@@ -88,9 +88,10 @@ class RightPlayerPanel(tk.Frame):
         self.canvas.create_text(380, 214, text="<-- Double-klik video dari panel kiri",
                                  fill="#333355", font=("Segoe UI", 13), tags="ph")
         
-        # Binding Klik & Double Klik
+        # Binding Klik, Double Klik, & Resize Jendela
         self.canvas.bind("<Button-1>", self._on_canvas_click)
         self.canvas.bind("<Double-Button-1>", self.toggle_fullscreen)
+        self.canvas.bind("<Configure>", lambda e: self.render_current_frame())
 
         # ─ Seek Bar Frame ─
         self.seek_frame = tk.Frame(self, bg="#0d0d1a", pady=2)
@@ -635,9 +636,17 @@ class RightPlayerPanel(tk.Frame):
             cv2.putText(frame, t, (w - tw - 12, h - 28), FONT, 0.75, COLOR_END, 2, cv2.LINE_AA)
             
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        cw = self.canvas.winfo_width() or 760
-        ch = self.canvas.winfo_height() or 428
         
+        # Pastikan antrean layout Tkinter selesai diproses agar winfo_width/height akurat
+        self.canvas.update_idletasks()
+        cw = self.canvas.winfo_width()
+        ch = self.canvas.winfo_height()
+        
+        # Fallback jika widget belum dirender sepenuhnya (nilai <= 1)
+        if cw <= 1 or ch <= 1:
+            cw = 760
+            ch = 428
+            
         sc = min(cw / w, ch / h)
         nw, nh = max(1, int(w * sc)), max(1, int(h * sc))
         
