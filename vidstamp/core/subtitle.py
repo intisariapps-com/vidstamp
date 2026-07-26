@@ -72,8 +72,10 @@ def extract_mkv_subtitles(video_path, temp_srt_path):
         except:
             pass
 
+    from vidstamp.utils.path_helper import get_ffmpeg_path
+    ffmpeg_cmd = get_ffmpeg_path()
     cmd = [
-        'ffmpeg', '-y',
+        ffmpeg_cmd, '-y',
         '-i', video_path,
         '-map', '0:s:0',
         temp_srt_path

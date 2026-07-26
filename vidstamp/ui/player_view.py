@@ -398,10 +398,14 @@ class RightPlayerPanel(tk.Frame):
         self.mark_end = self.engine.cur_idx / self.engine.fps
         self._upmk()
 
-    def _upmk(self):
+    def _upmk(self, current_sec=None):
         s = f"S:{format_time(self.mark_start)}" if self.mark_start is not None else "S:--"
         e = f"E:{format_time(self.mark_end)}"   if self.mark_end   is not None else "E:--"
-        self.lbl_mk.config(text=f"{s}  {e}")
+        if self.mark_start is not None and self.mark_end is None and current_sec is not None:
+            diff = current_sec - self.mark_start
+            self.lbl_mk.config(text=f"{s}  {e}  ({diff:.2f}s)")
+        else:
+            self.lbl_mk.config(text=f"{s}  {e}")
 
     def cancel_recording_action(self):
         """Membatalkan perekaman adegan yang sedang berjalan."""
@@ -556,6 +560,13 @@ class RightPlayerPanel(tk.Frame):
             t = f"START: {format_time(self.mark_start)}"
             cv2.putText(frame, t, (8, h - 28), FONT, 0.75, COLOR_BG, 4, cv2.LINE_AA)
             cv2.putText(frame, t, (8, h - 28), FONT, 0.75, COLOR_MARK, 2, cv2.LINE_AA)
+            
+            if self.mark_end is None:
+                self._upmk(sec)
+                running_sec = sec - self.mark_start
+                t_rec = f"REC: {running_sec:.2f}s"
+                cv2.putText(frame, t_rec, (8, h - 56), FONT, 0.75, COLOR_BG, 4, cv2.LINE_AA)
+                cv2.putText(frame, t_rec, (8, h - 56), FONT, 0.75, (0, 0, 255), 2, cv2.LINE_AA)
             
         if self.mark_end is not None:
             t = f"END: {format_time(self.mark_end)}"

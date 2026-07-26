@@ -18,3 +18,12 @@ docs/srs/
 # OS Log & Temporary files
 .DS_Store
 Thumbs.db
+
+# PyInstaller Build & Distribution folders
+build/
+dist/
+
+# Executable & Biner FFmpeg eksternal (Tidak di-push karena ukurannya yang sangat besar)
+bin/win/
+bin/mac/
+VidStamp_Setup.exe
