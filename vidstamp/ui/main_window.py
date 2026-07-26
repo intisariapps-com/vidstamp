@@ -117,8 +117,14 @@ class VideoAppController:
         state = load_playback_state(video_path)
         last_pos = state.get("last_position_sec")
         if last_pos is not None:
-            self.engine.seek_to(int(last_pos * self.engine.fps))
-            self.right_panel.seek_var.set(self.engine.cur_idx)
+            # Jeda 350ms untuk mencegah race condition/segfault di FFmpeg/ffpyplayer pada video bermasalah dengan header rusak
+            target_frame = int(last_pos * self.engine.fps)
+            def deferred_resume():
+                if self.engine.cap and self.engine.video_path == video_path:
+                    self.engine.seek_to(target_frame)
+                    self.right_panel.seek_var.set(self.engine.cur_idx)
+                    self.right_panel.render_current_frame()
+            self.root.after(350, deferred_resume)
         else:
             self.right_panel.seek_var.set(0)
             
