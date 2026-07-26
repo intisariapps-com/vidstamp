@@ -163,3 +163,115 @@ def save_scenes_data(video_path, scenes_list):
         print(f"Gagal menyimpan data adegan: {e}")
         return False
 
+def get_global_config_path():
+    return os.path.join(os.path.expanduser("~"), ".vidstamp_config.json")
+
+def load_global_config():
+    import json
+    path = get_global_config_path()
+    default_config = {
+        "root_dirs": [
+            r"e:\ANIME",
+            os.path.join(os.path.expanduser("~"), "Videos")
+        ],
+        "video_exts": [".mp4", ".mkv", ".avi", ".mov", ".flv", ".wmv", ".m4v", ".webm", ".ts", ".rmvb"],
+        "show_ts": True,
+        "show_ms": True,
+        "default_speed": "1.0x",
+        "auto_save_interval": 5
+    }
+    
+    if not os.path.exists(path):
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(default_config, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Gagal menulis konfigurasi default: {e}")
+        return default_config
+        
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            # Pastikan field penting ada
+            for k, v in default_config.items():
+                if k not in data:
+                    data[k] = v
+            return data
+    except Exception as e:
+        print(f"Gagal membaca konfigurasi global: {e}")
+        return default_config
+
+def save_global_config(config_data):
+    import json
+    path = get_global_config_path()
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(config_data, f, indent=2, ensure_ascii=False)
+        return True
+    except Exception as e:
+        print(f"Gagal menyimpan konfigurasi global: {e}")
+        return False
+
+def register_as_default_player():
+    """
+    Mendaftarkan VidStamp di Windows Registry lokal (HKEY_CURRENT_USER)
+    agar terdaftar sebagai pemutar video alternatif/default untuk ekstensi populer.
+    Ini tidak membutuhkan hak akses Administrator.
+    """
+    if os.name != 'nt':
+        return False, "Hanya didukung di sistem operasi Windows."
+        
+    import winreg
+    import sys
+    
+    if getattr(sys, 'frozen', False):
+        app_path = sys.executable
+    else:
+        main_file = os.path.abspath(sys.argv[0])
+        app_path = f'"{sys.executable}" "{main_file}"'
+        
+    try:
+        # 1. Daftarkan Program ID: HKCU\Software\Classes\VidStamp.Video
+        prog_id_key = r"Software\Classes\VidStamp.Video"
+        with winreg.CreateKey(winreg.HKEY_CURRENT_USER, prog_id_key) as key:
+            winreg.SetValue(key, "", winreg.REG_SZ, "VidStamp Video File")
+            
+        # Perintah Open
+        open_cmd_key = r"Software\Classes\VidStamp.Video\shell\open\command"
+        with winreg.CreateKey(winreg.HKEY_CURRENT_USER, open_cmd_key) as key:
+            if app_path.startswith('"'):
+                cmd_value = f'{app_path} "%1"'
+            else:
+                cmd_value = f'"{app_path}" "%1"'
+            winreg.SetValue(key, "", winreg.REG_SZ, cmd_value)
+            
+        # 2. Daftarkan File Associations di OpenWithProgids untuk masing-masing ekstensi
+        extensions = [".mp4", ".mkv", ".avi", ".mov", ".flv", ".wmv", ".m4v", ".webm", ".ts", ".rmvb"]
+        for ext in extensions:
+            ext_key = f"Software\Classes\\{ext}\\OpenWithProgids"
+            with winreg.CreateKey(winreg.HKEY_CURRENT_USER, ext_key) as key:
+                winreg.SetValueEx(key, "VidStamp.Video", 0, winreg.REG_SZ, "")
+                
+        # 3. Mendaftarkan di RegisteredApplications agar dikenali Windows Settings Default Apps
+        reg_apps_key = r"Software\RegisteredApplications"
+        with winreg.CreateKey(winreg.HKEY_CURRENT_USER, reg_apps_key) as key:
+            winreg.SetValueEx(key, "VidStamp", 0, winreg.REG_SZ, r"Software\VidStamp\Capabilities")
+            
+        # Buat Capabilities
+        cap_key = r"Software\VidStamp\Capabilities"
+        with winreg.CreateKey(winreg.HKEY_CURRENT_USER, cap_key) as key:
+            winreg.SetValueEx(key, "ApplicationName", 0, winreg.REG_SZ, "VidStamp")
+            winreg.SetValueEx(key, "ApplicationDescription", 0, winreg.REG_SZ, "VidStamp Video Timestamp & Marker App")
+            
+        # Hubungkan ekstensi di Capabilities\FileAssociations
+        cap_assoc_key = r"Software\VidStamp\Capabilities\FileAssociations"
+        with winreg.CreateKey(winreg.HKEY_CURRENT_USER, cap_assoc_key) as key:
+            for ext in extensions:
+                winreg.SetValueEx(key, ext, 0, winreg.REG_SZ, "VidStamp.Video")
+                
+        return True, "Asosiasi file VidStamp berhasil didaftarkan ke Windows Registry!"
+    except Exception as e:
+        return False, f"Gagal mendaftarkan registry: {str(e)}"
+
+
+

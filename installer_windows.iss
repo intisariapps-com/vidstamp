@@ -38,3 +38,21 @@ Name: "{userdesktop}\VidStamp"; Filename: "{app}\VidStamp.exe"; Tasks: desktopic
 
 [Run]
 Filename: "{app}\VidStamp.exe"; Description: "{cm:LaunchProgram,VidStamp}"; Flags: nowait postinstall skipifsilent
+
+[Registry]
+Root: HKA; Subkey: "Software\Classes\.mp4\OpenWithProgids"; ValueType: string; ValueName: "VidStamp.Video"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.mkv\OpenWithProgids"; ValueType: string; ValueName: "VidStamp.Video"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.avi\OpenWithProgids"; ValueType: string; ValueName: "VidStamp.Video"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.mov\OpenWithProgids"; ValueType: string; ValueName: "VidStamp.Video"; ValueData: ""; Flags: uninsdeletevalue
+
+Root: HKA; Subkey: "Software\Classes\VidStamp.Video"; ValueType: string; ValueName: ""; ValueData: "VidStamp Video File"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\VidStamp.Video\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\VidStamp.exe,0"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\VidStamp.Video\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\VidStamp.exe"" ""%1"""; Flags: uninsdeletekey
+
+Root: HKA; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueName: "VidStamp"; ValueData: "Software\VidStamp\Capabilities"; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\VidStamp\Capabilities"; ValueType: string; ValueName: "ApplicationName"; ValueData: "VidStamp"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\VidStamp\Capabilities"; ValueType: string; ValueName: "ApplicationDescription"; ValueData: "VidStamp Video Timestamp & Marker App"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\VidStamp\Capabilities\FileAssociations"; ValueType: string; ValueName: ".mp4"; ValueData: "VidStamp.Video"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\VidStamp\Capabilities\FileAssociations"; ValueType: string; ValueName: ".mkv"; ValueData: "VidStamp.Video"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\VidStamp\Capabilities\FileAssociations"; ValueType: string; ValueName: ".avi"; ValueData: "VidStamp.Video"; Flags: uninsdeletekey
+

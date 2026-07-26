@@ -1,11 +1,11 @@
-"""
-vidstamp/ui/main_window.py - Koordinator Window Utama dan Event Loops
-"""
 import tkinter as tk
 from tkinter import messagebox, ttk
 import sys
 import os
 import time
+import threading
+import customtkinter as ctk
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
 # Impor dari paket vidstamp
 from vidstamp.config import ROOT_DIRS
@@ -35,6 +35,9 @@ class VideoAppController:
         self.skipped_op = False
         self.skipped_ed = False
         
+        self._loading = False
+
+        
         # Panel Kiri
         self.left_panel = LeftBrowserPanel(self.paned_window, 
                                            on_video_select_callback=self.load_video,
@@ -43,8 +46,13 @@ class VideoAppController:
         
         # Panel Kanan
         self.right_panel = RightPlayerPanel(self.paned_window, self.engine,
-                                             on_toggle_browser_callback=self.toggle_browser)
+                                             on_toggle_browser_callback=self.toggle_browser,
+                                             on_settings_save_callback=self.on_settings_saved)
         self.paned_window.add(self.right_panel, minsize=600)
+
+        # Daftarkan canvas untuk menerima drop file video (Drag & Drop)
+        self.right_panel.canvas.drop_target_register(DND_FILES)
+        self.right_panel.canvas.dnd_bind('<<Drop>>', self._on_file_drop)
         
         self._bind_global_shortcuts()
         
@@ -64,50 +72,64 @@ class VideoAppController:
                 return d
         return os.path.expanduser("~")
 
+    def _on_file_drop(self, event):
+        file_path = event.data.strip()
+        if file_path.startswith('{') and file_path.endswith('}'):
+            file_path = file_path[1:-1]
+        
+        if os.path.isfile(file_path):
+            from vidstamp.utils.file_manager import load_global_config
+            cfg_data = load_global_config()
+            video_exts = cfg_data.get("video_exts", [".mp4", ".mkv", ".avi", ".mov", ".flv", ".wmv"])
+            _, ext = os.path.splitext(file_path.lower())
+            if ext in video_exts:
+                self.load_video(file_path)
+            else:
+                messagebox.showwarning("File Tidak Didukung", f"Ekstensi file {ext} tidak terdaftar di pengaturan video.")
+
     def load_video(self, video_path):
+        if getattr(self, "_loading", False):
+            return
+        self._loading = True
+        
+        try:
+            self._load_video_internal(video_path)
+        except Exception as e:
+            self._loading = False
+            import traceback
+            try:
+                with open("crash.log", "a", encoding="utf-8") as f:
+                    f.write("=== LOAD_VIDEO EXCEPTION ===\n")
+                    traceback.print_exc(file=f)
+            except:
+                pass
+            messagebox.showerror("Error", f"Terjadi kesalahan saat memuat video:\n{e}")
+
+    def _load_video_internal(self, video_path):
         # Simpan posisi video lama sebelum memuat yang baru
         if self.engine.cap and self.engine.video_path:
             cur_sec = self.engine.cur_idx / self.engine.fps
             from vidstamp.utils.file_manager import save_playback_state
             save_playback_state(self.engine.video_path, cur_sec)
 
-        self.root.config(cursor="watch")
+        self.root.configure(cursor="watch")
         self.root.update()
         
         self.right_panel.subtitle_list = []
         
         success = self.engine.load(video_path)
-        self.root.config(cursor="")
+        self.root.configure(cursor="")
         
         if not success:
             messagebox.showerror("Error", f"Gagal membuka berkas video:\n{video_path}")
+            self._loading = False
             return
-            
-        # Prioritas 1: Cek subtitle eksternal (.srt) di folder yang sama
-        external_sub = find_external_subtitle(video_path)
-        if external_sub:
-            subtitles = parse_srt_file(external_sub)
-            self.right_panel.subtitle_list = subtitles
-            self.right_panel.lbl_file.config(text=f"{os.path.basename(video_path)} ({len(subtitles)} subtitle eksternal dimuat)")
-        # Prioritas 2: Fallback ke ekstraksi subtitle internal jika format mkv
-        elif video_path.lower().endswith('.mkv'):
-            self.right_panel.lbl_file.config(text=f"{os.path.basename(video_path)} (Ekstrak subtitle...)")
-            self.root.update()
-            
-            extracted = extract_mkv_subtitles(video_path, self.temp_srt_path)
-            if extracted:
-                subtitles = parse_srt_file(self.temp_srt_path)
-                self.right_panel.subtitle_list = subtitles
-                self.right_panel.lbl_file.config(text=f"{os.path.basename(video_path)} ({len(subtitles)} subtitle internal dimuat)")
-            else:
-                self.right_panel.lbl_file.config(text=f"{os.path.basename(video_path)} (Tanpa subtitle internal)")
-        else:
-            self.right_panel.lbl_file.config(text=os.path.basename(video_path))
             
         self.left_panel.highlight_video(video_path)
         
-        self.right_panel.lbl_tot.config(text=format_time(self.engine.total_frames / self.engine.fps))
-        self.right_panel.seek_bar.config(to=max(1, self.engine.total_frames - 1))
+        tot_sec = self.engine.total_frames / self.engine.fps
+        self.right_panel.lbl_time.configure(text=f"00:00.000 / {format_time(tot_sec, self.right_panel.show_ms.get())}")
+        self.right_panel.seek_bar.configure(to=max(1, self.engine.total_frames - 1))
         
         # Muat database adegan lama
         self.right_panel.load_saved_scenes()
@@ -117,14 +139,29 @@ class VideoAppController:
         state = load_playback_state(video_path)
         last_pos = state.get("last_position_sec")
         if last_pos is not None:
-            self.engine.seek_to(int(last_pos * self.engine.fps))
+            import cv2
+            # Posisikan OpenCV frame secara instan agar user langsung melihat gambarnya
+            target_frame = int(last_pos * self.engine.fps)
+            target_frame = max(0, min(target_frame, self.engine.total_frames - 1))
+            self.engine.cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+            self.engine.cur_idx = int(self.engine.cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1
             self.right_panel.seek_var.set(self.engine.cur_idx)
+            
+            # Tunda pemanggilan seek audio player selama 500ms agar thread ffpyplayer siap
+            def delayed_audio_seek():
+                if self.engine.video_path == video_path and self.engine.audio_player:
+                    try:
+                        self.engine.audio_player.seek(last_pos, relative=False)
+                    except:
+                        pass
+            self.root.after(500, delayed_audio_seek)
         else:
             self.right_panel.seek_var.set(0)
+
             
         self.right_panel.mark_start = None
         self.right_panel.mark_end = None
-        self.right_panel.lbl_mk.config(text="")
+        self.right_panel.lbl_mk.configure(text="")
         
         # Load Konfigurasi Skip OP/ED jika ada
         skip_data = load_skip_config(video_path)
@@ -139,6 +176,41 @@ class VideoAppController:
         
         self.root.title(f"VidStamp - {os.path.basename(video_path)}")
         self.right_panel.render_current_frame()
+
+        # Prioritas 1: Cek subtitle eksternal (.srt) di folder yang sama
+        external_sub = find_external_subtitle(video_path)
+        if external_sub:
+            subtitles = parse_srt_file(external_sub)
+            self.right_panel.subtitle_list = subtitles
+            self.right_panel.lbl_file.configure(text=f"{os.path.basename(video_path)} ({len(subtitles)} subtitle eksternal dimuat)")
+            self._loading = False
+        # Prioritas 2: Fallback ke ekstraksi subtitle internal jika format mkv
+        elif video_path.lower().endswith('.mkv'):
+            self.right_panel.lbl_file.configure(text=f"{os.path.basename(video_path)} (Mengekstrak subtitle...)")
+            
+            def bg_extract():
+                try:
+                    extracted = extract_mkv_subtitles(video_path, self.temp_srt_path)
+                except Exception:
+                    extracted = False
+                
+                self.root.after(0, lambda: self._on_mkv_extract_complete(video_path, extracted))
+                
+            threading.Thread(target=bg_extract, daemon=True).start()
+        else:
+            self.right_panel.lbl_file.configure(text=os.path.basename(video_path))
+            self._loading = False
+
+    def _on_mkv_extract_complete(self, video_path, extracted):
+        if self.engine.video_path == video_path:
+            if extracted:
+                subtitles = parse_srt_file(self.temp_srt_path)
+                self.right_panel.subtitle_list = subtitles
+                self.right_panel.lbl_file.configure(text=f"{os.path.basename(video_path)} ({len(subtitles)} subtitle internal dimuat)")
+            else:
+                self.right_panel.lbl_file.configure(text=f"{os.path.basename(video_path)} (Tanpa subtitle internal)")
+        self._loading = False
+
 
     def toggle_browser(self, event=None):
         self.browser_visible = not self.browser_visible
@@ -213,11 +285,12 @@ class VideoAppController:
                 self.right_panel.draw_frame(frame)
                 if not self.right_panel._seeking:
                     self.right_panel.seek_var.set(self.engine.cur_idx)
-                self.right_panel.lbl_cur.config(text=format_time(self.engine.cur_idx / self.engine.fps, 
-                                                                 self.right_panel.show_ms.get()))
+                cur_sec = self.engine.cur_idx / self.engine.fps
+                tot_sec = self.engine.total_frames / self.engine.fps
+                self.right_panel.lbl_time.configure(text=f"{format_time(cur_sec, self.right_panel.show_ms.get())} / {format_time(tot_sec, self.right_panel.show_ms.get())}")
             else:
                 self.engine.set_playing(False)
-                self.right_panel.btn_play.config(text="Play")
+                self.right_panel.btn_play.configure(text="▶")
                 
             elapsed = (time.perf_counter() - t0) * 1000
             frame_delay = 1000.0 / (self.engine.fps * self.engine.speed)
@@ -242,24 +315,66 @@ class VideoAppController:
         self.root.destroy()
 
     def _start_auto_save_loop(self):
-        """Menyimpan posisi pemutaran terakhir secara otomatis setiap 5 detik."""
+        """Menyimpan posisi pemutaran terakhir secara otomatis sesuai pengaturan global."""
         if self.engine.cap and self.engine.playing and self.engine.video_path:
             cur_sec = self.engine.cur_idx / self.engine.fps
             from vidstamp.utils.file_manager import save_playback_state
             save_playback_state(self.engine.video_path, cur_sec)
         
-        self.root.after(5000, self._start_auto_save_loop)
+        from vidstamp.utils.file_manager import load_global_config
+        cfg_data = load_global_config()
+        interval_ms = max(1, cfg_data.get("auto_save_interval", 5)) * 1000
+        
+        self.root.after(interval_ms, self._start_auto_save_loop)
+
+    def on_settings_saved(self):
+        """Triggered ketika pengguna mengklik simpan pengaturan global."""
+        from vidstamp.utils.file_manager import load_global_config
+        import vidstamp.config as cfg
+        new_config = load_global_config()
+        
+        # Perbarui variabel konfigurasi global di memori
+        cfg.ROOT_DIRS = new_config.get("root_dirs", cfg.ROOT_DIRS)
+        cfg.VIDEO_EXTS = set(new_config.get("video_exts", cfg.VIDEO_EXTS))
+        
+        # Segarkan navigasi folder browser di panel kiri
+        init_path = self.get_default_dir()
+        if init_path and os.path.isdir(init_path):
+            self.left_panel.navigate_to(init_path)
+            
+        # Segarkan canvas video saat ini agar timestamp/milidetik langsung terupdate
+        if self.engine.cap:
+            self.right_panel.render_current_frame()
+
+
+class CTkDnD(ctk.CTk, TkinterDnD.DnDWrapper):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.TkdndVersion = TkinterDnD._require(self)
 
 def start_gui(start_path=None):
-    root = tk.Tk()
+    ctk.set_appearance_mode("dark")
+    ctk.set_default_color_theme("blue")
+    
+    root = CTkDnD()
     root.geometry("1200x760")
     root.minsize(900, 580)
     
-    style = ttk.Style(root)
-    style.theme_use("clam")
-    style.configure("Horizontal.TScale", background="#0d0d1a", troughcolor="#1a1a3e",
-                     sliderthickness=14, sliderrelief="flat")
-                     
+    def report_callback_exception(exc, val, tb):
+        import traceback
+        try:
+            with open("crash.log", "a", encoding="utf-8") as f:
+                f.write("=== TKINTER CALLBACK EXCEPTION ===\n")
+                traceback.print_exception(exc, val, tb, file=f)
+        except:
+            pass
+        sys.__stderr__.write("Tkinter Callback Exception:\n")
+        traceback.print_exception(exc, val, tb, file=sys.__stderr__)
+
+    root.report_callback_exception = report_callback_exception
+    
+    # Inisialisasi controller utama
     app = VideoAppController(root, start_path)
     root.protocol("WM_DELETE_WINDOW", app.quit_app)
     root.mainloop()
+

@@ -1,0 +1,153 @@
+=== VIDSTAMP CRASH REPORT ===
+Traceback (most recent call last):
+  File "D:\VIDSTAMPS-APPS\vidstamp\__main__.py", line 21, in <module>
+    start_gui(start_arg)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 375, in start_gui
+    app = VideoAppController(root, start_path)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 61, in __init__
+    self.left_panel.navigate_to(init_path)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\browser.py", line 111, in navigate_to
+    self.lbl_path.config(text=folder)
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 111, in config
+    raise AttributeError("'config' is not implemented for CTk widgets. For consistency, always use 'configure' instead.")
+AttributeError: 'config' is not implemented for CTk widgets. For consistency, always use 'configure' instead.
+=== LOAD_VIDEO EXCEPTION ===
+Traceback (most recent call last):
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 96, in load_video
+    self._load_video_internal(video_path)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 130, in _load_video_internal
+    self.right_panel.lbl_tot.config(text=format_time(self.engine.total_frames / self.engine.fps))
+    ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'lbl_tot'
+=== LOAD_VIDEO EXCEPTION ===
+Traceback (most recent call last):
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 96, in load_video
+    self._load_video_internal(video_path)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 130, in _load_video_internal
+    self.right_panel.lbl_tot.config(text=format_time(self.engine.total_frames / self.engine.fps))
+    ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'lbl_tot'
+=== LOAD_VIDEO EXCEPTION ===
+Traceback (most recent call last):
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 96, in load_video
+    self._load_video_internal(video_path)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 164, in _load_video_internal
+    self.right_panel.lbl_mk.config(text="")
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 111, in config
+    raise AttributeError("'config' is not implemented for CTk widgets. For consistency, always use 'configure' instead.")
+AttributeError: 'config' is not implemented for CTk widgets. For consistency, always use 'configure' instead.
+=== LOAD_VIDEO EXCEPTION ===
+Traceback (most recent call last):
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 96, in load_video
+    self._load_video_internal(video_path)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 164, in _load_video_internal
+    self.right_panel.lbl_mk.config(text="")
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 111, in config
+    raise AttributeError("'config' is not implemented for CTk widgets. For consistency, always use 'configure' instead.")
+AttributeError: 'config' is not implemented for CTk widgets. For consistency, always use 'configure' instead.
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 499, in toggle_fullscreen
+    self.seek_frame.pack_forget()
+    ^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'seek_frame'
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 520, in toggle_fullscreen
+    self.seek_frame.pack(fill="x")
+    ^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'seek_frame'
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 499, in toggle_fullscreen
+    self.seek_frame.pack_forget()
+    ^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'seek_frame'
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 520, in toggle_fullscreen
+    self.seek_frame.pack(fill="x")
+    ^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'seek_frame'
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 499, in toggle_fullscreen
+    self.seek_frame.pack_forget()
+    ^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'seek_frame'
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 520, in toggle_fullscreen
+    self.seek_frame.pack(fill="x")
+    ^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'seek_frame'
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 499, in toggle_fullscreen
+    self.seek_frame.pack_forget()
+    ^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'seek_frame'
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 520, in toggle_fullscreen
+    self.seek_frame.pack(fill="x")
+    ^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'seek_frame'
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 499, in toggle_fullscreen
+    self.seek_frame.pack_forget()
+    ^^^^^^^^^^^^^^^
+AttributeError: 'RightPlayerPanel' object has no attribute 'seek_frame'
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 289, in playback_loop
+    tot_sec = self.engine.tot_frames / self.engine.fps
+              ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'VideoPlayerEngine' object has no attribute 'tot_frames'
+=== TKINTER CALLBACK EXCEPTION ===
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 506, in toggle_fullscreen
+    self.canvas_container.pack(in_=self, fill="both", expand=True)
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 298, in pack
+    return super().pack(**self._apply_argument_scaling(kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 2471, in pack_configure
+    self.tk.call(
+_tkinter.TclError: can't pack .!panedwindow.!rightplayerpanel.!ctktabview.!ctkframe.!ctkframe2 inside .!panedwindow.!rightplayerpanel
