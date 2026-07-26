@@ -35,7 +35,13 @@ Program VidStamp memerlukan parser OpenCV, audio engine `ffpyplayer` (yang membu
 * **Windows**: `bin/win/ffmpeg.exe`
 * **macOS**: `bin/mac/ffmpeg`
 
----
+### E. Aset Visual & Media Installer
+Untuk memberikan tampilan installer yang premium dan profesional, aset visual berikut telah disiapkan di folder `vidstamp/ui/assets/`:
+* `icon.png`: Ikon utama aplikasi dengan format gambar PNG resolusi tinggi.
+* `icon.ico`: Ikon aplikasi Windows (multi-resolusi: 16px hingga 256px) untuk disematkan pada executable VidStamp dan installer.
+* `installer_banner.bmp`: Banner samping berdimensi 164x314 piksel dengan latar gelap elegan untuk Wizard layar sambutan Inno Setup.
+* `installer_small.bmp`: Logo pojok kanan atas berdimensi 55x58 piksel untuk halaman dalam Wizard Inno Setup.
+* `installer_windows.iss` (berada di root): File konfigurasi Inno Setup Compiler untuk Windows desktop installer.
 
 ## 3. Alur Kompilasi & Build (Bagi Pengembang)
 
