@@ -258,6 +258,8 @@ class VideoAppController:
 
 def start_gui(start_path=None):
     root = tk.Tk()
+    from vidstamp.utils.logger import register_tkinter_exception_handler
+    register_tkinter_exception_handler(root)
     root.geometry("1200x760")
     root.minsize(900, 580)
     
