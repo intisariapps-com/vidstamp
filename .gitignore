@@ -1,0 +1,23 @@
+# ==========================================
+#  .gitignore - VidStamp (Whitelist Mode)
+# ==========================================
+
+# Abaikan semua file dan folder di root secara default
+/*
+
+# Pengecualian (TIDAK diabaikan/Di-push ke publik)
+!/vidstamp/
+!/README.md
+!/requirements.txt
+!/.gitignore
+
+# ==========================================
+#  Aturan Pengabaian di dalam vidstamp/
+# ==========================================
+vidstamp/**/__pycache__/
+vidstamp/**/*.pyc
+vidstamp/**/*.pyo
+
+# Log dan OS temporary
+.DS_Store
+Thumbs.db

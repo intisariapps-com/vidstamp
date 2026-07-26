@@ -1,0 +1,1 @@
+# vidstamp core package
