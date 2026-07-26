@@ -168,7 +168,7 @@ class RightPlayerPanel(tk.Frame):
         self.inf_bar = tk.Frame(self, bg="#0d0d1a", pady=1)
         self.inf_bar.pack(fill="x", padx=6)
         
-        tk.Label(self.inf_bar, text="Space=Play/Pause | DoubleClick=Fullscreen | Ctrl+T=Record Mulai/Selesai | Q=Keluar",
+        tk.Label(self.inf_bar, text="Space=Play/Pause | DoubleClick=Fullscreen | Ctrl+T=Record | Ctrl+Space=Batal Rekam | Q=Keluar",
                  bg="#0d0d1a", fg="#333355", font=("Segoe UI", 7)).pack(side="left")
                  
         self.lbl_mk = tk.Label(self.inf_bar, text="", bg="#0d0d1a", fg="#ffd700",
@@ -402,6 +402,14 @@ class RightPlayerPanel(tk.Frame):
         s = f"S:{format_time(self.mark_start)}" if self.mark_start is not None else "S:--"
         e = f"E:{format_time(self.mark_end)}"   if self.mark_end   is not None else "E:--"
         self.lbl_mk.config(text=f"{s}  {e}")
+
+    def cancel_recording_action(self):
+        """Membatalkan perekaman adegan yang sedang berjalan."""
+        if self.mark_start is not None or self.mark_end is not None:
+            self.mark_start = None
+            self.mark_end = None
+            self.lbl_mk.config(text="Perekaman dibatalkan")
+            self.render_current_frame()
 
     def save_scene_action(self):
         if not self.engine.cap:

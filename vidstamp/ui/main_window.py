@@ -145,6 +145,7 @@ class VideoAppController:
         self.root.bind("<Escape>",      self._exit_fullscreen_only)
         self.root.bind("<Control-t>",   self._record_shortcut_handler)
         self.root.bind("<Control-T>",   self._record_shortcut_handler)
+        self.root.bind("<Control-space>", lambda e: self.right_panel.cancel_recording_action())
         self.root.bind("q",             lambda e: self.quit_app())
         self.root.bind("Q",             lambda e: self.quit_app())
 

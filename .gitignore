@@ -1,23 +1,20 @@
 # ==========================================
-#  .gitignore - VidStamp (Whitelist Mode)
+#  .gitignore - VidStamp (Clean Mode)
 # ==========================================
 
-# Abaikan semua file dan folder di root secara default
-/*
+# Python compiled cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyw
 
-# Pengecualian (TIDAK diabaikan/Di-push ke publik)
-!/vidstamp/
-!/README.md
-!/requirements.txt
-!/.gitignore
+# Konfigurasi AI & Memori internal (Tidak di-push)
+memory/
+Agent.md
+.gemini/
+.agents/
+docs/srs/
 
-# ==========================================
-#  Aturan Pengabaian di dalam vidstamp/
-# ==========================================
-vidstamp/**/__pycache__/
-vidstamp/**/*.pyc
-vidstamp/**/*.pyo
-
-# Log dan OS temporary
+# OS Log & Temporary files
 .DS_Store
 Thumbs.db
