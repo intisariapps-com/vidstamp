@@ -56,6 +56,7 @@ class VideoAppController:
             self.load_video(init_path)
             
         self.playback_loop()
+        self._start_auto_save_loop()
 
     def get_default_dir(self):
         for d in ROOT_DIRS:
@@ -64,6 +65,12 @@ class VideoAppController:
         return os.path.expanduser("~")
 
     def load_video(self, video_path):
+        # Simpan posisi video lama sebelum memuat yang baru
+        if self.engine.cap and self.engine.video_path:
+            cur_sec = self.engine.cur_idx / self.engine.fps
+            from vidstamp.utils.file_manager import save_playback_state
+            save_playback_state(self.engine.video_path, cur_sec)
+
         self.root.config(cursor="watch")
         self.root.update()
         
@@ -101,10 +108,20 @@ class VideoAppController:
         
         self.right_panel.lbl_tot.config(text=format_time(self.engine.total_frames / self.engine.fps))
         self.right_panel.seek_bar.config(to=max(1, self.engine.total_frames - 1))
-        self.right_panel.seek_var.set(0)
         
-        self.right_panel.scenes = []
-        self.right_panel.sc_lb.delete(0, "end")
+        # Muat database adegan lama
+        self.right_panel.load_saved_scenes()
+        
+        # Load posisi pemutaran terakhir (Resume Playback)
+        from vidstamp.utils.file_manager import load_playback_state
+        state = load_playback_state(video_path)
+        last_pos = state.get("last_position_sec")
+        if last_pos is not None:
+            self.engine.seek_to(int(last_pos * self.engine.fps))
+            self.right_panel.seek_var.set(self.engine.cur_idx)
+        else:
+            self.right_panel.seek_var.set(0)
+            
         self.right_panel.mark_start = None
         self.right_panel.mark_end = None
         self.right_panel.lbl_mk.config(text="")
@@ -210,6 +227,12 @@ class VideoAppController:
             self.root.after(50, self.playback_loop)
 
     def quit_app(self):
+        # Simpan posisi pemutaran detik terakhir saat aplikasi ditutup
+        if self.engine.cap and self.engine.video_path:
+            cur_sec = self.engine.cur_idx / self.engine.fps
+            from vidstamp.utils.file_manager import save_playback_state
+            save_playback_state(self.engine.video_path, cur_sec)
+
         self.engine.release()
         if os.path.exists(self.temp_srt_path):
             try:
@@ -217,6 +240,15 @@ class VideoAppController:
             except:
                 pass
         self.root.destroy()
+
+    def _start_auto_save_loop(self):
+        """Menyimpan posisi pemutaran terakhir secara otomatis setiap 5 detik."""
+        if self.engine.cap and self.engine.playing and self.engine.video_path:
+            cur_sec = self.engine.cur_idx / self.engine.fps
+            from vidstamp.utils.file_manager import save_playback_state
+            save_playback_state(self.engine.video_path, cur_sec)
+        
+        self.root.after(5000, self._start_auto_save_loop)
 
 def start_gui(start_path=None):
     root = tk.Tk()

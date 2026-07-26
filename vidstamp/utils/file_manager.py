@@ -78,3 +78,88 @@ def save_skip_config(video_path, config_data, as_template=False):
     except Exception as e:
         print(f"Gagal menyimpan konfigurasi skip: {e}")
         return False
+
+def load_playback_state(video_path):
+    """
+    Membaca riwayat posisi pemutaran terakhir dari playback_state.json
+    di dalam folder catatan video.
+    """
+    import json
+    if not video_path:
+        return {}
+    try:
+        note_dir = ensure_note_folder(video_path)
+        state_path = os.path.join(note_dir, "playback_state.json")
+        if os.path.exists(state_path):
+            with open(state_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except:
+        pass
+    return {}
+
+def save_playback_state(video_path, current_sec):
+    """
+    Menyimpan posisi detik terakhir pemutaran ke playback_state.json
+    di dalam folder catatan video.
+    """
+    import json
+    if not video_path or current_sec is None:
+        return False
+    try:
+        note_dir = ensure_note_folder(video_path)
+        state_path = os.path.join(note_dir, "playback_state.json")
+        state_data = {"last_position_sec": current_sec}
+        with open(state_path, "w", encoding="utf-8") as f:
+            json.dump(state_data, f, indent=2, ensure_ascii=False)
+        return True
+    except Exception as e:
+        print(f"Gagal menyimpan status pemutaran: {e}")
+        return False
+
+def load_scenes_data(video_path):
+    """
+    Membaca database adegan terstruktur dari scenes.json
+    di dalam folder catatan video.
+    """
+    import json
+    if not video_path:
+        return []
+    try:
+        note_dir = ensure_note_folder(video_path)
+        scenes_path = os.path.join(note_dir, "scenes.json")
+        if os.path.exists(scenes_path):
+            with open(scenes_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"Gagal membaca data adegan: {e}")
+    return []
+
+def save_scenes_data(video_path, scenes_list):
+    """
+    Menyimpan database adegan terstruktur ke scenes.json
+    di dalam folder catatan video.
+    """
+    import json
+    if not video_path:
+        return False
+    try:
+        note_dir = ensure_note_folder(video_path)
+        scenes_path = os.path.join(note_dir, "scenes.json")
+        
+        # Konversi list of tuples (start, end, label, subs) ke list of dicts
+        serializable_scenes = []
+        for s, e, label, subs in scenes_list:
+            serializable_scenes.append({
+                "start": s,
+                "end": e,
+                "label": label,
+                "subtitles": subs
+            })
+            
+        with open(scenes_path, "w", encoding="utf-8") as f:
+            json.dump(serializable_scenes, f, indent=2, ensure_ascii=False)
+        return True
+    except Exception as e:
+        print(f"Gagal menyimpan data adegan: {e}")
+        return False
+

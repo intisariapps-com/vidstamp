@@ -457,6 +457,11 @@ class RightPlayerPanel(tk.Frame):
         self.mark_end = None
         self.lbl_mk.config(text=f"Tersimpan: {note_name}")
         self.render_current_frame()
+        
+        # Simpan database JSON dan ekspor teks otomatis
+        from vidstamp.utils.file_manager import save_scenes_data
+        save_scenes_data(self.engine.video_path, self.scenes)
+        self._auto_export_scenes()
 
     def _jump_sc(self, event=None):
         s = self.sc_lb.curselection()
@@ -471,6 +476,61 @@ class RightPlayerPanel(tk.Frame):
         if s:
             self.scenes.pop(s[0])
             self.sc_lb.delete(s[0])
+            # Simpan database JSON dan ekspor teks otomatis setelah penghapusan
+            from vidstamp.utils.file_manager import save_scenes_data
+            save_scenes_data(self.engine.video_path, self.scenes)
+            self._auto_export_scenes()
+
+    def _auto_export_scenes(self):
+        """Mengekspor daftar adegan secara otomatis ke file teks default di folder catatan."""
+        if not self.engine.cap or not self.engine.video_path:
+            return
+        try:
+            from vidstamp.utils.file_manager import ensure_note_folder
+            note_dir = ensure_note_folder(self.engine.video_path)
+            video_name = os.path.basename(self.engine.video_path)
+            video_base, _ = os.path.splitext(video_name)
+            default_file = os.path.join(note_dir, f"{video_base}_catatan_adegan.txt")
+            
+            with open(default_file, "w", encoding="utf-8") as f:
+                f.write("=" * 65 + "\n")
+                f.write("                  CATATAN ADEGAN & SUBTITLE\n")
+                f.write(f"  Video Source: {video_name}\n")
+                f.write(f"  Folder: {note_dir}\n")
+                f.write("=" * 65 + "\n\n")
+                
+                for i, (s, e, label, subs) in enumerate(self.scenes, 1):
+                    f.write(f"[{i:02d}] {label}\n")
+                    f.write(f"     Mulai  : {format_time(s)} ({s:.3f}s)\n")
+                    f.write(f"     Akhir  : {format_time(e)} ({e:.3f}s)\n")
+                    f.write(f"     Durasi : {e-s:.3f} detik\n")
+                    if subs:
+                        f.write(f"     --- Subtitle / Transkrip Adegan ---\n")
+                        indented_subs = "\n".join(["       " + line for line in subs.split("\n")])
+                        f.write(f"{indented_subs}\n")
+                    f.write("\n" + "-" * 40 + "\n\n")
+        except Exception as err:
+            print(f"Gagal melakukan ekspor otomatis catatan: {err}")
+
+    def load_saved_scenes(self):
+        """Memuat database adegan lama dari scenes.json ke GUI."""
+        self.scenes = []
+        self.sc_lb.delete(0, "end")
+        if not self.engine.cap or not self.engine.video_path:
+            return
+            
+        from vidstamp.utils.file_manager import load_scenes_data
+        saved = load_scenes_data(self.engine.video_path)
+        for item in saved:
+            s = item.get("start", 0.0)
+            e = item.get("end", 0.0)
+            label = item.get("label", "")
+            subs = item.get("subtitles", "")
+            self.scenes.append((s, e, label, subs))
+            
+            dur = e - s
+            disp = f"{label}: {format_time(s)} -> {format_time(e)} ({dur:.2f}s)"
+            self.sc_lb.insert("end", disp)
 
     def _exp_sc(self):
         if not self.scenes:
