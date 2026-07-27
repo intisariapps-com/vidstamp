@@ -409,7 +409,9 @@ class RightPlayerPanel(tk.Frame):
         e = f"E:{format_time(self.mark_end)}"   if self.mark_end   is not None else "E:--"
         if self.mark_start is not None and self.mark_end is None and current_sec is not None:
             diff = current_sec - self.mark_start
-            self.lbl_mk.config(text=f"{s}  {e}  ({diff:.2f}s)")
+            diff_m = int(diff) // 60
+            diff_s = int(diff) % 60
+            self.lbl_mk.config(text=f"{s}  {e}  ({diff_m:02d}:{diff_s:02d})")
         else:
             self.lbl_mk.config(text=f"{s}  {e}")
 
@@ -631,7 +633,9 @@ class RightPlayerPanel(tk.Frame):
             if self.mark_end is None:
                 self._upmk(sec)
                 running_sec = sec - self.mark_start
-                t_rec = f"REC: {running_sec:.2f}s"
+                run_m = int(running_sec) // 60
+                run_s = int(running_sec) % 60
+                t_rec = f"REC: {run_m:02d}:{run_s:02d}"
                 cv2.putText(frame, t_rec, (8, h - 56), FONT, 0.75, COLOR_BG, 4, cv2.LINE_AA)
                 cv2.putText(frame, t_rec, (8, h - 56), FONT, 0.75, (0, 0, 255), 2, cv2.LINE_AA)
             
