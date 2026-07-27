@@ -19,6 +19,7 @@ class VideoPlayerEngine:
         self.cur_idx = 0
         self.speed = 1.0
         self._seek_target = None
+        self._caffeinate_process = None
 
     def load(self, path):
         """Memuat berkas video dan mempersiapkan audio player MediaPlayer."""
@@ -53,6 +54,8 @@ class VideoPlayerEngine:
         self.playing = state
         if self.audio_player:
             self.audio_player.set_pause(not state)
+            
+        self._set_sleep_prevention(state)
 
     def set_speed(self, val: float):
         """Mengubah kecepatan video."""
@@ -126,6 +129,7 @@ class VideoPlayerEngine:
     def release(self):
         """Menutup stream video & audio player."""
         self.playing = False
+        self._set_sleep_prevention(False)
         if self.cap:
             self.cap.release()
             self.cap = None
@@ -134,3 +138,34 @@ class VideoPlayerEngine:
             self.audio_player = None
         self.cur_idx = 0
         self._seek_target = None
+
+    def _set_sleep_prevention(self, prevent: bool):
+        """Mencegah atau mengizinkan layar mati / tidur secara otomatis (Windows & macOS)."""
+        import os
+        import sys
+        if os.name == 'nt':
+            try:
+                import ctypes
+                ES_CONTINUOUS = 0x80000000
+                ES_SYSTEM_REQUIRED = 0x00000001
+                ES_DISPLAY_REQUIRED = 0x00000002
+                if prevent:
+                    ctypes.windll.kernel32.SetThreadExecutionState(
+                        ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED
+                    )
+                else:
+                    ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS)
+            except Exception as e:
+                print(f"Error sleep prevention Windows: {e}")
+        elif sys.platform == 'darwin':
+            import subprocess
+            if prevent:
+                if not self._caffeinate_process or self._caffeinate_process.poll() is not None:
+                    try:
+                        self._caffeinate_process = subprocess.Popen(['caffeinate', '-d'])
+                    except Exception as e:
+                        print(f"Error starting caffeinate macOS: {e}")
+            else:
+                if self._caffeinate_process and self._caffeinate_process.poll() is None:
+                    self._caffeinate_process.terminate()
+                    self._caffeinate_process = None
