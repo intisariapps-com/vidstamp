@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 import os
 import cv2
 from vidstamp.config import FONT, COLOR_TS, COLOR_MARK, COLOR_END, COLOR_BG
-from vidstamp.utils.time_formatter import format_time
+from vidstamp.utils.time_formatter import format_time, format_remaining
 from vidstamp.utils.text_cleaner import get_first_4_words
 from vidstamp.utils.file_manager import ensure_note_folder, save_skip_config
 from vidstamp.core.subtitle import get_subtitles_in_range
@@ -97,8 +97,8 @@ class RightPlayerPanel(tk.Frame):
         self.seek_frame = tk.Frame(self, bg="#0d0d1a", pady=2)
         self.seek_frame.pack(fill="x", padx=6)
         
-        self.lbl_cur = tk.Label(self.seek_frame, text="00:00.000", bg="#0d0d1a", fg="#e94560",
-                                 font=("Consolas", 10, "bold"), width=10)
+        self.lbl_cur = tk.Label(self.seek_frame, text="00:00:00", bg="#0d0d1a", fg="#e94560",
+                                 font=("Consolas", 10, "bold"), width=9)
         self.lbl_cur.pack(side="left", padx=4)
         
         self.seek_var = tk.DoubleVar(value=0)
@@ -109,7 +109,7 @@ class RightPlayerPanel(tk.Frame):
         self.seek_bar.bind("<ButtonPress-1>", self._sk_press)
         self.seek_bar.bind("<ButtonRelease-1>", self._sk_release)
         
-        self.lbl_tot = tk.Label(self.seek_frame, text="00:00.000", bg="#0d0d1a", fg="#a8dadc",
+        self.lbl_tot = tk.Label(self.seek_frame, text="-00:00:00", bg="#0d0d1a", fg="#a8dadc",
                                  font=("Consolas", 10), width=10)
         self.lbl_tot.pack(side="left", padx=4)
 
@@ -213,7 +213,10 @@ class RightPlayerPanel(tk.Frame):
         target = self.engine.cur_idx + int(ds * self.engine.fps)
         self.engine.seek_to(target)
         self.seek_var.set(self.engine.cur_idx)
-        self.lbl_cur.config(text=format_time(self.engine.cur_idx / self.engine.fps, self.show_ms.get()))
+        cur_sec = self.engine.cur_idx / self.engine.fps
+        total_sec = self.engine.total_frames / self.engine.fps
+        self.lbl_cur.config(text=format_time(cur_sec))
+        self.lbl_tot.config(text=format_remaining(cur_sec, total_sec))
         self.render_current_frame()
 
     def _sk_press(self, e=None):
@@ -230,8 +233,10 @@ class RightPlayerPanel(tk.Frame):
         if not self.engine.cap:
             return
         try:
-            sec = int(float(v)) / self.engine.fps
-            self.lbl_cur.config(text=format_time(sec, self.show_ms.get()))
+            cur_sec = int(float(v)) / self.engine.fps
+            total_sec = self.engine.total_frames / self.engine.fps
+            self.lbl_cur.config(text=format_time(cur_sec))
+            self.lbl_tot.config(text=format_remaining(cur_sec, total_sec))
         except:
             pass
 

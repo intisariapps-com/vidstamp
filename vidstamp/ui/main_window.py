@@ -9,7 +9,7 @@ import time
 
 # Impor dari paket vidstamp
 from vidstamp.config import ROOT_DIRS
-from vidstamp.utils.time_formatter import format_time
+from vidstamp.utils.time_formatter import format_time, format_remaining
 from vidstamp.core.subtitle import extract_mkv_subtitles, parse_srt_file, find_external_subtitle
 from vidstamp.core.player import VideoPlayerEngine
 from vidstamp.ui.browser import LeftBrowserPanel
@@ -106,7 +106,9 @@ class VideoAppController:
             
         self.left_panel.highlight_video(video_path)
         
-        self.right_panel.lbl_tot.config(text=format_time(self.engine.total_frames / self.engine.fps))
+        total_sec = self.engine.total_frames / self.engine.fps
+        self.right_panel.lbl_tot.config(text=format_remaining(0, total_sec))
+        self.right_panel.lbl_cur.config(text=format_time(0))
         self.right_panel.seek_bar.config(to=max(1, self.engine.total_frames - 1))
         
         # Muat database adegan lama
@@ -217,10 +219,12 @@ class VideoAppController:
             ret, frame = self.engine.get_next_frame()
             if ret:
                 self.right_panel.draw_frame(frame)
+                cur_sec = self.engine.cur_idx / self.engine.fps
+                total_sec = self.engine.total_frames / self.engine.fps
                 if not self.right_panel._seeking:
                     self.right_panel.seek_var.set(self.engine.cur_idx)
-                self.right_panel.lbl_cur.config(text=format_time(self.engine.cur_idx / self.engine.fps, 
-                                                                 self.right_panel.show_ms.get()))
+                self.right_panel.lbl_cur.config(text=format_time(cur_sec))
+                self.right_panel.lbl_tot.config(text=format_remaining(cur_sec, total_sec))
             else:
                 self.engine.set_playing(False)
                 self.right_panel.btn_play.config(text="Play")
