@@ -440,22 +440,116 @@ class RightPlayerPanel(tk.Frame):
         was_playing = self.engine.playing
         if was_playing:
             self.engine.set_playing(False)
+            self.btn_play.config(text="Play")
             
-        note_name = simpledialog.askstring("Simpan Catatan", "Beri nama catatan adegan ini:",
-                                           initialvalue=default_name, parent=self)
-        
-        if was_playing:
-            self.engine.set_playing(True)
-            
-        if not note_name:
-            return
-            
+        # Dapatkan subtitle pratinjau
         sub_text = ""
         if self.subtitle_list:
             matched_subs = get_subtitles_in_range(self.subtitle_list, self.mark_start, self.mark_end)
             if matched_subs:
                 sub_text = "\n".join([f"[{format_time(s['start'])}] {s['text']}" for s in matched_subs])
-                
+
+        # State untuk menangkap data dialog
+        dialog_result = {"saved": False, "name": ""}
+
+        # Toplevel Dialog Kustom
+        dialog = tk.Toplevel(self)
+        dialog.title("💾 Simpan Catatan Adegan")
+        dialog.geometry("460x330")
+        dialog.configure(bg="#0f0f1e")
+        dialog.resizable(False, False)
+        dialog.transient(self.winfo_toplevel())
+        dialog.grab_set()
+
+        # Pusatkan dialog relatif terhadap main window
+        try:
+            parent_x = self.winfo_toplevel().winfo_x()
+            parent_y = self.winfo_toplevel().winfo_y()
+            parent_w = self.winfo_toplevel().winfo_width()
+            parent_h = self.winfo_toplevel().winfo_height()
+            dialog_x = parent_x + (parent_w - 460) // 2
+            dialog_y = parent_y + (parent_h - 330) // 2
+            dialog.geometry(f"460x330+{max(0, dialog_x)}+{max(0, dialog_y)}")
+        except:
+            pass
+
+        # Frame Kontainer utama
+        f = tk.Frame(dialog, bg="#0f0f1e", padx=15, pady=15)
+        f.pack(fill="both", expand=True)
+
+        # 1. Info Adegan (Waktu & Durasi)
+        info_frame = tk.Frame(f, bg="#16213e", padx=10, pady=8)
+        info_frame.pack(fill="x", pady=(0, 10))
+
+        lbl_style = dict(bg="#16213e", fg="#a8dadc", font=("Segoe UI", 9))
+        val_style = dict(bg="#16213e", fg="#ffd700", font=("Consolas", 9, "bold"))
+
+        tk.Label(info_frame, text="Mulai:", **lbl_style).grid(row=0, column=0, sticky="w")
+        tk.Label(info_frame, text=format_time(self.mark_start), **val_style).grid(row=0, column=1, sticky="w", padx=(5, 15))
+        
+        tk.Label(info_frame, text="Selesai:", **lbl_style).grid(row=0, column=2, sticky="w")
+        tk.Label(info_frame, text=format_time(self.mark_end), **val_style).grid(row=0, column=3, sticky="w", padx=(5, 15))
+
+        tk.Label(info_frame, text="Durasi:", **lbl_style).grid(row=0, column=4, sticky="w")
+        tk.Label(info_frame, text=f"{dur:.2f}s", **val_style).grid(row=0, column=5, sticky="w", padx=5)
+
+        # 2. Input Kolom Nama Catatan
+        tk.Label(f, text="Nama Catatan Adegan:", bg="#0f0f1e", fg="#ffd700", font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(0, 4))
+        
+        v_name = tk.StringVar(value=default_name)
+        ent = tk.Entry(f, textvariable=v_name, bg="#1a1a3e", fg="white", insertbackground="white",
+                       relief="flat", font=("Segoe UI", 10), highlightthickness=1, highlightbackground="#333366",
+                       highlightcolor="#e94560")
+        ent.pack(fill="x", ipady=4, pady=(0, 10))
+        
+        # Fokus otomatis & seleksi teks
+        ent.focus_set()
+        ent.select_range(0, tk.END)
+
+        # 3. Preview Subtitle (Jika ada)
+        if sub_text:
+            tk.Label(f, text="Preview Subtitle / Transkrip:", bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 8, "bold")).pack(anchor="w", pady=(0, 2))
+            preview_box = tk.Text(f, bg="#0d0d1a", fg="#8888aa", font=("Consolas", 8), height=5, relief="flat", wrap="word", highlightthickness=0)
+            preview_box.pack(fill="both", expand=True, pady=(0, 15))
+            preview_box.insert("1.0", sub_text)
+            preview_box.config(state="disabled")
+        else:
+            tk.Frame(f, bg="#0f0f1e", height=60).pack(fill="x")
+
+        # Fungsi Aksi
+        def on_confirm(event=None):
+            name_val = v_name.get().strip()
+            if not name_val:
+                messagebox.showwarning("Peringatan", "Nama catatan tidak boleh kosong!", parent=dialog)
+                return
+            dialog_result["saved"] = True
+            dialog_result["name"] = name_val
+            dialog.destroy()
+
+        def on_cancel():
+            dialog.destroy()
+
+        # Binds
+        ent.bind("<Return>", on_confirm)
+
+        # 4. Tombol Aksi di bagian bawah
+        btn_frame = tk.Frame(f, bg="#0f0f1e")
+        btn_frame.pack(fill="x")
+
+        tk.Button(btn_frame, text="Batal", command=on_cancel, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=20, pady=4).pack(side="left")
+        tk.Button(btn_frame, text="Simpan Catatan", command=on_confirm, bg="#e94560", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=20, pady=4).pack(side="right")
+
+        # Tunggu dialog ditutup
+        self.wait_window(dialog)
+        
+        if was_playing:
+            self.engine.set_playing(True)
+            self.btn_play.config(text="Pause")
+            
+        if not dialog_result["saved"]:
+            return
+            
+        note_name = dialog_result["name"]
         self.scenes.append((self.mark_start, self.mark_end, note_name, sub_text))
         
         disp = f"{note_name}: {format_time(self.mark_start)} -> {format_time(self.mark_end)} ({dur:.2f}s)"
