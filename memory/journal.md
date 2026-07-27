@@ -31,7 +31,8 @@ Log kronologis aktivitas harian sesi pengembangan.
   - Melakukan kompilasi executable mandiri terbaru menggunakan **PyInstaller** dengan spec `vidstamp.spec` (dengan DLL ffpyplayer/SDL2 dan biner FFmpeg Windows terintegrasi).
   - Membangun berkas installer resmi Windows **`VidStamp_Setup.exe`** (~125MB) menggunakan **Inno Setup** setelah menyesuaikan konfigurasi bahasa (menggunakan bahasa Inggris sebagai default karena tidak adanya paket lokalisasi Indonesia `.isl` pada mesin build lokal).
   - Mengatasi masalah video patah-patah (stuttering) saat dijalankan sebagai EXE dengan: (1) menghapus `update_idletasks()` di loop render `player_view.py` untuk mengeliminasi blocking layout sync, dan (2) mengganti kueri properti sinkron OpenCV `cap.get(cv2.CAP_PROP_POS_FRAMES)` dengan pelacakan indeks frame manual in-memory (`self.cur_idx`) di `player.py`.
-* **Status**: Sukses besar, optimasi performa video anti-stuttering telah berhasil diimplementasikan dan diuji secara lokal.
-* **Langkah Selanjutnya**: Melakukan build ulang biner executable `.exe` dengan performa yang dioptimalkan, diikuti dengan pembuatan ulang berkas installer setup.
+  - Merumuskan berkas Product Requirement Document (PRD) di `docs/prd.md` yang memperluas visi, fitur, dan peta jalan pengembangan (seperti rencana integrasi API AniSkip dan modernisasi UI CustomTkinter).
+* **Status**: Sukses besar, optimasi performa pemutaran, integrasi format waktu hitung mundur, dan dokumen PRD telah selesai dirancang dan disimpan.
+* **Langkah Selanjutnya**: Melakukan pengujian lanjutan pada video-video anime lama dengan konfigurasi skip OP/ED otomatis, serta persiapan migrasi UI CustomTkinter.
 
 
