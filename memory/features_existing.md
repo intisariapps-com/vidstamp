@@ -11,7 +11,7 @@ Berikut adalah daftar fitur yang sudah selesai dibangun dan berstatus stabil di 
 * **Status**: Selesai
 
 ## 3. Optimasi Video Super Mulus (Anti Patah-patah)
-* **Deskripsi**: Toleransi desync audio-video diperbesar ke 6 frame untuk menghindari pemanggilan set-frame OpenCV yang berat. Resize canvas menggunakan interpolasi `cv2.INTER_NEAREST` untuk performa CPU ringan.
+* **Deskripsi**: Toleransi desync audio-video diperbesar ke 6 frame untuk menghindari pemanggilan set-frame OpenCV yang berat. Resize canvas menggunakan interpolasi `cv2.INTER_NEAREST` untuk performa CPU ringan. Selain itu, pemanggilan pemblokiran layout `self.canvas.update_idletasks()` di loop render dan kueri sinkron OpenCV `cap.get(cv2.CAP_PROP_POS_FRAMES)` dieliminasi serta digantikan dengan pelacakan frame index in-memory (`self.cur_idx`).
 * **Status**: Selesai
 
 ## 4. Deteksi Subtitle Eksternal (.srt) Otomatis
@@ -40,4 +40,8 @@ Berikut adalah daftar fitur yang sudah selesai dibangun dan berstatus stabil di 
 
 ## 10. Setup Bundling Desktop & Installer (Windows)
 * **Deskripsi**: Menyediakan file konfigurasi PyInstaller (vidstamp.spec), folder penampung biner FFmpeg portable (bin/), aset ikon visual kustom (.ico/.bmp), dan skrip Inno Setup Compiler (installer_windows.iss) untuk kompilasi executable mandiri yang premium.
+* **Status**: Selesai
+
+## 11. Format Waktu HH:MM:SS & Hitung Mundur (Countdown)
+* **Deskripsi**: Mengubah format penanda waktu dari MM:SS menjadi HH:MM:SS. Label sebelah kiri menampilkan waktu berjalan (elapsed time, hitung maju) dan label sebelah kanan menampilkan waktu tersisa (remaining time, hitung mundur). Format ini juga diterapkan pada overlay pojok kanan atas canvas.
 * **Status**: Selesai
