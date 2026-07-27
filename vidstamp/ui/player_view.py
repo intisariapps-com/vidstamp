@@ -637,8 +637,7 @@ class RightPlayerPanel(tk.Frame):
             
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
-        # Pastikan antrean layout Tkinter selesai diproses agar winfo_width/height akurat
-        self.canvas.update_idletasks()
+        # Ambil dimensi aktual Canvas tanpa memblokir thread via update_idletasks()
         cw = self.canvas.winfo_width()
         ch = self.canvas.winfo_height()
         

@@ -28,7 +28,10 @@ Log kronologis aktivitas harian sesi pengembangan.
   - Memperbaiki bug visual aspek rasio video di mana video tetap berukuran kecil dan menempel di kiri atas Canvas saat jendela dimaksimalkan (*maximized*). Solusi: Menggunakan `update_idletasks()`, memperbaiki logika fallback dimensi, dan mengikat (*bind*) event `<Configure>` agar video membesar secara dinamis dan selalu diposisikan tepat di tengah (*centered*).
   - Mengembangkan sistem **Crash Logger Global** di `vidstamp/utils/logger.py` untuk menangkap semua uncaught exception (`sys.excepthook`) dan kesalahan Tkinter callback loop (`report_callback_exception`), lalu mencatatnya secara terstruktur ke berkas lokal **`crash.log`** serta menampilkan messagebox pemberitahuan yang ramah pengguna.
   - Mengunggah seluruh perbaikan di atas ke remote branch baru `main-old-base-fixed` di GitHub.
-* **Status**: Sukses besar, kedua versi (UI/UX CustomTkinter di branch `main` dan versi lama + fix bug crash/resize/logger di branch `main-old-base-fixed`) telah aman terunggah ke remote repository GitHub.
-* **Langkah Selanjutnya**: Melakukan rilis biner installer dengan installer setup Windows jika diperlukan.
+  - Melakukan kompilasi executable mandiri terbaru menggunakan **PyInstaller** dengan spec `vidstamp.spec` (dengan DLL ffpyplayer/SDL2 dan biner FFmpeg Windows terintegrasi).
+  - Membangun berkas installer resmi Windows **`VidStamp_Setup.exe`** (~125MB) menggunakan **Inno Setup** setelah menyesuaikan konfigurasi bahasa (menggunakan bahasa Inggris sebagai default karena tidak adanya paket lokalisasi Indonesia `.isl` pada mesin build lokal).
+  - Mengatasi masalah video patah-patah (stuttering) saat dijalankan sebagai EXE dengan: (1) menghapus `update_idletasks()` di loop render `player_view.py` untuk mengeliminasi blocking layout sync, dan (2) mengganti kueri properti sinkron OpenCV `cap.get(cv2.CAP_PROP_POS_FRAMES)` dengan pelacakan indeks frame manual in-memory (`self.cur_idx`) di `player.py`.
+* **Status**: Sukses besar, optimasi performa video anti-stuttering telah berhasil diimplementasikan dan diuji secara lokal.
+* **Langkah Selanjutnya**: Melakukan build ulang biner executable `.exe` dengan performa yang dioptimalkan, diikuti dengan pembuatan ulang berkas installer setup.
 
 

@@ -83,24 +83,27 @@ class VideoPlayerEngine:
         if not self.cap:
             return False, None
 
+        # Tentukan indeks frame target
+        target_idx = self.cur_idx + 1
+
         # Jika ada antrean seek target
         if self._seek_target is not None:
-            self.cap.set(cv2.CAP_PROP_POS_FRAMES, self._seek_target)
+            target_idx = self._seek_target
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_idx)
             self._seek_target = None
-
         # Jika sedang memutar, sinkronkan video ke audio PTS
-        if self.playing and self.audio_player:
+        elif self.playing and self.audio_player:
             pts = self.audio_player.get_pts()
             if pts > 0:
                 target_frame = int(pts * self.fps)
                 # Hanya lakukan seek (set frame) jika desync lebih dari 6 frame (~200ms)
                 if abs(self.cur_idx - target_frame) >= 6:
-                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
-                    self.cur_idx = target_frame
+                    target_idx = target_frame
+                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_idx)
 
         ret, frame = self.cap.read()
         if ret:
-            self.cur_idx = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1
+            self.cur_idx = target_idx
             
         return ret, frame
 
@@ -108,12 +111,14 @@ class VideoPlayerEngine:
         """Membaca satu frame spesifik tanpa mengubah posisi playback."""
         if not self.cap:
             return None
-        prev_pos = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
         ret, frame = self.cap.read()
         
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, prev_pos)
+        # Kembalikan posisi cap ke frame berikutnya yang seharusnya dibaca
+        next_pos = max(0, self.cur_idx + 1)
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, next_pos)
+        
         if ret:
             return frame
         return None
