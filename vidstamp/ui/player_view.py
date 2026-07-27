@@ -594,11 +594,18 @@ class RightPlayerPanel(tk.Frame):
             video_base, _ = os.path.splitext(video_name)
             default_file = os.path.join(note_dir, f"{video_base}_catatan_adegan.txt")
             
+            # Ambil path absolut video dan folder catatan
+            abs_video_path = os.path.abspath(self.engine.video_path)
+            abs_note_dir = os.path.abspath(note_dir)
+            note_folder_name = os.path.basename(abs_note_dir)
+            
             with open(default_file, "w", encoding="utf-8") as f:
                 f.write("=" * 65 + "\n")
                 f.write("                  CATATAN ADEGAN & SUBTITLE\n")
-                f.write(f"  Video Source: {video_name}\n")
-                f.write(f"  Folder: {note_dir}\n")
+                f.write(f"  Video File Name  : {video_name}\n")
+                f.write(f"  Video Abs Path   : {abs_video_path}\n")
+                f.write(f"  Note Folder Name : {note_folder_name}\n")
+                f.write(f"  Note Folder Path : {abs_note_dir}\n")
                 f.write("=" * 65 + "\n\n")
                 
                 for i, (s, e, label, subs) in enumerate(self.scenes, 1):
@@ -659,11 +666,18 @@ class RightPlayerPanel(tk.Frame):
             return
             
         try:
+            # Ambil path absolut video dan folder catatan
+            abs_video_path = os.path.abspath(self.engine.video_path)
+            abs_note_dir = os.path.abspath(note_dir)
+            note_folder_name = os.path.basename(abs_note_dir)
+            
             with open(p, "w", encoding="utf-8") as f:
                 f.write("=" * 65 + "\n")
                 f.write("                  CATATAN ADEGAN & SUBTITLE (SEO)\n")
-                f.write(f"  Video Source: {video_name}\n")
-                f.write(f"  Folder: {note_dir}\n")
+                f.write(f"  Video File Name  : {video_name}\n")
+                f.write(f"  Video Abs Path   : {abs_video_path}\n")
+                f.write(f"  Note Folder Name : {note_folder_name}\n")
+                f.write(f"  Note Folder Path : {abs_note_dir}\n")
                 f.write("=" * 65 + "\n\n")
                 
                 for i, (s, e, label, subs) in enumerate(self.scenes, 1):
