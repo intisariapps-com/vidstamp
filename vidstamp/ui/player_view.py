@@ -617,7 +617,8 @@ class RightPlayerPanel(tk.Frame):
             cv2.putText(frame, lbl, (8, 44), FONT, 1.1, COLOR_BG, 6, cv2.LINE_AA)
             cv2.putText(frame, lbl, (8, 44), FONT, 1.1, COLOR_TS, 2, cv2.LINE_AA)
             
-            sl = f"{sec:.2f}s"
+            total_sec = self.engine.total_frames / self.engine.fps
+            sl = format_remaining(sec, total_sec)
             (tw, _), _ = cv2.getTextSize(sl, FONT, 1.0, 2)
             cv2.putText(frame, sl, (w - tw - 12, 44), FONT, 1.0, COLOR_BG, 5, cv2.LINE_AA)
             cv2.putText(frame, sl, (w - tw - 12, 44), FONT, 1.0, (255, 220, 80), 2, cv2.LINE_AA)
