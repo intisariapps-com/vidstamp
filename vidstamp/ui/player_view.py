@@ -694,18 +694,14 @@ class PlayerView(QWidget):
         self.is_fullscreen = not self.is_fullscreen
         parent_window = self.window()
         if self.is_fullscreen:
-            self.top_bar.hide()
             self.seek_frame.hide()
             self.ctrl_panel.hide()
             self.inf_bar.hide()
-            self.sidebar_container.hide()
             parent_window.showFullScreen()
         else:
-            self.top_bar.show()
             self.seek_frame.show()
             self.ctrl_panel.show()
             self.inf_bar.show()
-            self.sidebar_container.show()
             parent_window.showNormal()
         self.render_current_frame()
 

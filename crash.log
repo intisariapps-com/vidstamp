@@ -40,3 +40,25 @@ AttributeError: 'PlayerView' object has no attribute 'lbl_title'
 
 ==================================================
 
+=== CRASH LOG [2026-07-28 21:34:16,760] ===
+Uncaught Exception:
+Traceback (most recent call last):
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 559, in _auto_save_playback_state
+    if self.engine.cap and self.engine.playing and self.engine.video_path:
+    
+KeyboardInterrupt
+
+==================================================
+
+=== CRASH LOG [2026-07-28 21:34:47,679] ===
+Uncaught Exception:
+Traceback (most recent call last):
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 184, in keyPressEvent
+    self.right_panel.toggle_fullscreen()
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 697, in toggle_fullscreen
+    self.top_bar.hide()
+    ^^^^^^^^^^^^
+AttributeError: 'PlayerView' object has no attribute 'top_bar'
+
+==================================================
+
