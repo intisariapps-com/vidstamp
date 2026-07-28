@@ -1,5 +1,5 @@
 """
-vidstamp/ui/main_window.py - Koordinator Window Utama dan Event Loops berbasis PySide6
+vidstamp/ui/main_window.py - Koordinator Jendela Utama Pendamping MPC-HC berbasis PySide6
 """
 import sys
 import os
@@ -14,9 +14,9 @@ from vidstamp.ui.player_view import PlayerView
 class VideoAppController(QMainWindow):
     def __init__(self, start_path=None):
         super().__init__()
-        self.setWindowTitle("VidStamp - Video Timestamp & Scene Marker")
-        self.resize(1200, 760)
-        self.setMinimumSize(900, 580)
+        self.setWindowTitle("VidStamp - MPC-HC Companion")
+        self.resize(750, 200) # Ukuran yang sangat kompak dan elegan untuk Companion App!
+        self.setMinimumSize(600, 180)
         self.setObjectName("MainWindow")
         
         self.browser_visible = False
@@ -42,7 +42,7 @@ class VideoAppController(QMainWindow):
         return os.path.expanduser("~")
 
     def _build_ui(self):
-        # Gunakan QSplitter untuk membagi folder browser kiri dan player kanan
+        # Gunakan QSplitter untuk membagi folder browser kiri dan panel kontrol kanan
         self.splitter = QSplitter(Qt.Horizontal, self)
         self.splitter.setHandleWidth(5)
         self.splitter.setObjectName("MainSplitter")
@@ -55,9 +55,8 @@ class VideoAppController(QMainWindow):
         self.splitter.addWidget(self.left_panel)
         self.splitter.addWidget(self.right_panel)
         
-        # Atur proporsi split: kiri 20%, kanan 80%
-        self.splitter.setStretchFactor(0, 2)
-        self.splitter.setStretchFactor(1, 8)
+        self.splitter.setStretchFactor(0, 3)
+        self.splitter.setStretchFactor(1, 7)
         
         self.setCentralWidget(self.splitter)
 
@@ -149,17 +148,18 @@ class VideoAppController(QMainWindow):
         self.setStyleSheet(qss)
 
     def load_video(self, video_path):
-        # Simpan posisi video lama
-        if self.right_panel.engine.cap and self.right_panel.engine.video_path:
-            cur_sec = self.right_panel.engine.cur_idx / self.right_panel.engine.fps
-            from vidstamp.utils.file_manager import save_playback_state
-            save_playback_state(self.right_panel.engine.video_path, cur_sec)
-            
+        # Menyuruh OS membuka video dengan default handler (MPC-HC) jika dipicu secara lokal
+        if os.path.exists(video_path):
+            try:
+                os.startfile(video_path)
+            except Exception as err:
+                print(f"Gagal meluncurkan berkas video via OS: {err}")
+                
         self.right_panel.load_video(video_path)
 
     def _on_video_loaded(self, path):
         self.left_panel.highlight_video(path)
-        self.setWindowTitle(f"VidStamp - {os.path.basename(path)}")
+        self.setWindowTitle(f"VidStamp - [Companion] {os.path.basename(path)}")
 
     def toggle_browser(self):
         self.browser_visible = not self.browser_visible
@@ -167,7 +167,6 @@ class VideoAppController(QMainWindow):
             self.left_panel.show()
         else:
             self.left_panel.hide()
-        self.right_panel.render_current_frame()
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -180,28 +179,25 @@ class VideoAppController(QMainWindow):
             self.right_panel.open_scenes_dialog()
         elif key == Qt.Key_Tab:
             self.toggle_browser()
-        elif key == Qt.Key_F11:
-            self.right_panel.toggle_fullscreen()
-        elif key == Qt.Key_Escape:
-            if self.right_panel.is_fullscreen:
-                self.right_panel.toggle_fullscreen()
+        elif key == Qt.Key_Space:
+            self.right_panel.client.toggle_play()
         elif key == Qt.Key_Left:
             if modifiers & Qt.ShiftModifier:
-                self.right_panel.seek_offset(-10)
+                self.right_panel.client.jump_backward(10)
             else:
-                self.right_panel.seek_offset(-1)
+                self.right_panel.client.jump_backward(5)
         elif key == Qt.Key_Right:
             if modifiers & Qt.ShiftModifier:
-                self.right_panel.seek_offset(10)
+                self.right_panel.client.jump_forward(10)
             else:
-                self.right_panel.seek_offset(1)
+                self.right_panel.client.jump_forward(5)
         else:
             super().keyPressEvent(event)
 
     def open_batch_merger(self):
         current_dir = None
-        if self.right_panel.engine.video_path:
-            current_dir = os.path.dirname(self.right_panel.engine.video_path)
+        if self.right_panel.video_path:
+            current_dir = os.path.dirname(self.right_panel.video_path)
         else:
             current_dir = self.left_panel.cur_folder or self.get_default_dir()
             
@@ -215,8 +211,8 @@ class VideoAppController(QMainWindow):
 
     def open_extractor_tool(self):
         current_dir = None
-        if self.right_panel.engine.video_path:
-            current_dir = os.path.dirname(self.right_panel.engine.video_path)
+        if self.right_panel.video_path:
+            current_dir = os.path.dirname(self.right_panel.video_path)
         else:
             current_dir = self.left_panel.cur_folder or self.get_default_dir()
             
@@ -225,15 +221,7 @@ class VideoAppController(QMainWindow):
         wizard.exec()
 
     def closeEvent(self, event):
-        # Simpan posisi pemutaran detik terakhir saat aplikasi ditutup
-        if self.right_panel.engine.cap and self.right_panel.engine.video_path:
-            cur_sec = self.right_panel.engine.cur_idx / self.right_panel.engine.fps
-            from vidstamp.utils.file_manager import save_playback_state
-            save_playback_state(self.right_panel.engine.video_path, cur_sec)
-            
-        self.right_panel.timer.stop()
-        self.right_panel.save_timer.stop()
-        self.right_panel.engine.release()
+        self.right_panel.sync_timer.stop()
         event.accept()
 
 def start_gui(start_path=None):
