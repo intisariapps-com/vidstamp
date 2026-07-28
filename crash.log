@@ -12,3 +12,17 @@ RuntimeError: libshiboken: Please destroy the QApplication singleton before crea
 
 ==================================================
 
+=== CRASH LOG [2026-07-28 21:33:17,261] ===
+Uncaught Exception:
+Traceback (most recent call last):
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 112, in open_video_dialog
+    if fn:
+        ^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 157, in load_video
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\player_view.py", line 425, in load_video
+    self.lbl_title.setText(os.path.basename(path))
+    ^^^^^^^^^^^^^^
+AttributeError: 'PlayerView' object has no attribute 'lbl_title'
+
+==================================================
+

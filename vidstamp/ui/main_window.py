@@ -19,10 +19,11 @@ class VideoAppController(QMainWindow):
         self.setMinimumSize(900, 580)
         self.setObjectName("MainWindow")
         
-        self.browser_visible = True
+        self.browser_visible = False
         self.start_path = start_path
         
         self._build_ui()
+        self.left_panel.hide()  # Sembunyikan Folder Browser secara default saat startup
         self._build_menu()
         self._apply_stylesheet()
         
