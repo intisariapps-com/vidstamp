@@ -204,8 +204,7 @@ def start_gui(start_path=None):
     from vidstamp.ui.launcher import LauncherWindow
     from vidstamp.config import ROOT_DIRS
     
-    # State untuk menentukan apa yang harus dibuka setelah launcher ditutup
-    action_to_take = {"mode": None, "path": None}
+    app = QApplication(sys.argv) if QApplication.instance() is None else QApplication.instance()
     
     def get_default_dir():
         for d in ROOT_DIRS:
@@ -213,39 +212,34 @@ def start_gui(start_path=None):
                 return d
         return os.path.expanduser("~")
 
-    def set_launch_player():
-        action_to_take["mode"] = "player"
-        QApplication.quit()
+    # List reference untuk menyimpan objek window agar tidak di-garbage collect
+    active_windows = []
 
-    def set_launch_wizard(folder_path):
-        action_to_take["mode"] = "wizard"
-        action_to_take["path"] = folder_path
-        QApplication.quit()
+    def launch_player():
+        launcher.close()
+        controller = VideoAppController(start_path)
+        controller.show()
+        active_windows.append(controller)
+
+    def launch_wizard(folder_path):
+        launcher.close()
+        from vidstamp.ui.batch_merger import BatchMergerWizard
+        wizard = BatchMergerWizard(None, folder_path)
+        wizard.show()
+        active_windows.append(wizard)
 
     # Jika start_path diberikan langsung buka player
     if start_path and os.path.exists(start_path):
-        action_to_take["mode"] = "player"
+        controller = VideoAppController(start_path)
+        controller.show()
+        active_windows.append(controller)
     else:
-        # Jalankan launcher screen berbasis PySide6
-        app = QApplication(sys.argv)
+        # Jalankan launcher screen
         launcher = LauncherWindow(
-            launch_player_fn=set_launch_player,
-            launch_wizard_fn=set_launch_wizard,
+            launch_player_fn=launch_player,
+            launch_wizard_fn=launch_wizard,
             get_def_dir_fn=get_default_dir
         )
         launcher.show()
-        app.exec()
         
-    # Eksekusi PySide6 main window secara murni (Tkinter dihapus 100%!)
-    if action_to_take["mode"] == "player":
-        app = QApplication(sys.argv)
-        controller = VideoAppController(start_path)
-        controller.show()
-        sys.exit(app.exec())
-        
-    elif action_to_take["mode"] == "wizard":
-        app = QApplication(sys.argv)
-        from vidstamp.ui.batch_merger import BatchMergerWizard
-        wizard = BatchMergerWizard(None, action_to_take["path"])
-        wizard.show()
-        sys.exit(app.exec())
+    sys.exit(app.exec())

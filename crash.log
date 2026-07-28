@@ -1,0 +1,14 @@
+=== CRASH LOG [2026-07-28 21:24:24,517] ===
+Uncaught Exception:
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\VIDSTAMPS-APPS\vidstamp\__main__.py", line 22, in <module>
+    start_gui(start_arg)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 241, in start_gui
+    app = QApplication(sys.argv)
+          ^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: libshiboken: Please destroy the QApplication singleton before creating a new QApplication instance.
+
+==================================================
+
