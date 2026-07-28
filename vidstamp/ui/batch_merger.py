@@ -199,8 +199,11 @@ class BatchMergerWizard(tk.Toplevel):
         tk.Label(table_frame, text="Antrean Episode Video:", bg="#0d0d1a", fg="#a8dadc",
                  font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(0, 5))
                  
+        tree_container = tk.Frame(table_frame, bg="#0d0d1a")
+        tree_container.pack(fill="both", expand=True)
+                 
         columns = ("episode", "duration", "subtitle", "op_skip", "ed_skip")
-        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", 
+        self.tree = ttk.Treeview(tree_container, columns=columns, show="headings", 
                                  style="Dark.Treeview", height=6)
         
         self.tree.heading("episode", text="Episode / Nama Berkas")
@@ -215,9 +218,6 @@ class BatchMergerWizard(tk.Toplevel):
         self.tree.column("op_skip", width=140, anchor="center")
         self.tree.column("ed_skip", width=140, anchor="center")
         
-        tree_container = tk.Frame(table_frame, bg="#0d0d1a")
-        tree_container.pack(fill="both", expand=True)
-
         sb = tk.Scrollbar(tree_container, orient="vertical", command=self.tree.yview)
         self.tree.config(yscrollcommand=sb.set)
         
