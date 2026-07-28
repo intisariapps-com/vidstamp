@@ -45,3 +45,11 @@ Berikut adalah daftar fitur yang sudah selesai dibangun dan berstatus stabil di 
 ## 11. Format Waktu HH:MM:SS & Hitung Mundur (Countdown)
 * **Deskripsi**: Mengubah format penanda waktu dari MM:SS menjadi HH:MM:SS. Label sebelah kiri menampilkan waktu berjalan (elapsed time, hitung maju) dan label sebelah kanan menampilkan waktu tersisa (remaining time, hitung mundur). Format ini juga diterapkan pada overlay pojok kanan atas canvas.
 * **Status**: Selesai
+
+## 12. Deteksi Bab MKV Otomatis (Auto-Detect MKV Chapters)
+* **Deskripsi**: Menjalankan analisis `ffprobe` otomatis saat memuat berkas video MKV yang belum memiliki konfigurasi skip. Jika ditemukan nama chapter yang cocok dengan kata kunci Opening atau Ending, nilai waktu skip langsung diisi dan disimpan secara otomatis.
+* **Status**: Selesai
+
+## 13. Fitur Ekspor Video & Subtitel Bersih (Smart Cut & Subtitle Aligner)
+* **Deskripsi**: Menyediakan dialog ekspor untuk memotong video bersih tanpa Opening/Ending (dengan opsi Softsub atau Hardsub) baik untuk video aktif saat ini maupun pemrosesan massal (Bulk Folder Batch) menggunakan latar belakang proses threading non-blocking dan visual progress bar. Subtitle diselaraskan dan digeser waktunya secara otomatis secara presisi.
+* **Status**: Selesai

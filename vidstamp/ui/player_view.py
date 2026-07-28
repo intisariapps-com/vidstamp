@@ -305,7 +305,7 @@ class RightPlayerPanel(tk.Frame):
             
         dialog = tk.Toplevel(self)
         dialog.title("⚙️ Atur Waktu Skip OP/ED")
-        dialog.geometry("340x260")
+        dialog.geometry("420x260")
         dialog.configure(bg="#0f0f1e")
         dialog.resizable(False, False)
         dialog.transient(self.winfo_toplevel())
@@ -388,8 +388,189 @@ class RightPlayerPanel(tk.Frame):
         btn_frame = tk.Frame(f, bg="#0f0f1e")
         btn_frame.grid(row=5, column=0, columnspan=2, pady=10)
         
-        tk.Button(btn_frame, text="Batal", command=dialog.destroy, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="left", padx=10)
-        tk.Button(btn_frame, text="Simpan", command=save, bg="#1e5f3a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="left", padx=10)
+        tk.Button(btn_frame, text="Batal", command=dialog.destroy, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=12).pack(side="left", padx=5)
+        tk.Button(btn_frame, text="Simpan Settings", command=save, bg="#1e5f3a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=12).pack(side="left", padx=5)
+        tk.Button(btn_frame, text="✂️ Ekspor Video Bersih", command=lambda: self.setup_export_clean_dialog(dialog, v_op_start, v_op_end, v_ed_start, v_ed_end), bg="#e94560", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=10).pack(side="left", padx=5)
+
+    def setup_export_clean_dialog(self, parent_dialog, v_op_start, v_op_end, v_ed_start, v_ed_end):
+        if not self.engine.video_path:
+            return
+            
+        # Parse inputs dari parent dialog
+        try:
+            op_s = float(v_op_start.get().strip()) if v_op_start.get().strip() else None
+            op_e = float(v_op_end.get().strip()) if v_op_end.get().strip() else None
+            ed_s = float(v_ed_start.get().strip()) if v_ed_start.get().strip() else None
+            ed_e = float(v_ed_end.get().strip()) if v_ed_end.get().strip() else None
+        except ValueError:
+            messagebox.showerror("Error", "Masukkan format angka detik saja di pengaturan skip!")
+            return
+            
+        dialog = tk.Toplevel(self)
+        dialog.title("✂️ Konfigurasi Ekspor Bersih")
+        dialog.geometry("380x240")
+        dialog.configure(bg="#0f0f1e")
+        dialog.resizable(False, False)
+        dialog.transient(parent_dialog)
+        dialog.grab_set()
+        
+        lbl_style = dict(bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 9, "bold"))
+        
+        # Opsi 1: Mode Subtitel (Hardsub vs Softsub)
+        tk.Label(dialog, text="Mode Subtitel:", **lbl_style).pack(anchor="w", padx=20, pady=(15, 5))
+        v_sub_mode = tk.StringVar(value="softsub")
+        tk.Radiobutton(dialog, text="Softsub (Potong subtitel terpisah .srt)", variable=v_sub_mode, value="softsub",
+                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
+                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
+        tk.Radiobutton(dialog, text="Hardsub (Tempel teks ke dalam video)", variable=v_sub_mode, value="hardsub",
+                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
+                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
+                       
+        # Opsi 2: Cakupan (Satu file vs Bulk folder)
+        tk.Label(dialog, text="Cakupan Ekspor:", **lbl_style).pack(anchor="w", padx=20, pady=(15, 5))
+        v_scope = tk.BooleanVar(value=False) # False = Single, True = Bulk
+        tk.Radiobutton(dialog, text="Hanya episode aktif saat ini", variable=v_scope, value=False,
+                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
+                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
+        tk.Radiobutton(dialog, text="Semua video di folder aktif saat ini (Bulk)", variable=v_scope, value=True,
+                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
+                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
+                       
+        def start_export():
+            video_path = self.engine.video_path
+            mode = v_sub_mode.get()
+            is_bulk = v_scope.get()
+            
+            # Default output paths
+            base_name, ext = os.path.splitext(video_path)
+            output_video = f"{base_name}_clean{ext}"
+            output_srt = f"{base_name}_clean.srt"
+            
+            # Tutup dialog opsi dan dialog skip parent
+            dialog.destroy()
+            parent_dialog.destroy()
+            
+            # Buka progress window
+            self.show_export_progress_window(
+                video_path, op_s, op_e, ed_s, ed_e,
+                output_video, output_srt, mode, is_bulk
+            )
+            
+        # Tombol aksi
+        btn_frame_opts = tk.Frame(dialog, bg="#0f0f1e")
+        btn_frame_opts.pack(fill="x", pady=15)
+        
+        tk.Button(btn_frame_opts, text="Batal", command=dialog.destroy, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="left", padx=25)
+        tk.Button(btn_frame_opts, text="Mulai Ekspor", command=start_export, bg="#1e5f3a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="right", padx=25)
+
+    def show_export_progress_window(self, video_path, op_start, op_end, ed_start, ed_end, output_video, output_srt, mode, is_bulk):
+        import threading
+        
+        progress_dialog = tk.Toplevel(self)
+        progress_dialog.title("✂️ Memproses Ekspor Video Bersih")
+        progress_dialog.geometry("400x190")
+        progress_dialog.configure(bg="#0f0f1e")
+        progress_dialog.resizable(False, False)
+        progress_dialog.transient(self.winfo_toplevel())
+        progress_dialog.grab_set()
+        
+        lbl_status = tk.Label(progress_dialog, text="Menyiapkan ekspor...", bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 10, "bold"))
+        lbl_status.pack(pady=(20, 5))
+        
+        lbl_file = tk.Label(progress_dialog, text=os.path.basename(video_path), bg="#0f0f1e", fg="white", font=("Segoe UI", 9))
+        lbl_file.pack(pady=5)
+        
+        progress_var = tk.DoubleVar(value=0)
+        progress_bar = ttk.Progressbar(progress_dialog, variable=progress_var, maximum=100, length=320)
+        progress_bar.pack(pady=10)
+        
+        cancel_event = threading.Event()
+        
+        def cancel_action():
+            if messagebox.askyesno("Batal", "Apakah Anda yakin ingin membatalkan proses ekspor?"):
+                cancel_event.set()
+                progress_dialog.destroy()
+                
+        btn_cancel = tk.Button(progress_dialog, text="Batal", command=cancel_action, bg="#5c1a1a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15)
+        btn_cancel.pack(pady=5)
+        
+        def run_export_thread():
+            from vidstamp.core.exporter import export_clean_video_and_srt
+            
+            def progress_callback(pct):
+                self.after(0, lambda: progress_var.set(pct))
+                self.after(0, lambda: lbl_status.config(text=f"Rendering: {pct:.1f}%"))
+                
+            if not is_bulk:
+                success, msg = export_clean_video_and_srt(
+                    video_path, op_start, op_end, ed_start, ed_end,
+                    output_video, output_srt, mode=mode,
+                    progress_callback=progress_callback, cancel_event=cancel_event
+                )
+                
+                if not cancel_event.is_set():
+                    if success:
+                        self.after(0, lambda: messagebox.showinfo("Sukses", f"Ekspor berhasil selesai!\nVideo: {os.path.basename(output_video)}\nSubtitel: {os.path.basename(output_srt)}"))
+                    else:
+                        self.after(0, lambda: messagebox.showerror("Gagal Ekspor", f"Terjadi kesalahan saat mengekspor:\n{msg}"))
+                    self.after(0, progress_dialog.destroy)
+            else:
+                # Pemrosesan Batch (Bulk Folder)
+                parent_dir = os.path.dirname(video_path)
+                from vidstamp.config import VIDEO_EXTS
+                all_files = [os.path.join(parent_dir, f) for f in os.listdir(parent_dir) if os.path.splitext(f)[1].lower() in VIDEO_EXTS]
+                all_files = sorted(all_files)
+                
+                total_files = len(all_files)
+                success_count = 0
+                
+                for idx, file in enumerate(all_files):
+                    if cancel_event.is_set():
+                        break
+                        
+                    self.after(0, lambda f=file, i=idx: lbl_file.config(text=f"[{i+1}/{total_files}] {os.path.basename(f)}"))
+                    
+                    # Dapatkan skip config masing-masing video, fallback ke template season
+                    from vidstamp.utils.file_manager import load_skip_config
+                    skip_data = load_skip_config(file)
+                    
+                    op_s = skip_data.get("op_start")
+                    op_e = skip_data.get("op_end")
+                    ed_s = skip_data.get("ed_start")
+                    ed_e = skip_data.get("ed_end")
+                    
+                    # Jika tidak ada config, coba deteksi bab
+                    if not skip_data and file.lower().endswith(".mkv"):
+                        from vidstamp.core.exporter import get_mkv_chapters
+                        detected = get_mkv_chapters(file)
+                        op_s = detected.get("op_start")
+                        op_e = detected.get("op_end")
+                        ed_s = detected.get("ed_start")
+                        ed_e = detected.get("ed_end")
+                        
+                    # Output file paths
+                    base_name, ext = os.path.splitext(file)
+                    out_v = f"{base_name}_clean{ext}"
+                    out_s = f"{base_name}_clean.srt"
+                    
+                    def bulk_progress_callback(pct, file_idx=idx):
+                        overall_pct = (file_idx / total_files) * 100 + (pct / total_files)
+                        self.after(0, lambda: progress_var.set(overall_pct))
+                        self.after(0, lambda: lbl_status.config(text=f"Episode {file_idx+1}/{total_files} - Render: {pct:.1f}%"))
+                        
+                    success, msg = export_clean_video_and_srt(
+                        file, op_s, op_e, ed_s, ed_e,
+                        out_v, out_s, mode=mode,
+                        progress_callback=bulk_progress_callback, cancel_event=cancel_event
+                    )
+                    if success:
+                        success_count += 1
+                        
+                if not cancel_event.is_set():
+                    self.after(0, lambda: messagebox.showinfo("Sukses", f"Ekspor Massal Selesai!\nBerhasil memproses {success_count} dari {total_files} video di folder:\n{parent_dir}"))
+                    self.after(0, progress_dialog.destroy)
+                    
+        threading.Thread(target=run_export_thread, daemon=True).start()
 
     # ── Mark & Catatan ──
     def mark_start_action(self):

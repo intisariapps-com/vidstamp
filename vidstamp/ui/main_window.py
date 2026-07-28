@@ -136,6 +136,21 @@ class VideoAppController:
         
         # Load Konfigurasi Skip OP/ED jika ada
         skip_data = load_skip_config(video_path)
+        if not skip_data and video_path.lower().endswith(".mkv"):
+            from vidstamp.core.exporter import get_mkv_chapters
+            from vidstamp.utils.file_manager import save_skip_config
+            detected_chapters = get_mkv_chapters(video_path)
+            if detected_chapters:
+                skip_data = detected_chapters
+                # Simpan juga ke skip_config.json secara otomatis biar permanen
+                save_skip_config(video_path, {
+                    "op_start": skip_data.get("op_start"),
+                    "op_end": skip_data.get("op_end"),
+                    "ed_start": skip_data.get("ed_start"),
+                    "ed_end": skip_data.get("ed_end"),
+                    "auto_skip_enabled": True
+                })
+                
         self.right_panel.op_start = skip_data.get("op_start")
         self.right_panel.op_end = skip_data.get("op_end")
         self.right_panel.ed_start = skip_data.get("ed_start")

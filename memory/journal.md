@@ -36,4 +36,18 @@ Log kronologis aktivitas harian sesi pengembangan.
 * **Status**: Sukses besar, optimasi performa pemutaran, integrasi format waktu hitung mundur, dokumen PRD, dan sinkronisasi path absolut catatan adegan telah selesai dirancang dan disimpan.
 * **Langkah Selanjutnya**: Pengujian integrasi pemotongan video end-to-end menggunakan berkas ekspor teks, serta persiapan migrasi UI CustomTkinter.
 
+## 2026-07-28 - Sesi Integrasi Deteksi Bab MKV Otomatis & Fitur Ekspor Video Bersih
+* **Aktivitas**:
+  - Menganalisis skrip `mkv_merger_skip_oped.py` yang berada di drive `E:\` untuk mengonseptualisasikan fitur baru.
+  - Membuat berkas Spesifikasi Kebutuhan Perangkat Lunak (SRS) di `docs/srs/integrasi_mkv_chapters_dan_export_clean.md` dan melakukan commit awal ke repositori.
+  - Memodifikasi `vidstamp/utils/path_helper.py` untuk mengintegrasikan deteksi biner `ffprobe` yang kompatibel dengan PyInstaller.
+  - Membangun modul inti baru `vidstamp/core/exporter.py` yang menangani pembacaan bab MKV (chapters), kalkulasi segmen simpan/skip, pembacaan, pergeseran, dan penyelarasan subtitel (.srt) secara presisi, serta pemicu render FFmpeg.
+  - Mengintegrasikan fungsi deteksi bab MKV otomatis pada `load_video()` di `vidstamp/ui/main_window.py`. Jika video berekstensi `.mkv` tidak memiliki skip config, program akan memindai chapter metadata di latar belakang dan mengisi waktu skip secara otonom.
+  - Mendesain dialog opsi ekspor baru (`setup_export_clean_dialog`) di `vidstamp/ui/player_view.py` untuk memilih mode subtitel (Hardsub vs Softsub) dan cakupan pemrosesan (Satu file vs Bulk folder).
+  - Mengembangkan visualisasi progress bar (`show_export_progress_window`) berbasis Threading non-blocking di Tkinter yang melacak kemajuan render FFmpeg per detik secara real-time dan mendukung pembatalan (Cancel).
+  - Memperbarui dokumentasi memori proyek (`memory/features_existing.md`) dengan fitur-fitur baru yang telah stabil ini.
+* **Status**: Sukses besar, fitur deteksi bab otomatis dan ekspor video bersih berjalan sangat lancar dan responsif tanpa memblokir antarmuka utama (UI).
+* **Langkah Selanjutnya**: Evaluasi kinerja ekspor massal untuk folder berskala besar dan persiapan untuk migrasi UI ke CustomTkinter.
+
+
 
