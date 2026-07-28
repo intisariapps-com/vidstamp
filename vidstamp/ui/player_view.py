@@ -937,10 +937,10 @@ class RightPlayerPanel(tk.Frame):
                 sub_text = re.sub(r'<[^>]*>', '', sub_text)
                 sub_text = re.sub(r'\{[^}]*\}', '', sub_text).strip()
                 
-                # Font scale proporsional terhadap lebar frame (sweet spot)
-                font_scale = max(0.45, min(0.9, w / 1100.0))
-                thickness = max(1, int(2.5 * font_scale))
-                shadow_thickness = thickness + 3
+                # Font scale proporsional terhadap lebar frame (dioptimasi untuk 1:1 IG)
+                font_scale = max(0.35, min(0.7, w / 1300.0))
+                thickness = max(1, int(2.0 * font_scale))
+                shadow_thickness = thickness + 2
                 
                 # Batas lebar maksimum teks 85% dari lebar video
                 max_text_width = int(w * 0.85)
@@ -950,8 +950,8 @@ class RightPlayerPanel(tk.Frame):
                 for rl in raw_lines:
                     wrapped_lines.extend(self._wrap_text(rl, FONT, font_scale, thickness, max_text_width))
                 
-                line_height = int(32 * font_scale)
-                base_y = h - 45 - (len(wrapped_lines) - 1) * line_height
+                line_height = int(28 * font_scale)
+                base_y = h - 35 - (len(wrapped_lines) - 1) * line_height
                 
                 for line_idx, line in enumerate(wrapped_lines):
                     (tw, th), _ = cv2.getTextSize(line, FONT, font_scale, thickness)
