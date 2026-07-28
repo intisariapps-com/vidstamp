@@ -19,7 +19,7 @@ from vidstamp.utils.file_manager import load_skip_config
 class VideoAppController:
     def __init__(self, root, start_path=None):
         self.root = root
-        self.root.title("VidStamp - Video Timestamp & Scene Marker")
+        self.root.title("VidStamp v1.3.0 - Video Timestamp & Scene Marker")
         
         self.engine = VideoPlayerEngine()
         self.temp_srt_path = os.path.join(os.path.expanduser("~"), "temp_video_sub.srt")

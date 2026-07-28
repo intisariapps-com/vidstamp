@@ -4,13 +4,13 @@
 
 [Setup]
 AppName=VidStamp
-AppVersion=1.0.0
+AppVersion=1.3.0
 AppPublisher=Intisari Apps
 AppPublisherURL=https://intisariapps.com/vidstamp
 DefaultDirName={autopf}\VidStamp
 DefaultGroupName=VidStamp
 OutputDir=.
-OutputBaseFilename=VidStamp_Setup
+OutputBaseFilename=VidStamp_Setup_v1.3.0
 Compression=lzma2/max
 SolidCompression=yes
 SetupIconFile=vidstamp\ui\assets\icon.ico
