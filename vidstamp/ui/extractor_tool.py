@@ -1,216 +1,346 @@
 """
-vidstamp/ui/extractor_tool.py - Jendela Perkakas Ekstraktor Subtitle & Audio (MP3/SRT)
+vidstamp/ui/extractor_tool.py - Jendela Perkakas Ekstraktor Subtitle & Audio (MP3/SRT) menggunakan PySide6
 """
-import tkinter as tk
-from tkinter import messagebox, ttk, filedialog
 import os
-import threading
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
+                             QLineEdit, QPushButton, QRadioButton, QButtonGroup, 
+                             QProgressBar, QFileDialog, QMessageBox, QApplication, QWidget)
+from PySide6.QtCore import Qt, QThread, Signal
 from vidstamp.core.subtitle import extract_mkv_subtitles, extract_audio_from_video
 
-class AudioSubExtractorWizard(tk.Toplevel):
-    def __init__(self, parent, initial_dir=None, *args, **kwargs):
-        super().__init__(parent, bg="#0d0d1a", *args, **kwargs)
-        self.title("Ekstraktor Subtitle & Audio")
-        self.geometry("600x420")
-        self.resizable(False, False)
+class ExtractorWorker(QThread):
+    finished = Signal(bool, str)
+
+    def __init__(self, mode, in_path, out_path):
+        super().__init__()
+        self.mode = mode
+        self.in_path = in_path
+        self.out_path = out_path
+
+    def run(self):
+        try:
+            if self.mode == "sub":
+                success = extract_mkv_subtitles(self.in_path, self.out_path)
+                msg = "Sukses mengekstrak subtitle internal!" if success else "Gagal mengekstrak subtitle. Pastikan video MKV memiliki trek teks."
+            else:
+                success, err_msg = extract_audio_from_video(self.in_path, self.out_path)
+                msg = "Sukses mengekstrak audio track!" if success else f"Gagal mengekstrak audio:\n{err_msg}"
+            self.finished.emit(success, msg)
+        except Exception as e:
+            self.finished.emit(False, f"Terjadi kesalahan internal:\n{e}")
+
+class AudioSubExtractorWizard(QDialog):
+    def __init__(self, parent=None, initial_dir=None):
+        super().__init__(parent)
+        self.setWindowTitle("Ekstraktor Subtitle & Audio")
+        self.setFixedSize(600, 420)
         
-        self.parent = parent
         self.initial_dir = initial_dir or os.path.expanduser("~")
         self.processing = False
+        self.worker = None
         
-        self._setup_styles()
         self._build_ui()
-
-    def _setup_styles(self):
-        style = ttk.Style(self)
-        style.configure("Emerald.Horizontal.TProgressbar", 
-                        troughcolor="#0d0d1a", 
-                        background="#1e5f3a", 
-                        thickness=15)
+        self._apply_stylesheet()
 
     def _build_ui(self):
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        
         # 1. Header
-        header_frame = tk.Frame(self, bg="#16213e", pady=10)
-        header_frame.pack(fill="x")
+        header_widget = QWidget(self)
+        header_widget.setObjectName("HeaderWidget")
+        header_layout = QVBoxLayout(header_widget)
+        header_layout.setContentsMargins(15, 12, 15, 12)
         
-        tk.Label(header_frame, text="⚙️ Ekstraktor Subtitle & Audio", 
-                 bg="#16213e", fg="#a8dadc", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
-        tk.Label(header_frame, text="Ekstrak subtitle internal MKV atau ambil audio video untuk persiapan transkripsi.", 
-                 bg="#16213e", fg="#8888aa", font=("Segoe UI", 8)).pack(anchor="w", padx=15)
-
-        # Body container
-        body = tk.Frame(self, bg="#0d0d1a", padx=15, pady=15)
-        body.pack(fill="both", expand=True)
-
+        lbl_title = QLabel("⚙️ Ekstraktor Subtitle & Audio", header_widget)
+        lbl_title.setObjectName("HeaderTitle")
+        
+        lbl_subtitle = QLabel("Ekstrak subtitle internal MKV atau ambil audio video untuk persiapan transkripsi.", header_widget)
+        lbl_subtitle.setObjectName("HeaderSubtitle")
+        
+        header_layout.addWidget(lbl_title)
+        header_layout.addWidget(lbl_subtitle)
+        main_layout.addWidget(header_widget)
+        
+        # 2. Body Container
+        body_widget = QWidget(self)
+        body_widget.setObjectName("BodyWidget")
+        body_layout = QVBoxLayout(body_widget)
+        body_layout.setContentsMargins(20, 20, 20, 20)
+        body_layout.setSpacing(12)
+        
         # Input Video File
-        tk.Label(body, text="Pilih Berkas Video input (MKV / MP4):", bg="#0d0d1a", fg="#a8dadc",
-                 font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(0, 2))
-                 
-        in_frame = tk.Frame(body, bg="#0d0d1a")
-        in_frame.pack(fill="x", pady=(0, 10))
+        lbl_in = QLabel("Pilih Berkas Video input (MKV / MP4):", body_widget)
+        lbl_in.setObjectName("SectionTitle")
+        body_layout.addWidget(lbl_in)
         
-        self.v_input_path = tk.StringVar()
-        self.v_input_path.trace_add("write", self._on_input_changed)
-        self.ent_input = tk.Entry(in_frame, textvariable=self.v_input_path, bg="#16213e", fg="white",
-                                  insertbackground="white", relief="flat", font=("Consolas", 9))
-        self.ent_input.pack(side="left", fill="x", expand=True, ipady=3)
+        in_layout = QHBoxLayout()
+        self.txt_input = QLineEdit(body_widget)
+        self.txt_input.setObjectName("PathInput")
+        self.txt_input.textChanged.connect(self._on_input_changed)
         
-        tk.Button(in_frame, text="Pilih Berkas", command=self._browse_input, bg="#1a1a3e", fg="#7ec8e3",
-                  relief="flat", font=("Segoe UI", 8, "bold"), padx=10).pack(side="left", padx=(5, 0))
-
-        # Mode Ekstraksi (Radiobutton)
-        tk.Label(body, text="Pilih Jenis Ekstraksi:", bg="#0d0d1a", fg="#a8dadc",
-                 font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(5, 2))
-                 
-        self.v_extract_mode = tk.StringVar(value="sub")
-        self.v_extract_mode.trace_add("write", self._on_mode_changed)
+        btn_browse_in = QPushButton("Pilih Berkas", body_widget)
+        btn_browse_in.setObjectName("BrowseButton")
+        btn_browse_in.setCursor(Qt.PointingHandCursor)
+        btn_browse_in.clicked.connect(self._browse_input)
         
-        self.rb_sub = tk.Radiobutton(body, text="Ekstrak Subtitle Internal ke .srt (Hanya berkas MKV)", 
-                                     variable=self.v_extract_mode, value="sub",
-                                     bg="#0d0d1a", fg="white", selectcolor="#16213e", activebackground="#0d0d1a",
-                                     activeforeground="white", font=("Segoe UI", 9))
-        self.rb_sub.pack(anchor="w", padx=10, pady=2)
+        in_layout.addWidget(self.txt_input)
+        in_layout.addWidget(btn_browse_in)
+        body_layout.addLayout(in_layout)
         
-        self.rb_audio = tk.Radiobutton(body, text="Ekstrak Audio Track ke .mp3 (Mendukung MKV & MP4)", 
-                                       variable=self.v_extract_mode, value="audio",
-                                       bg="#0d0d1a", fg="white", selectcolor="#16213e", activebackground="#0d0d1a",
-                                       activeforeground="white", font=("Segoe UI", 9))
-        self.rb_audio.pack(anchor="w", padx=10, pady=2)
-
+        # Mode Ekstraksi
+        lbl_mode = QLabel("Pilih Jenis Ekstraksi:", body_widget)
+        lbl_mode.setObjectName("SectionTitle")
+        body_layout.addWidget(lbl_mode)
+        
+        self.btn_group = QButtonGroup(body_widget)
+        
+        self.rb_sub = QRadioButton("Ekstrak Subtitle Internal ke .srt (Hanya berkas MKV)", body_widget)
+        self.rb_sub.setObjectName("ModeRadio")
+        self.rb_sub.setChecked(True)
+        self.rb_sub.toggled.connect(self._on_mode_changed)
+        self.btn_group.addButton(self.rb_sub)
+        body_layout.addWidget(self.rb_sub)
+        
+        self.rb_audio = QRadioButton("Ekstrak Audio Track ke .mp3 (Mendukung MKV & MP4)", body_widget)
+        self.rb_audio.setObjectName("ModeRadio")
+        self.rb_audio.toggled.connect(self._on_mode_changed)
+        self.btn_group.addButton(self.rb_audio)
+        body_layout.addWidget(self.rb_audio)
+        
         # Output Target File
-        tk.Label(body, text="Pilih Berkas Output hasil:", bg="#0d0d1a", fg="#a8dadc",
-                 font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(10, 2))
-                 
-        out_frame = tk.Frame(body, bg="#0d0d1a")
-        out_frame.pack(fill="x", pady=(0, 10))
+        lbl_out = QLabel("Pilih Berkas Output hasil:", body_widget)
+        lbl_out.setObjectName("SectionTitle")
+        body_layout.addWidget(lbl_out)
         
-        self.v_output_path = tk.StringVar()
-        self.ent_output = tk.Entry(out_frame, textvariable=self.v_output_path, bg="#16213e", fg="white",
-                                   insertbackground="white", relief="flat", font=("Consolas", 9))
-        self.ent_output.pack(side="left", fill="x", expand=True, ipady=3)
+        out_layout = QHBoxLayout()
+        self.txt_output = QLineEdit(body_widget)
+        self.txt_output.setObjectName("PathInput")
         
-        tk.Button(out_frame, text="Browse...", command=self._browse_output, bg="#1a1a3e", fg="#7ec8e3",
-                  relief="flat", font=("Segoe UI", 8, "bold"), padx=10).pack(side="left", padx=(5, 0))
-
+        btn_browse_out = QPushButton("Browse...", body_widget)
+        btn_browse_out.setObjectName("BrowseButton")
+        btn_browse_out.setCursor(Qt.PointingHandCursor)
+        btn_browse_out.clicked.connect(self._browse_output)
+        
+        out_layout.addWidget(self.txt_output)
+        out_layout.addWidget(btn_browse_out)
+        body_layout.addLayout(out_layout)
+        
         # Progress Indicator
-        self.lbl_status = tk.Label(body, text="Silakan pilih input berkas video.", bg="#0d0d1a", fg="#8888aa",
-                                   font=("Segoe UI", 8))
-        self.lbl_status.pack(anchor="w", pady=(5, 2))
+        self.lbl_status = QLabel("Silakan pilih input berkas video.", body_widget)
+        self.lbl_status.setObjectName("StatusLabel")
+        body_layout.addWidget(self.lbl_status)
         
-        self.progress_bar = ttk.Progressbar(body, style="Emerald.Horizontal.TProgressbar", mode="indeterminate")
-        self.progress_bar.pack(fill="x", pady=(0, 10))
+        self.progress_bar = QProgressBar(body_widget)
+        self.progress_bar.setObjectName("ProgressBar")
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setRange(0, 0) # Indeterminate mode by default
+        self.progress_bar.hide()
+        body_layout.addWidget(self.progress_bar)
+        
+        # Bottom Buttons
+        bottom_layout = QHBoxLayout()
+        
+        self.btn_cancel = QPushButton("Batal", body_widget)
+        self.btn_cancel.setObjectName("CancelButton")
+        self.btn_cancel.setCursor(Qt.PointingHandCursor)
+        self.btn_cancel.clicked.connect(self.close)
+        
+        self.btn_start = QPushButton("Mulai Ekstraksi", body_widget)
+        self.btn_start.setObjectName("StartButton")
+        self.btn_start.setCursor(Qt.PointingHandCursor)
+        self.btn_start.clicked.connect(self._start_extraction)
+        
+        bottom_layout.addWidget(self.btn_cancel)
+        bottom_layout.addStretch()
+        bottom_layout.addWidget(self.btn_start)
+        body_layout.addLayout(bottom_layout)
+        
+        main_layout.addWidget(body_widget)
 
-        # Bottom Actions
-        btn_frame = tk.Frame(body, bg="#0d0d1a")
-        btn_frame.pack(fill="x", side="bottom")
-        
-        self.btn_cancel = tk.Button(btn_frame, text="Batal", command=self.destroy, bg="#333", fg="white",
-                                    relief="flat", font=("Segoe UI", 9, "bold"), padx=15, pady=4)
-        self.btn_cancel.pack(side="left")
-        
-        self.btn_start = tk.Button(btn_frame, text="Mulai Ekstraksi", command=self._start_extraction, bg="#1e5f3a", fg="white",
-                                   relief="flat", font=("Segoe UI", 9, "bold"), padx=18, pady=4)
-        self.btn_start.pack(side="right")
+    def _apply_stylesheet(self):
+        qss = """
+        QDialog {
+            background-color: #0d0d1a;
+        }
+        #HeaderWidget {
+            background-color: #16213e;
+            border-bottom: 2px solid #1f4068;
+        }
+        #HeaderTitle {
+            color: #a8dadc;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        #HeaderSubtitle {
+            color: #8888aa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10px;
+        }
+        #BodyWidget {
+            background-color: #0d0d1a;
+        }
+        #SectionTitle {
+            color: #a8dadc;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        #PathInput {
+            background-color: #16213e;
+            color: white;
+            border: 1px solid #1f4068;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 11px;
+            padding: 4px;
+        }
+        #BrowseButton {
+            background-color: #1a1a3e;
+            color: #7ec8e3;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 5px 12px;
+        }
+        #BrowseButton:hover {
+            background-color: #e94560;
+            color: white;
+        }
+        #ModeRadio {
+            color: #ffffff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+        }
+        #StatusLabel {
+            color: #8888aa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10px;
+        }
+        #ProgressBar {
+            height: 12px;
+            border: 1px solid #1e5f3a;
+            border-radius: 4px;
+            background-color: #0d0d1a;
+        }
+        #ProgressBar::chunk {
+            background-color: #1e5f3a;
+        }
+        #CancelButton {
+            background-color: #333333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 18px;
+        }
+        #CancelButton:hover {
+            background-color: #444444;
+        }
+        #StartButton {
+            background-color: #1e5f3a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 20px;
+        }
+        #StartButton:hover {
+            background-color: #2a7f50;
+        }
+        """
+        self.setStyleSheet(qss)
 
     def _browse_input(self):
-        fn = filedialog.askopenfilename(title="Pilih Berkas Video", 
-                                        initialdir=self.initial_dir,
-                                        filetypes=[("Video (MKV/MP4)", "*.mkv *.mp4"), ("Semua Berkas", "*.*")])
+        fn, _ = QFileDialog.getOpenFileName(self, "Pilih Berkas Video", self.initial_dir,
+                                            "Video (MKV/MP4) (*.mkv *.mp4);;Semua Berkas (*.*)")
         if fn:
-            self.v_input_path.set(fn)
+            self.txt_input.setText(fn)
 
     def _browse_output(self):
-        mode = self.v_extract_mode.get()
-        if mode == "sub":
-            types = [("Subtitle SRT", "*.srt")]
-        else:
-            types = [("Audio MP3", "*.mp3")]
-            
-        fn = filedialog.asksaveasfilename(title="Simpan File Hasil", 
-                                          initialdir=os.path.dirname(self.v_input_path.get()) or self.initial_dir,
-                                          initialfile=os.path.basename(self.v_output_path.get()),
-                                          filetypes=types)
+        mode = "sub" if self.rb_sub.isChecked() else "audio"
+        types = "Subtitle SRT (*.srt)" if mode == "sub" else "Audio MP3 (*.mp3)"
+        
+        in_path = self.txt_input.text()
+        init_file = self.txt_output.text()
+        init_dir = os.path.dirname(in_path) or self.initial_dir
+        
+        fn, _ = QFileDialog.getSaveFileName(self, "Simpan File Hasil", init_dir, types)
         if fn:
-            self.v_output_path.set(fn)
+            self.txt_output.setText(fn)
 
-    def _on_input_changed(self, *args):
-        in_path = self.v_input_path.get()
-        if not in_path or not os.path.exists(in_path):
+    def _on_input_changed(self, text):
+        if not text or not os.path.exists(text):
             return
             
-        base, ext = os.path.splitext(in_path)
-        mode = self.v_extract_mode.get()
+        base, ext = os.path.splitext(text)
         
-        # Atur disable/enable mode radio berdasarkan ekstensi file
         if ext.lower() == ".mp4":
-            self.rb_sub.config(state="disabled")
-            self.v_extract_mode.set("audio")
-            self.v_output_path.set(base + ".mp3")
+            self.rb_sub.setEnabled(False)
+            self.rb_audio.setChecked(True)
+            self.txt_output.setText(base + ".mp3")
         else:
-            self.rb_sub.config(state="normal")
-            if mode == "sub":
-                self.v_output_path.set(base + ".srt")
+            self.rb_sub.setEnabled(True)
+            if self.rb_sub.isChecked():
+                self.txt_output.setText(base + ".srt")
             else:
-                self.v_output_path.set(base + ".mp3")
+                self.txt_output.setText(base + ".mp3")
                 
-        self.lbl_status.config(text="Siap untuk diekstrak.")
+        self.lbl_status.setText("Siap untuk diekstrak.")
 
-    def _on_mode_changed(self, *args):
-        in_path = self.v_input_path.get()
+    def _on_mode_changed(self):
+        in_path = self.txt_input.text()
         if not in_path:
             return
         base, _ = os.path.splitext(in_path)
-        mode = self.v_extract_mode.get()
-        if mode == "sub":
-            self.v_output_path.set(base + ".srt")
+        if self.rb_sub.isChecked():
+            self.txt_output.setText(base + ".srt")
         else:
-            self.v_output_path.set(base + ".mp3")
+            self.txt_output.setText(base + ".mp3")
 
     def _start_extraction(self):
         if self.processing:
             return
             
-        in_path = self.v_input_path.get()
-        out_path = self.v_output_path.get()
-        mode = self.v_extract_mode.get()
+        in_path = self.txt_input.text()
+        out_path = self.txt_output.text()
+        mode = "sub" if self.rb_sub.isChecked() else "audio"
         
         if not in_path or not os.path.exists(in_path):
-            messagebox.showerror("Error", "Berkas video input tidak valid!")
+            QMessageBox.critical(self, "Error", "Berkas video input tidak valid!")
             return
         if not out_path:
-            messagebox.showerror("Error", "Tentukan lokasi berkas output!")
+            QMessageBox.critical(self, "Error", "Tentukan lokasi berkas output!")
             return
             
         self.processing = True
-        self.btn_start.config(state="disabled")
-        self.btn_cancel.config(state="disabled")
-        self.progress_bar.start(10)
-        self.lbl_status.config(text="Sedang mengekstrak berkas via FFmpeg... Mohon tunggu.")
+        self.btn_start.setEnabled(False)
+        self.btn_cancel.setEnabled(False)
+        self.progress_bar.show()
+        self.lbl_status.setText("Sedang mengekstrak berkas via FFmpeg... Mohon tunggu.")
         
-        def run_thread():
-            try:
-                if mode == "sub":
-                    success = extract_mkv_subtitles(in_path, out_path)
-                    msg = "Sukses mengekstrak subtitle internal!" if success else "Gagal mengekstrak subtitle. Pastikan video MKV memiliki trek teks."
-                else:
-                    success, err_msg = extract_audio_from_video(in_path, out_path)
-                    msg = "Sukses mengekstrak audio track!" if success else f"Gagal mengekstrak audio:\n{err_msg}"
-                
-                self.after(0, lambda: self._extraction_complete(success, msg))
-            except Exception as e:
-                self.after(0, lambda: self._extraction_complete(False, f"Terjadi kesalahan internal:\n{e}"))
-                
-        threading.Thread(target=run_thread, daemon=True).start()
+        # Luncurkan QThread asinkron
+        self.worker = ExtractorWorker(mode, in_path, out_path)
+        self.worker.finished.connect(self._extraction_complete)
+        self.worker.start()
 
     def _extraction_complete(self, success, message):
         self.processing = False
-        self.progress_bar.stop()
-        self.btn_start.config(state="normal")
-        self.btn_cancel.config(state="normal")
-        self.lbl_status.config(text="Proses selesai.")
+        self.progress_bar.hide()
+        self.btn_start.setEnabled(True)
+        self.btn_cancel.setEnabled(True)
+        self.lbl_status.setText("Proses selesai.")
         
         if success:
-            messagebox.showinfo("Sukses", message)
-            self.destroy()
+            QMessageBox.information(self, "Sukses", message)
+            self.accept()
         else:
-            messagebox.showerror("Gagal", message)
+            QMessageBox.critical(self, "Gagal", message)

@@ -1,957 +1,656 @@
 """
-vidstamp/ui/player_view.py - Komponen UI Player Panel Kanan
+vidstamp/ui/player_view.py - Komponen UI Media Player Utama berbasis PySide6
 """
-import tkinter as tk
-from tkinter import messagebox, ttk, simpledialog, filedialog
-from PIL import Image, ImageTk
 import os
+import re
 import cv2
-from vidstamp.config import FONT, COLOR_TS, COLOR_MARK, COLOR_END, COLOR_BG
-from vidstamp.utils.time_formatter import format_time, format_remaining
-from vidstamp.utils.text_cleaner import get_first_4_words
-from vidstamp.utils.file_manager import ensure_note_folder, save_skip_config
-from vidstamp.core.subtitle import get_subtitles_in_range
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+                             QPushButton, QSlider, QComboBox, QLineEdit, 
+                             QListWidget, QTextEdit, QFileDialog, QMessageBox, 
+                             QGroupBox, QApplication, QSizePolicy, QCheckBox)
+from PySide6.QtCore import Qt, QTimer, QSize
+from PySide6.QtGui import QImage, QPixmap, QKeyEvent
 
-class RightPlayerPanel(tk.Frame):
-    def __init__(self, parent, engine, on_toggle_browser_callback, *args, **kwargs):
-        super().__init__(parent, bg="#0d0d1a", *args, **kwargs)
+from vidstamp.core.player import VideoPlayerEngine
+from vidstamp.core.subtitle import parse_srt_file
+from vidstamp.utils.time_formatter import format_time, format_remaining
+
+FONT = cv2.FONT_HERSHEY_DUPLEX
+COLOR_BG = (0, 0, 0)
+COLOR_TS = (0, 255, 255)
+COLOR_MARK = (0, 255, 0)
+COLOR_END = (0, 0, 255)
+
+class PlayerView(QWidget):
+    def __init__(self, parent=None, on_video_loaded_callback=None):
+        super().__init__(parent)
+        self.engine = VideoPlayerEngine()
+        self.on_video_loaded = on_video_loaded_callback
         
-        self.engine = engine
-        self.on_toggle_browser = on_toggle_browser_callback
-        
-        self._seeking = False
+        self.subtitle_list = []
+        self.scenes = []
         self.mark_start = None
         self.mark_end = None
-        self.scenes = [] # list of tuple (start_sec, end_sec, label_name, subtitle_text)
-        self.subtitle_list = [] # List subtitle yang sedang diparse
         
-        # State Fullscreen
+        # State
         self.is_fullscreen = False
+        self.skip_overlay_text = ""
+        self.skip_overlay_timer = 0
+        self.show_ts_enabled = True
+        self.show_ms_enabled = True
+        self.temp_srt_path = ""
         
-        # State Skip OP/ED
-        self.auto_skip = tk.BooleanVar(value=True)
+        # State Penanda Skip OP/ED
         self.op_start = None
         self.op_end = None
         self.ed_start = None
         self.ed_end = None
-        
-        # Overlay Notifikasi Skip
-        self.skip_overlay_text = ""
-        self.skip_overlay_timer = 0
+        self.skipped_op = False
+        self.skipped_ed = False
         
         self._build_ui()
+        self._apply_stylesheet()
+        self._setup_shortcuts()
         
+        # Timer Loop Playback
+        self.timer = QTimer(self)
+        self.timer.setInterval(15) # ~60fps refresh limit
+        self.timer.timeout.connect(self.update_loop)
+        
+        # Timer Auto Save Playback State (setiap 5 detik)
+        self.save_timer = QTimer(self)
+        self.save_timer.setInterval(5000)
+        self.save_timer.timeout.connect(self._auto_save_playback_state)
+        self.save_timer.start()
+
     def _build_ui(self):
-        # ─ Top Bar Control ─
-        self.top_bar = tk.Frame(self, bg="#16213e", pady=3)
-        self.top_bar.pack(fill="x")
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(6, 6, 6, 6)
+        self.main_layout.setSpacing(6)
         
-        self.btn_toggle_side = tk.Button(self.top_bar, text="📁 Toggle Browser (Tab)", 
-                                         command=self.on_toggle_browser, bg="#1a1a3e",
-                                         fg="#7ec8e3", relief="flat", font=("Segoe UI", 8, "bold"),
-                                         padx=6, pady=2)
-        self.btn_toggle_side.pack(side="left", padx=6)
+        # 1. Top Bar (Nama Berkas & Tombol load)
+        self.top_bar = QWidget(self)
+        self.top_bar.setObjectName("TopBar")
+        top_layout = QHBoxLayout(self.top_bar)
+        top_layout.setContentsMargins(5, 2, 5, 2)
         
-        self.lbl_file = tk.Label(self.top_bar, text="Double-klik video di panel kiri",
-                                  bg="#16213e", fg="#a8dadc", font=("Segoe UI", 9))
-        self.lbl_file.pack(side="left", padx=10)
+        self.lbl_title = QLabel("Tidak ada video yang dimuat", self.top_bar)
+        self.lbl_title.setObjectName("VideoTitle")
         
-        # Overlay options
-        self.show_ts = tk.BooleanVar(value=True)
-        self.show_ms = tk.BooleanVar(value=True)
+        btn_open = QPushButton("Buka Video...", self.top_bar)
+        btn_open.setObjectName("OpenButton")
+        btn_open.setCursor(Qt.PointingHandCursor)
+        btn_open.clicked.connect(self._open_file_dialog)
         
-        # Tombol set OP/ED dan Checkbox Auto-Skip
-        tk.Checkbutton(self.top_bar, text="ms", variable=self.show_ms,
-                        bg="#16213e", fg="#a8dadc", selectcolor="#0f3460",
-                        activebackground="#16213e", font=("Segoe UI", 8)).pack(side="right", padx=(2, 6))
-        tk.Checkbutton(self.top_bar, text="Timestamp", variable=self.show_ts,
-                        bg="#16213e", fg="#a8dadc", selectcolor="#0f3460",
-                        activebackground="#16213e", font=("Segoe UI", 8)).pack(side="right", padx=2)
-                        
-        tk.Frame(self.top_bar, bg="#e94560", width=1, height=18).pack(side="right", padx=8, fill="y")
+        top_layout.addWidget(self.lbl_title)
+        top_layout.addStretch()
+        top_layout.addWidget(btn_open)
+        self.main_layout.addWidget(self.top_bar)
         
-        tk.Checkbutton(self.top_bar, text="Auto-Skip OP/ED", variable=self.auto_skip,
-                        bg="#16213e", fg="#ffd700", selectcolor="#0f3460",
-                        activebackground="#16213e", font=("Segoe UI", 8, "bold")).pack(side="right", padx=2)
-                        
-        tk.Button(self.top_bar, text="⚙️ Set Skip OP/ED", command=self.setup_skip_oped_dialog,
-                  bg="#e94560", fg="white", relief="flat", font=("Segoe UI", 8, "bold"),
-                  padx=6, pady=1).pack(side="right", padx=4)
+        # 2. Canvas Panel (Display Frame OpenCV)
+        self.canvas_container = QWidget(self)
+        self.canvas_container.setObjectName("CanvasContainer")
+        self.canvas_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        canvas_layout = QVBoxLayout(self.canvas_container)
+        canvas_layout.setContentsMargins(0, 0, 0, 0)
+        
+        self.lbl_canvas = QLabel(self.canvas_container)
+        self.lbl_canvas.setObjectName("CanvasLabel")
+        self.lbl_canvas.setAlignment(Qt.AlignCenter)
+        self.lbl_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.lbl_canvas.setMinimumSize(400, 225) # Aspek 16:9 dasar
+        # Double Click event filter untuk fullscreen
+        self.lbl_canvas.mouseDoubleClickEvent = self.toggle_fullscreen
+        self.lbl_canvas.mousePressEvent = self._on_canvas_clicked
+        
+        canvas_layout.addWidget(self.lbl_canvas)
+        self.main_layout.addWidget(self.canvas_container)
+        
+        # 3. Seek Bar & Time Display
+        self.seek_frame = QWidget(self)
+        seek_layout = QHBoxLayout(self.seek_frame)
+        seek_layout.setContentsMargins(5, 0, 5, 0)
+        
+        self.lbl_time_cur = QLabel("00:00:00.000", self.seek_frame)
+        self.lbl_time_cur.setObjectName("TimeLabel")
+        
+        self.slider = QSlider(Qt.Horizontal, self.seek_frame)
+        self.slider.setObjectName("SeekBar")
+        self.slider.setRange(0, 1000)
+        self.slider.setValue(0)
+        self.slider.sliderMoved.connect(self._on_slider_moved)
+        self.slider.sliderPressed.connect(self._on_slider_pressed)
+        self.slider.sliderReleased.connect(self._on_slider_released)
+        
+        self.lbl_time_total = QLabel("00:00:00.000", self.seek_frame)
+        self.lbl_time_total.setObjectName("TimeLabel")
+        
+        seek_layout.addWidget(self.lbl_time_cur)
+        seek_layout.addWidget(self.slider)
+        seek_layout.addWidget(self.lbl_time_total)
+        self.main_layout.addWidget(self.seek_frame)
+        
+        # 4. Control Panel (Playback Navigasi & Markers)
+        self.ctrl_panel = QWidget(self)
+        ctrl_layout = QHBoxLayout(self.ctrl_panel)
+        ctrl_layout.setContentsMargins(5, 0, 5, 0)
+        ctrl_layout.setSpacing(6)
+        
+        btn_rew10 = QPushButton("-10s", self.ctrl_panel)
+        btn_rew10.clicked.connect(lambda: self.seek_offset(-10))
+        btn_rew1 = QPushButton("-1s", self.ctrl_panel)
+        btn_rew1.clicked.connect(lambda: self.seek_offset(-1))
+        
+        self.btn_play = QPushButton("Play", self.ctrl_panel)
+        self.btn_play.setObjectName("PlayButton")
+        self.btn_play.clicked.connect(self.toggle_play)
+        
+        btn_ff1 = QPushButton("+1s", self.ctrl_panel)
+        btn_ff1.clicked.connect(lambda: self.seek_offset(1))
+        btn_ff10 = QPushButton("+10s", self.ctrl_panel)
+        btn_ff10.clicked.connect(lambda: self.seek_offset(10))
+        
+        # Jump To Input
+        lbl_go = QLabel("Ke detik:", self.ctrl_panel)
+        lbl_go.setObjectName("ControlText")
+        self.txt_go = QLineEdit(self.ctrl_panel)
+        self.txt_go.setObjectName("GoInput")
+        self.txt_go.setFixedWidth(50)
+        self.txt_go.returnPressed.connect(self._jump_to_seconds)
+        
+        btn_go = QPushButton("GO", self.ctrl_panel)
+        btn_go.setObjectName("GoButton")
+        btn_go.clicked.connect(self._jump_to_seconds)
+        
+        # Speed
+        lbl_speed = QLabel("Speed:", self.ctrl_panel)
+        lbl_speed.setObjectName("ControlText")
+        self.combo_speed = QComboBox(self.ctrl_panel)
+        self.combo_speed.addItems(["0.25x", "0.5x", "1.0x", "1.5x", "2.0x", "3.0x"])
+        self.combo_speed.setCurrentText("1.0x")
+        self.combo_speed.currentTextChanged.connect(self._on_speed_changed)
+        
+        # Checkbox Auto Skip OP/ED
+        self.cb_auto_skip = QCheckBox("Auto Skip OP/ED", self.ctrl_panel)
+        self.cb_auto_skip.setObjectName("OptionCheckbox")
+        self.cb_auto_skip.setChecked(True)
+        
+        # Marker Buttons
+        self.btn_start = QPushButton("[M] Start", self.ctrl_panel)
+        self.btn_start.setObjectName("StartMarker")
+        self.btn_start.clicked.connect(self._mark_start_fn)
+        
+        self.btn_end = QPushButton("[N] End", self.ctrl_panel)
+        self.btn_end.setObjectName("EndMarker")
+        self.btn_end.clicked.connect(self._mark_end_fn)
+        
+        # Concat styles to control panel
+        for btn in [btn_rew10, btn_rew1, btn_ff1, btn_ff10, btn_go]:
+            btn.setObjectName("NavButton")
+            btn.setCursor(Qt.PointingHandCursor)
+            
+        ctrl_layout.addWidget(btn_rew10)
+        ctrl_layout.addWidget(btn_rew1)
+        ctrl_layout.addWidget(self.btn_play)
+        ctrl_layout.addWidget(btn_ff1)
+        ctrl_layout.addWidget(btn_ff10)
+        ctrl_layout.addWidget(lbl_go)
+        ctrl_layout.addWidget(self.txt_go)
+        ctrl_layout.addWidget(btn_go)
+        ctrl_layout.addWidget(lbl_speed)
+        ctrl_layout.addWidget(self.combo_speed)
+        ctrl_layout.addWidget(self.cb_auto_skip)
+        ctrl_layout.addStretch()
+        ctrl_layout.addWidget(self.btn_start)
+        ctrl_layout.addWidget(self.btn_end)
+        self.main_layout.addWidget(self.ctrl_panel)
+        
+        # 5. Info Bar Pintasan
+        self.inf_bar = QLabel("Space = Play/Pause | DoubleClick = Fullscreen | Ctrl+T = Record | Ctrl+Space = Batal | Q = Keluar", self)
+        self.inf_bar.setObjectName("InfoBar")
+        self.inf_bar.setAlignment(Qt.AlignCenter)
+        self.main_layout.addWidget(self.inf_bar)
+        
+        # 6. Scene Catatan Adegan Panel
+        self.sc_label_frame = QGroupBox(" Adegan Tercatat ", self)
+        self.sc_label_frame.setObjectName("SceneFrame")
+        sc_layout = QHBoxLayout(self.sc_label_frame)
+        sc_layout.setContentsMargins(8, 8, 8, 8)
+        
+        self.sc_lb = QListWidget(self.sc_label_frame)
+        self.sc_lb.setObjectName("SceneList")
+        self.sc_lb.setFixedHeight(120)
+        self.sc_lb.itemSelectionChanged.connect(self._on_sc_select)
+        self.sc_lb.itemDoubleClicked.connect(self._jump_sc)
+        
+        sc_btn_layout = QVBoxLayout()
+        sc_btn_layout.setSpacing(4)
+        
+        self.btn_sc_jump = QPushButton("Lompat", self.sc_label_frame)
+        self.btn_sc_jump.clicked.connect(self._jump_sc)
+        
+        self.btn_sc_del = QPushButton("Hapus", self.sc_label_frame)
+        self.btn_sc_del.setObjectName("DeleteSceneButton")
+        self.btn_sc_del.clicked.connect(self._del_sc)
+        
+        self.btn_sc_exp = QPushButton("Export", self.sc_label_frame)
+        self.btn_sc_exp.setObjectName("ExportSceneButton")
+        self.btn_sc_exp.clicked.connect(self._exp_sc)
+        
+        for btn in [self.btn_sc_jump, self.btn_sc_del, self.btn_sc_exp]:
+            btn.setObjectName("SceneActionButton")
+            btn.setCursor(Qt.PointingHandCursor)
+            sc_btn_layout.addWidget(btn)
+            
+        sc_layout.addWidget(self.sc_lb)
+        sc_layout.addLayout(sc_btn_layout)
+        self.main_layout.addWidget(self.sc_label_frame)
+        
+        # 7. Detail Preview Adegan Terpilih
+        self.detail_frame = QGroupBox(" Detail Adegan & Subtitel Terpilih ", self)
+        self.detail_frame.setObjectName("DetailFrame")
+        det_layout = QVBoxLayout(self.detail_frame)
+        det_layout.setContentsMargins(6, 6, 6, 6)
+        
+        self.txt_detail = QTextEdit(self.detail_frame)
+        self.txt_detail.setObjectName("DetailText")
+        self.txt_detail.setReadOnly(True)
+        self.txt_detail.setFixedHeight(60)
+        self.txt_detail.setPlainText("Pilih adegan di atas untuk melihat detail subtitel...")
+        
+        det_layout.addWidget(self.txt_detail)
+        self.main_layout.addWidget(self.detail_frame)
+        self.detail_frame.hide() # sembunyi secara default
 
-        # ─ Canvas Video ─
-        self.canvas_container = tk.Frame(self, bg="#000000")
-        self.canvas_container.pack(fill="both", expand=True, padx=4, pady=4)
-        
-        self.canvas = tk.Canvas(self.canvas_container, bg="#000000", width=760, height=428,
-                                 highlightthickness=0)
-        self.canvas.pack(fill="both", expand=True)
-        self.canvas.create_text(380, 214, text="<-- Double-klik video dari panel kiri",
-                                 fill="#333355", font=("Segoe UI", 13), tags="ph")
-        
-        # Binding Klik, Double Klik, & Resize Jendela
-        self.canvas.bind("<Button-1>", self._on_canvas_click)
-        self.canvas.bind("<Double-Button-1>", self.toggle_fullscreen)
-        self.canvas.bind("<Configure>", lambda e: self.render_current_frame())
+    def _apply_stylesheet(self):
+        qss = """
+        #TopBar {
+            background-color: #16213e;
+            border-bottom: 2px solid #1f4068;
+            border-radius: 4px;
+        }
+        #VideoTitle {
+            color: #a8dadc;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        #OpenButton {
+            background-color: #e94560;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 10px;
+        }
+        #OpenButton:hover {
+            background-color: #ff5e7e;
+        }
+        #CanvasContainer {
+            background-color: #000000;
+            border: 2px solid #1f4068;
+            border-radius: 6px;
+        }
+        #TimeLabel {
+            color: #8888aa;
+            font-family: 'Consolas', monospace;
+            font-size: 11px;
+        }
+        #SeekBar::groove:horizontal {
+            border: 1px solid #1f4068;
+            height: 10px;
+            background: #1a1a3e;
+            border-radius: 4px;
+        }
+        #SeekBar::handle:horizontal {
+            background: #e94560;
+            width: 14px;
+            border-radius: 7px;
+            margin: -2px 0;
+        }
+        #PlayButton {
+            background-color: #1e5f3a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-weight: bold;
+            padding: 5px 18px;
+        }
+        #PlayButton:hover {
+            background-color: #2a7f50;
+        }
+        #NavButton {
+            background-color: #16213e;
+            color: #7ec8e3;
+            border: 1px solid #1f4068;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10px;
+            padding: 4px 8px;
+        }
+        #NavButton:hover {
+            background-color: #1a1a3e;
+        }
+        #ControlText {
+            color: #8888aa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+        }
+        #GoInput {
+            background-color: #16213e;
+            color: white;
+            border: 1px solid #1f4068;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 11px;
+            padding: 2px;
+        }
+        #GoButton {
+            background-color: #e94560;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 4px 8px;
+        }
+        #StartMarker {
+            background-color: #1a4a6e;
+            color: white;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-weight: bold;
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+        #EndMarker {
+            background-color: #5c1a1a;
+            color: white;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-weight: bold;
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+        #InfoBar {
+            color: #555577;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 9px;
+        }
+        #SceneFrame {
+            color: #a8dadc;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #1f4068;
+            border-radius: 6px;
+        }
+        #SceneList {
+            background-color: #0d0d1a;
+            color: #e0e0ff;
+            border: none;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+        }
+        #SceneList::item:hover {
+            background-color: #16213e;
+        }
+        #SceneList::item:selected {
+            background-color: #e94560;
+            color: white;
+        }
+        #SceneActionButton {
+            background-color: #16213e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10px;
+            padding: 4px 10px;
+            min-width: 60px;
+        }
+        #SceneActionButton:hover {
+            background-color: #1a1a3e;
+        }
+        #DeleteSceneButton {
+            background-color: #5c1a1a;
+        }
+        #DeleteSceneButton:hover {
+            background-color: #7c2222;
+        }
+        #ExportSceneButton {
+            background-color: #1e5f3a;
+        }
+        #ExportSceneButton:hover {
+            background-color: #2a7f50;
+        }
+        #DetailFrame {
+            color: #a8dadc;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #1f4068;
+            border-radius: 6px;
+        }
+        #DetailText {
+            background-color: #0b0b18;
+            color: #8888aa;
+            border: none;
+            font-family: 'Consolas', monospace;
+            font-size: 11px;
+        }
+        """
+        self.setStyleSheet(qss)
 
-        # ─ Seek Bar Frame ─
-        self.seek_frame = tk.Frame(self, bg="#0d0d1a", pady=2)
-        self.seek_frame.pack(fill="x", padx=6)
-        
-        self.lbl_cur = tk.Label(self.seek_frame, text="00:00:00", bg="#0d0d1a", fg="#e94560",
-                                 font=("Consolas", 10, "bold"), width=9)
-        self.lbl_cur.pack(side="left", padx=4)
-        
-        self.seek_var = tk.DoubleVar(value=0)
-        self.seek_bar = ttk.Scale(self.seek_frame, from_=0, to=100, variable=self.seek_var,
-                                   orient="horizontal", command=self._sk_move)
-        self.seek_bar.pack(side="left", fill="x", expand=True, padx=4)
-        
-        self.seek_bar.bind("<ButtonPress-1>", self._sk_press)
-        self.seek_bar.bind("<ButtonRelease-1>", self._sk_release)
-        
-        self.lbl_tot = tk.Label(self.seek_frame, text="-00:00:00", bg="#0d0d1a", fg="#a8dadc",
-                                 font=("Consolas", 10), width=10)
-        self.lbl_tot.pack(side="left", padx=4)
+    def _setup_shortcuts(self):
+        self.setFocusPolicy(Qt.StrongFocus)
 
-        # ─ Control Panel Frame ─
-        self.ctrl_panel = tk.Frame(self, bg="#16213e", pady=5)
-        self.ctrl_panel.pack(fill="x")
+    def keyPressEvent(self, event: QKeyEvent):
+        key = event.key()
+        modifiers = event.modifiers()
         
-        b = dict(bg="#0f3460", fg="white", activebackground="#e94560",
-                 font=("Segoe UI", 9, "bold"), relief="flat", padx=7, pady=4)
-                 
-        tk.Button(self.ctrl_panel, text="-10s", command=lambda: self._delta(-10), **b).pack(side="left", padx=3)
-        tk.Button(self.ctrl_panel, text="-1s", command=lambda: self._delta(-1), **b).pack(side="left", padx=2)
-        
-        self.btn_play = tk.Button(self.ctrl_panel, text="Play", command=self.toggle_play, **b)
-        self.btn_play.pack(side="left", padx=3)
-        
-        tk.Button(self.ctrl_panel, text="+1s", command=lambda: self._delta(1), **b).pack(side="left", padx=2)
-        tk.Button(self.ctrl_panel, text="+10s", command=lambda: self._delta(10), **b).pack(side="left", padx=3)
+        if key == Qt.Key_Space:
+            self.toggle_play()
+        elif key == Qt.Key_M:
+            self._mark_start_fn()
+        elif key == Qt.Key_N:
+            self._mark_end_fn()
+        elif key == Qt.Key_Q:
+            QApplication.quit()
+        elif modifiers & Qt.ControlModifier and key == Qt.Key_T:
+            self._toggle_record_shortcut()
+        elif modifiers & Qt.ControlModifier and key == Qt.Key_Space:
+            self._cancel_record_shortcut()
+        else:
+            super().keyPressEvent(event)
 
-        # Input lompat detik
-        tk.Label(self.ctrl_panel, text="Ke detik:", bg="#16213e", fg="#a8dadc",
-                 font=("Segoe UI", 8)).pack(side="left", padx=(12, 2))
-        
-        self.jvar = tk.StringVar()
-        je = tk.Entry(self.ctrl_panel, textvariable=self.jvar, width=8, bg="#1a1a3e", fg="white",
-                    insertbackground="white", relief="flat", font=("Consolas", 9))
-        je.pack(side="left", padx=2)
-        je.bind("<Return>", self._jump)
-        
-        tk.Button(self.ctrl_panel, text="GO", command=self._jump, bg="#e94560", fg="white",
-                  relief="flat", font=("Segoe UI", 8, "bold"), padx=5, pady=4).pack(side="left", padx=2)
+    def _toggle_record_shortcut(self):
+        if self.mark_start is None:
+            self._mark_start_fn()
+        else:
+            self._mark_end_fn()
 
-        # Dropdown Speed
-        tk.Label(self.ctrl_panel, text="Speed:", bg="#16213e", fg="#a8dadc",
-                 font=("Segoe UI", 8)).pack(side="left", padx=(12, 2))
-                 
-        self.spvar = tk.StringVar(value="1.0x")
-        sp = ttk.Combobox(self.ctrl_panel, textvariable=self.spvar, width=5, state="readonly",
-                         values=["0.25x", "0.5x", "0.75x", "1.0x", "1.5x", "2.0x", "3.0x"],
-                         font=("Segoe UI", 8))
-        sp.pack(side="left", padx=2)
-        sp.bind("<<ComboboxSelected>>", self._spchg)
+    def _cancel_record_shortcut(self):
+        self.mark_start = None
+        self.mark_end = None
+        self.skip_overlay_text = ""
+        self.lbl_status_bar_update("Perekaman dibatalkan.")
 
-        # Mark buttons
-        tk.Frame(self.ctrl_panel, bg="#e94560", width=2, height=26).pack(side="left", padx=10, fill="y")
+    def lbl_status_bar_update(self, text):
+        self.inf_bar.setText(text)
+
+    # ── Playback Logic ──
+    def load_video(self, path):
+        if not path or not os.path.exists(path):
+            return
+            
+        self.timer.stop()
+        self.engine.release()
         
-        mk = dict(bg="#1a4a6e", fg="white", activebackground="#e94560",
-                font=("Segoe UI", 8, "bold"), relief="flat", padx=6, pady=4)
+        success = self.engine.load(path)
+        if success:
+            self.lbl_title.setText(os.path.basename(path))
+            self.lbl_time_total.setText(format_time(self.engine.total_frames / self.engine.fps))
+            self.slider.setRange(0, self.engine.total_frames - 1)
+            self.slider.setValue(0)
+            
+            # Load Subtitle
+            self.subtitle_list = []
+            self.temp_srt_path = os.path.join(os.path.dirname(path), "temp_player_sub.srt")
+            
+            from vidstamp.core.subtitle import extract_mkv_subtitles, find_external_subtitle, filter_karaoke_spam
+            ext_srt = find_external_subtitle(path)
+            if ext_srt:
+                self.subtitle_list = filter_karaoke_spam(parse_srt_file(ext_srt))
+                self.lbl_status_bar_update("Memuat subtitle eksternal SRT.")
+            elif path.lower().endswith(".mkv"):
+                extracted = extract_mkv_subtitles(path, self.temp_srt_path)
+                if extracted and os.path.exists(self.temp_srt_path):
+                    self.subtitle_list = filter_karaoke_spam(parse_srt_file(self.temp_srt_path))
+                    self.lbl_status_bar_update("Memuat subtitle internal MKV.")
+                    try: os.remove(self.temp_srt_path)
+                    except: pass
+                else:
+                    self.lbl_status_bar_update("Trek subtitle internal tidak ditemukan.")
+            else:
+                self.lbl_status_bar_update("Video dimuat tanpa subtitel.")
                 
-        tk.Button(self.ctrl_panel, text="[M] Start", command=self.mark_start_action, **mk).pack(side="left", padx=2)
-        tk.Button(self.ctrl_panel, text="[N] End", command=self.mark_end_action, **mk).pack(side="left", padx=2)
-        tk.Button(self.ctrl_panel, text="Simpan", command=self.save_scene_action, bg="#1e5f3a", fg="white",
-                  activebackground="#52b788", font=("Segoe UI", 8, "bold"),
-                  relief="flat", padx=6, pady=4).pack(side="left", padx=4)
+            self.load_saved_scenes()
+            
+            # Load Konfigurasi Skip OP/ED
+            from vidstamp.utils.file_manager import load_skip_config, save_skip_config
+            skip_data = load_skip_config(path)
+            if not skip_data and path.lower().endswith(".mkv"):
+                from vidstamp.core.exporter import get_mkv_chapters
+                detected_chapters = get_mkv_chapters(path)
+                if detected_chapters:
+                    skip_data = detected_chapters
+                    save_skip_config(path, {
+                        "op_start": skip_data.get("op_start"),
+                        "op_end": skip_data.get("op_end"),
+                        "ed_start": skip_data.get("ed_start"),
+                        "ed_end": skip_data.get("ed_end"),
+                        "auto_skip_enabled": True
+                    })
+                    
+            self.op_start = skip_data.get("op_start")
+            self.op_end = skip_data.get("op_end")
+            self.ed_start = skip_data.get("ed_start")
+            self.ed_end = skip_data.get("ed_end")
+            self.cb_auto_skip.setChecked(skip_data.get("auto_skip_enabled", True))
+            
+            self.skipped_op = False
+            self.skipped_ed = False
+            
+            self.render_current_frame()
+            
+            # Load posisi pemutaran terakhir (Resume Playback)
+            from vidstamp.utils.file_manager import load_playback_state
+            state = load_playback_state(path)
+            last_pos = state.get("last_position_sec")
+            if last_pos is not None:
+                target_frame = int(last_pos * self.engine.fps)
+                def deferred_resume():
+                    if self.engine.cap and self.engine.video_path == path:
+                        self.engine.seek_to(target_frame)
+                        self.slider.setValue(self.engine.cur_idx)
+                        self.render_current_frame()
+                QTimer.singleShot(350, deferred_resume)
+            else:
+                self.slider.setValue(0)
+            
+            if self.on_video_loaded:
+                self.on_video_loaded(path)
+        else:
+            QMessageBox.critical(self, "Error", "Gagal memuat berkas video!")
 
-        # Info mark bar
-        self.inf_bar = tk.Frame(self, bg="#0d0d1a", pady=1)
-        self.inf_bar.pack(fill="x", padx=6)
-        
-        tk.Label(self.inf_bar, text="Space=Play/Pause | DoubleClick=Fullscreen | Ctrl+T=Record | Ctrl+Space=Batal Rekam | Q=Keluar",
-                 bg="#0d0d1a", fg="#333355", font=("Segoe UI", 7)).pack(side="left")
-                 
-        self.lbl_mk = tk.Label(self.inf_bar, text="", bg="#0d0d1a", fg="#ffd700",
-                              font=("Consolas", 8, "bold"))
-        self.lbl_mk.pack(side="right", padx=6)
-
-        # Catatan Adegan
-        self.sc_label_frame = tk.LabelFrame(self, text=" Adegan Tercatat ", bg="#0d0d1a", fg="#a8dadc",
-                           font=("Segoe UI", 8, "bold"), pady=2)
-        self.sc_label_frame.pack(fill="x", padx=6, pady=(0, 4))
-        
-        self.sc_lb = tk.Listbox(self.sc_label_frame, bg="#0b0b18", fg="#e0e0ff", font=("Consolas", 8),
-                               height=4, selectbackground="#e94560",
-                               activestyle="none", relief="flat", highlightthickness=0)
-        self.sc_lb.pack(side="left", fill="x", expand=True)
-        self.sc_lb.bind("<Double-Button-1>", self._jump_sc)
-        self.sc_lb.bind("<<ListboxSelect>>", self._on_sc_select)
-        
-        scbf = tk.Frame(self.sc_label_frame, bg="#0d0d1a")
-        scbf.pack(side="right", padx=4)
-        
-        for txt, cmd, col in [("Lompat", self._jump_sc, "#0f3460"),
-                             ("Hapus", self._del_sc, "#5c1a1a"),
-                             ("Export", self._exp_sc, "#1e5f3a")]:
-            tk.Button(scbf, text=txt, command=cmd, bg=col, fg="white", relief="flat",
-                      font=("Segoe UI", 7), padx=6, pady=2).pack(fill="x", pady=1)
-
-        # Detail Preview Adegan Terpilih
-        self.detail_frame = tk.LabelFrame(self, text=" Detail Adegan & Subtitel Terpilih ", bg="#0d0d1a", fg="#a8dadc",
-                                          font=("Segoe UI", 8, "bold"), pady=2)
-        
-        self.txt_detail = tk.Text(self.detail_frame, bg="#0b0b18", fg="#8888aa", font=("Consolas", 8),
-                                  height=3, relief="flat", wrap="word", highlightthickness=0)
-        self.txt_detail.pack(fill="x", padx=5, pady=2)
-        self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
-        self.txt_detail.config(state="disabled")
-
-    # ── Playback control wrappers ──
     def toggle_play(self):
         if not self.engine.cap:
             return
-        if self.engine.playing:
-            self.engine.set_playing(False)
-            self.btn_play.config(text="Play")
+        state = not self.engine.playing
+        self.engine.set_playing(state)
+        if state:
+            self.btn_play.setText("Pause")
+            self.btn_play.setStyleSheet("background-color: #e94560;")
+            self.timer.start()
         else:
-            self.engine.set_playing(True)
-            self.btn_play.config(text="Pause")
+            self.btn_play.setText("Play")
+            self.btn_play.setStyleSheet("background-color: #1e5f3a;")
+            self.timer.stop()
 
-    def _delta(self, ds):
-        if not self.engine.cap:
+    def update_loop(self):
+        if not self.engine.playing:
             return
-        target = self.engine.cur_idx + int(ds * self.engine.fps)
-        self.engine.seek_to(target)
-        self.seek_var.set(self.engine.cur_idx)
-        cur_sec = self.engine.cur_idx / self.engine.fps
-        total_sec = self.engine.total_frames / self.engine.fps
-        self.lbl_cur.config(text=format_time(cur_sec))
-        self.lbl_tot.config(text=format_remaining(cur_sec, total_sec))
-        self.render_current_frame()
-
-    def _sk_press(self, e=None):
-        self._seeking = True
-
-    def _sk_release(self, e=None):
-        self._seeking = False
-        if not self.engine.cap:
-            return
-        self.engine.seek_to(int(self.seek_var.get()))
-        self.render_current_frame()
-
-    def _sk_move(self, v):
-        if not self.engine.cap:
-            return
-        try:
-            cur_sec = int(float(v)) / self.engine.fps
-            total_sec = self.engine.total_frames / self.engine.fps
-            self.lbl_cur.config(text=format_time(cur_sec))
-            self.lbl_tot.config(text=format_remaining(cur_sec, total_sec))
-        except:
-            pass
-
-    def _jump(self, e=None):
-        if not self.engine.cap:
-            return
-        raw = self.jvar.get().strip()
-        if not raw:
-            return
-        try:
-            if ":" in raw:
-                parts = raw.split(":")
-                sec = float(parts[0]) * 60 + float(parts[1])
-            else:
-                sec = float(raw)
-            self.engine.seek_to(int(sec * self.engine.fps))
-            self.seek_var.set(self.engine.cur_idx)
-            self.render_current_frame()
-        except:
-            messagebox.showwarning("Format Salah", "Gunakan format: detik (90) atau menit:detik (1:30)")
-
-    def _spchg(self, e=None):
-        try:
-            val = float(self.spvar.get().replace("x", ""))
-            self.engine.set_speed(val)
-        except:
-            self.engine.set_speed(1.0)
-
-    def _on_canvas_click(self, event):
-        self.toggle_play()
-
-    # ── Fullscreen ──
-    def toggle_fullscreen(self, event=None):
-        root = self.winfo_toplevel()
-        self.is_fullscreen = not self.is_fullscreen
+            
+        sec = self.engine.cur_idx / self.engine.fps
         
-        if self.is_fullscreen:
-            self.top_bar.pack_forget()
-            self.seek_frame.pack_forget()
-            self.ctrl_panel.pack_forget()
-            self.inf_bar.pack_forget()
-            self.sc_label_frame.pack_forget()
-            self.detail_frame.pack_forget() # Sembunyikan detail frame visual!
-            root.attributes("-fullscreen", True)
+        if self.op_start is not None and sec < self.op_start:
+            self.skipped_op = False
+        if self.ed_start is not None and sec < self.ed_start:
+            self.skipped_ed = False
+            
+        if self.cb_auto_skip.isChecked():
+            if (self.op_start is not None and self.op_end is not None and
+                self.op_start <= sec < self.op_end and not self.skipped_op):
+                self.engine.seek_to(int(self.op_end * self.engine.fps))
+                self.skipped_op = True
+                self.skip_overlay_text = ">>> MELOMPATI OPENING <<<"
+                self.skip_overlay_timer = 45
+            elif (self.ed_start is not None and self.ed_end is not None and
+                  self.ed_start <= sec < self.ed_end and not self.skipped_ed):
+                self.engine.seek_to(int(self.ed_end * self.engine.fps))
+                self.skipped_ed = True
+                self.skip_overlay_text = ">>> MELOMPATI ENDING <<<"
+                self.skip_overlay_timer = 45
+
+        if self.skip_overlay_timer > 0:
+            self.skip_overlay_timer -= 1
+            if self.skip_overlay_timer == 0:
+                self.skip_overlay_text = ""
+            
+        ret, frame = self.engine.get_next_frame()
+        if ret and frame is not None:
+            self._draw_frame_on_canvas(frame)
+            self._update_time_slider()
         else:
-            root.attributes("-fullscreen", False)
-            self.top_bar.pack(fill="x", before=self.canvas_container)
-            self.canvas_container.pack(fill="both", expand=True)
-            self.seek_frame.pack(fill="x", after=self.canvas_container)
-            self.ctrl_panel.pack(fill="x", after=self.seek_frame)
-            self.inf_bar.pack(fill="x", after=self.ctrl_panel)
-            self.sc_label_frame.pack(fill="x", padx=6, pady=(0, 4), after=self.inf_bar)
-            
-            # Tampilkan kembali detail frame hanya jika ada adegan terpilih
-            if self.sc_lb.curselection():
-                self.detail_frame.pack(fill="x", padx=6, pady=(0, 4), after=self.sc_label_frame)
-            
-        self.update_idletasks()
-        self.render_current_frame()
-
-    # ── Dialog Konfigurasi Skip OP/ED ──
-    def setup_skip_oped_dialog(self):
-        if not self.engine.cap:
-            return
-            
-        # Jeda video saat popup dialog muncul
-        was_playing = self.engine.playing
-        if was_playing:
-            self.engine.set_playing(False)
-            self.btn_play.config(text="Play")
-            
-        dialog = tk.Toplevel(self)
-        dialog.title("⚙️ Atur Waktu Skip OP/ED")
-        dialog.geometry("420x260")
-        dialog.configure(bg="#0f0f1e")
-        dialog.resizable(False, False)
-        dialog.transient(self.winfo_toplevel())
-        dialog.grab_set()
-        
-        # Buat Frame Form
-        f = tk.Frame(dialog, bg="#0f0f1e", padx=15, pady=15)
-        f.pack(fill="both", expand=True)
-        
-        # Grid input
-        lbl_style = dict(bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 9, "bold"))
-        ent_style = dict(bg="#1a1a3e", fg="white", insertbackground="white", relief="flat", font=("Consolas", 10))
-        
-        # Row 1: Opening Start
-        tk.Label(f, text="OP Mulai (detik):", **lbl_style).grid(row=0, column=0, sticky="w", pady=4)
-        v_op_start = tk.StringVar(value=str(self.op_start) if self.op_start is not None else "")
-        tk.Entry(f, textvariable=v_op_start, width=12, **ent_style).grid(row=0, column=1, pady=4, padx=10)
-        
-        # Row 2: Opening End
-        tk.Label(f, text="OP Selesai (detik):", **lbl_style).grid(row=1, column=0, sticky="w", pady=4)
-        v_op_end = tk.StringVar(value=str(self.op_end) if self.op_end is not None else "")
-        tk.Entry(f, textvariable=v_op_end, width=12, **ent_style).grid(row=1, column=1, pady=4, padx=10)
-        
-        # Row 3: Ending Start
-        tk.Label(f, text="ED Mulai (detik):", **lbl_style).grid(row=2, column=0, sticky="w", pady=4)
-        v_ed_start = tk.StringVar(value=str(self.ed_start) if self.ed_start is not None else "")
-        tk.Entry(f, textvariable=v_ed_start, width=12, **ent_style).grid(row=2, column=1, pady=4, padx=10)
-        
-        # Row 4: Ending End
-        tk.Label(f, text="ED Selesai (detik):", **lbl_style).grid(row=3, column=0, sticky="w", pady=4)
-        v_ed_end = tk.StringVar(value=str(self.ed_end) if self.ed_end is not None else "")
-        tk.Entry(f, textvariable=v_ed_end, width=12, **ent_style).grid(row=3, column=1, pady=4, padx=10)
-        
-        # Row 5: Save as Template Checkbox
-        v_template = tk.BooleanVar(value=True)
-        tk.Checkbutton(f, text="Terapkan ke satu folder (template season)", variable=v_template,
-                        bg="#0f0f1e", fg="#e94560", selectcolor="#1a1a3e",
-                        activebackground="#0f0f1e", font=("Segoe UI", 8, "bold")).grid(row=4, column=0, columnspan=2, pady=10, sticky="w")
-                        
-        def save():
-            try:
-                op_s = float(v_op_start.get().strip()) if v_op_start.get().strip() else None
-                op_e = float(v_op_end.get().strip()) if v_op_end.get().strip() else None
-                ed_s = float(v_ed_start.get().strip()) if v_ed_start.get().strip() else None
-                ed_e = float(v_ed_end.get().strip()) if v_ed_end.get().strip() else None
-                
-                # Validasi logika durasi
-                if op_s is not None and op_e is not None and op_e <= op_s:
-                    messagebox.showerror("Error", "Waktu OP Selesai harus setelah OP Mulai!"); return
-                if ed_s is not None and ed_e is not None and ed_e <= ed_s:
-                    messagebox.showerror("Error", "Waktu ED Selesai harus setelah ED Mulai!"); return
-                    
-                # Simpan ke state
-                self.op_start = op_s
-                self.op_end = op_e
-                self.ed_start = ed_s
-                self.ed_end = ed_e
-                
-                # Simpan ke file JSON
-                config = {
-                    "op_start": self.op_start,
-                    "op_end": self.op_end,
-                    "ed_start": self.ed_start,
-                    "ed_end": self.ed_end,
-                    "auto_skip_enabled": self.auto_skip.get()
-                }
-                save_skip_config(self.engine.video_path, config, as_template=v_template.get())
-                
-                self.lbl_mk.config(text="⚙️ Skip OP/ED Disimpan!")
-                dialog.destroy()
-                
-                # Kembalikan video play
-                if was_playing:
-                    self.engine.set_playing(True)
-                    self.btn_play.config(text="Pause")
-            except ValueError:
-                messagebox.showerror("Error", "Masukkan format angka detik saja (misal: 90 atau 1320.5)!")
-
-        # Row 6: Tombol Aksi
-        btn_frame = tk.Frame(f, bg="#0f0f1e")
-        btn_frame.grid(row=5, column=0, columnspan=2, pady=10)
-        
-        tk.Button(btn_frame, text="Batal", command=dialog.destroy, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=12).pack(side="left", padx=5)
-        tk.Button(btn_frame, text="Simpan Settings", command=save, bg="#1e5f3a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=12).pack(side="left", padx=5)
-        tk.Button(btn_frame, text="✂️ Ekspor Video Bersih", command=lambda: self.setup_export_clean_dialog(dialog, v_op_start, v_op_end, v_ed_start, v_ed_end), bg="#e94560", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=10).pack(side="left", padx=5)
-
-    def setup_export_clean_dialog(self, parent_dialog, v_op_start, v_op_end, v_ed_start, v_ed_end):
-        if not self.engine.video_path:
-            return
-            
-        # Parse inputs dari parent dialog
-        try:
-            op_s = float(v_op_start.get().strip()) if v_op_start.get().strip() else None
-            op_e = float(v_op_end.get().strip()) if v_op_end.get().strip() else None
-            ed_s = float(v_ed_start.get().strip()) if v_ed_start.get().strip() else None
-            ed_e = float(v_ed_end.get().strip()) if v_ed_end.get().strip() else None
-        except ValueError:
-            messagebox.showerror("Error", "Masukkan format angka detik saja di pengaturan skip!")
-            return
-            
-        dialog = tk.Toplevel(self)
-        dialog.title("✂️ Konfigurasi Ekspor Bersih")
-        dialog.geometry("380x310")
-        dialog.configure(bg="#0f0f1e")
-        dialog.resizable(False, False)
-        dialog.transient(parent_dialog)
-        dialog.grab_set()
-        
-        lbl_style = dict(bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 9, "bold"))
-        
-        # Opsi 1: Mode Subtitel (Hardsub vs Softsub)
-        tk.Label(dialog, text="Mode Subtitel:", **lbl_style).pack(anchor="w", padx=20, pady=(12, 3))
-        v_sub_mode = tk.StringVar(value="softsub")
-        tk.Radiobutton(dialog, text="Softsub (Potong subtitel terpisah .srt)", variable=v_sub_mode, value="softsub",
-                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
-                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
-        tk.Radiobutton(dialog, text="Hardsub (Tempel teks ke dalam video)", variable=v_sub_mode, value="hardsub",
-                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
-                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
-                       
-        # Opsi 2: Cakupan (Satu file vs Bulk folder)
-        tk.Label(dialog, text="Cakupan Ekspor:", **lbl_style).pack(anchor="w", padx=20, pady=(10, 3))
-        v_scope = tk.BooleanVar(value=False) # False = Single, True = Bulk
-        tk.Radiobutton(dialog, text="Hanya episode aktif saat ini", variable=v_scope, value=False,
-                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
-                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
-        tk.Radiobutton(dialog, text="Semua video di folder aktif saat ini (Bulk)", variable=v_scope, value=True,
-                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
-                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
-                       
-        v_merge_bulk = tk.BooleanVar(value=True)
-        chk_merge = tk.Checkbutton(dialog, text="Gabungkan hasil bulk menjadi 1 file utama (MP4 & SRT)", variable=v_merge_bulk,
-                        bg="#0f0f1e", fg="#ffd700", selectcolor="#1a1a3e", activebackground="#0f0f1e",
-                        activeforeground="#ffd700", font=("Segoe UI", 8, "bold"))
-        chk_merge.pack(anchor="w", padx=35, pady=(5, 0))
-                       
-        def start_export():
-            video_path = self.engine.video_path
-            mode = v_sub_mode.get()
-            is_bulk = v_scope.get()
-            is_merge = v_merge_bulk.get()
-            
-            # Default output paths
-            base_name, ext = os.path.splitext(video_path)
-            output_video = f"{base_name}_clean{ext}"
-            output_srt = f"{base_name}_clean.srt"
-            
-            # Tutup dialog opsi dan dialog skip parent
-            dialog.destroy()
-            parent_dialog.destroy()
-            
-            # Buka progress window
-            self.show_export_progress_window(
-                video_path, op_s, op_e, ed_s, ed_e,
-                output_video, output_srt, mode, is_bulk, is_merge
-            )
-            
-        # Tombol aksi
-        btn_frame_opts = tk.Frame(dialog, bg="#0f0f1e")
-        btn_frame_opts.pack(fill="x", pady=12)
-        
-        tk.Button(btn_frame_opts, text="Batal", command=dialog.destroy, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="left", padx=25)
-        tk.Button(btn_frame_opts, text="Mulai Ekspor", command=start_export, bg="#1e5f3a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="right", padx=25)
-
-    def show_export_progress_window(self, video_path, op_start, op_end, ed_start, ed_end, output_video, output_srt, mode, is_bulk, is_merge=False):
-        import threading
-        
-        progress_dialog = tk.Toplevel(self)
-        progress_dialog.title("✂️ Memproses Ekspor Video Bersih")
-        progress_dialog.geometry("400x190")
-        progress_dialog.configure(bg="#0f0f1e")
-        progress_dialog.resizable(False, False)
-        progress_dialog.transient(self.winfo_toplevel())
-        progress_dialog.grab_set()
-        
-        lbl_status = tk.Label(progress_dialog, text="Menyiapkan ekspor...", bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 10, "bold"))
-        lbl_status.pack(pady=(20, 5))
-        
-        lbl_file = tk.Label(progress_dialog, text=os.path.basename(video_path), bg="#0f0f1e", fg="white", font=("Segoe UI", 9))
-        lbl_file.pack(pady=5)
-        
-        progress_var = tk.DoubleVar(value=0)
-        progress_bar = ttk.Progressbar(progress_dialog, variable=progress_var, maximum=100, length=320)
-        progress_bar.pack(pady=10)
-        
-        cancel_event = threading.Event()
-        
-        def cancel_action():
-            if messagebox.askyesno("Batal", "Apakah Anda yakin ingin membatalkan proses ekspor?"):
-                cancel_event.set()
-                progress_dialog.destroy()
-                
-        btn_cancel = tk.Button(progress_dialog, text="Batal", command=cancel_action, bg="#5c1a1a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15)
-        btn_cancel.pack(pady=5)
-        
-        def run_export_thread():
-            from vidstamp.core.exporter import export_clean_video_and_srt, export_bulk_and_merge
-            
-            def progress_callback(pct):
-                self.after(0, lambda: progress_var.set(pct))
-                self.after(0, lambda: lbl_status.config(text=f"Rendering: {pct:.1f}%"))
-                
-            if not is_bulk:
-                success, msg = export_clean_video_and_srt(
-                    video_path, op_start, op_end, ed_start, ed_end,
-                    output_video, output_srt, mode=mode,
-                    progress_callback=progress_callback, cancel_event=cancel_event
-                )
-                
-                if not cancel_event.is_set():
-                    if success:
-                        self.after(0, lambda: messagebox.showinfo("Sukses", f"Ekspor berhasil selesai!\nVideo: {os.path.basename(output_video)}\nSubtitel: {os.path.basename(output_srt)}"))
-                    else:
-                        self.after(0, lambda: messagebox.showerror("Gagal Ekspor", f"Terjadi kesalahan saat mengekspor:\n{msg}"))
-                    self.after(0, progress_dialog.destroy)
-            else:
-                # Pemrosesan Massal (Bulk Folder)
-                parent_dir = os.path.dirname(video_path)
-                
-                def bulk_progress_callback(file_idx, total, pct, status_text):
-                    overall_pct = (file_idx / total) * 100 + (pct / total)
-                    self.after(0, lambda: progress_var.set(overall_pct))
-                    self.after(0, lambda: lbl_status.config(text=f"Eps {file_idx+1}/{total} - {pct:.1f}%"))
-                    self.after(0, lambda: lbl_file.config(text=status_text))
-                    
-                success, msg = export_bulk_and_merge(
-                    parent_dir, mode=mode, merge_to_one=is_merge,
-                    progress_callback=bulk_progress_callback, cancel_event=cancel_event
-                )
-                
-                if not cancel_event.is_set():
-                    if success:
-                        self.after(0, lambda: messagebox.showinfo("Sukses", f"Ekspor Massal Selesai!\n{msg}"))
-                    else:
-                        self.after(0, lambda: messagebox.showerror("Gagal Ekspor Massal", f"Terjadi kesalahan:\n{msg}"))
-                    self.after(0, progress_dialog.destroy)
-                    
-        threading.Thread(target=run_export_thread, daemon=True).start()
-
-    # ── Mark & Catatan ──
-    def mark_start_action(self):
-        if not self.engine.cap:
-            return
-        self.mark_start = self.engine.cur_idx / self.engine.fps
-        self._upmk()
-
-    def mark_end_action(self):
-        if not self.engine.cap:
-            return
-        self.mark_end = self.engine.cur_idx / self.engine.fps
-        self._upmk()
-
-    def _upmk(self, current_sec=None):
-        s = f"S:{format_time(self.mark_start)}" if self.mark_start is not None else "S:--"
-        e = f"E:{format_time(self.mark_end)}"   if self.mark_end   is not None else "E:--"
-        if self.mark_start is not None and self.mark_end is None and current_sec is not None:
-            diff = current_sec - self.mark_start
-            diff_m = int(diff) // 60
-            diff_s = int(diff) % 60
-            self.lbl_mk.config(text=f"{s}  {e}  ({diff_m:02d}:{diff_s:02d})")
-        else:
-            self.lbl_mk.config(text=f"{s}  {e}")
-
-    def cancel_recording_action(self):
-        """Membatalkan perekaman adegan yang sedang berjalan."""
-        if self.mark_start is not None or self.mark_end is not None:
-            self.mark_start = None
-            self.mark_end = None
-            self.lbl_mk.config(text="Perekaman dibatalkan")
+            self.toggle_play()
+            self.engine.seek_to(0)
+            self._update_time_slider()
             self.render_current_frame()
 
-    def save_scene_action(self):
-        if not self.engine.cap:
-            return
-        if self.mark_start is None or self.mark_end is None:
-            messagebox.showwarning("Peringatan", "Tandai Start [M] dan End [N] terlebih dahulu!"); return
-        if self.mark_end <= self.mark_start:
-            messagebox.showwarning("Peringatan", "End harus setelah Start!"); return
-            
-        dur = self.mark_end - self.mark_start
-        
-        video_name = os.path.basename(self.engine.video_path)
-        base_title = get_first_4_words(video_name)
-        default_name = f"{base_title} Catatan {len(self.scenes) + 1}"
-        
-        was_playing = self.engine.playing
-        if was_playing:
-            self.engine.set_playing(False)
-            self.btn_play.config(text="Play")
-            
-        # Dapatkan subtitle pratinjau
-        sub_text = ""
-        if self.subtitle_list:
-            matched_subs = get_subtitles_in_range(self.subtitle_list, self.mark_start, self.mark_end)
-            if matched_subs:
-                sub_text = "\n".join([f"[{format_time(s['start'])}] {s['text']}" for s in matched_subs])
+    def _update_time_slider(self):
+        idx = self.engine.cur_idx
+        self.slider.setValue(idx)
+        self.lbl_time_cur.setText(format_time(idx / self.engine.fps))
 
-        # State untuk menangkap data dialog
-        dialog_result = {"saved": False, "name": ""}
-
-        # Toplevel Dialog Kustom
-        dialog = tk.Toplevel(self)
-        dialog.title("💾 Simpan Catatan Adegan")
-        dialog.geometry("460x330")
-        dialog.configure(bg="#0f0f1e")
-        dialog.resizable(False, False)
-        dialog.transient(self.winfo_toplevel())
-        dialog.grab_set()
-
-        # Pusatkan dialog relatif terhadap main window
-        try:
-            parent_x = self.winfo_toplevel().winfo_x()
-            parent_y = self.winfo_toplevel().winfo_y()
-            parent_w = self.winfo_toplevel().winfo_width()
-            parent_h = self.winfo_toplevel().winfo_height()
-            dialog_x = parent_x + (parent_w - 460) // 2
-            dialog_y = parent_y + (parent_h - 330) // 2
-            dialog.geometry(f"460x330+{max(0, dialog_x)}+{max(0, dialog_y)}")
-        except:
-            pass
-
-        # Frame Kontainer utama
-        f = tk.Frame(dialog, bg="#0f0f1e", padx=15, pady=15)
-        f.pack(fill="both", expand=True)
-
-        # 1. Info Adegan (Waktu & Durasi)
-        info_frame = tk.Frame(f, bg="#16213e", padx=10, pady=8)
-        info_frame.pack(fill="x", pady=(0, 10))
-
-        lbl_style = dict(bg="#16213e", fg="#a8dadc", font=("Segoe UI", 9))
-        val_style = dict(bg="#16213e", fg="#ffd700", font=("Consolas", 9, "bold"))
-
-        tk.Label(info_frame, text="Mulai:", **lbl_style).grid(row=0, column=0, sticky="w")
-        tk.Label(info_frame, text=format_time(self.mark_start), **val_style).grid(row=0, column=1, sticky="w", padx=(5, 15))
-        
-        tk.Label(info_frame, text="Selesai:", **lbl_style).grid(row=0, column=2, sticky="w")
-        tk.Label(info_frame, text=format_time(self.mark_end), **val_style).grid(row=0, column=3, sticky="w", padx=(5, 15))
-
-        tk.Label(info_frame, text="Durasi:", **lbl_style).grid(row=0, column=4, sticky="w")
-        tk.Label(info_frame, text=f"{dur:.2f}s", **val_style).grid(row=0, column=5, sticky="w", padx=5)
-
-        # 2. Input Kolom Nama Catatan
-        tk.Label(f, text="Nama Catatan Adegan:", bg="#0f0f1e", fg="#ffd700", font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(0, 4))
-        
-        v_name = tk.StringVar(value=default_name)
-        ent = tk.Entry(f, textvariable=v_name, bg="#1a1a3e", fg="white", insertbackground="white",
-                       relief="flat", font=("Segoe UI", 10), highlightthickness=1, highlightbackground="#333366",
-                       highlightcolor="#e94560")
-        ent.pack(fill="x", ipady=4, pady=(0, 10))
-        
-        # Fokus otomatis & seleksi teks
-        ent.focus_set()
-        ent.select_range(0, tk.END)
-
-        # 3. Preview Subtitle (Jika ada)
-        if sub_text:
-            tk.Label(f, text="Preview Subtitle / Transkrip:", bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 8, "bold")).pack(anchor="w", pady=(0, 2))
-            preview_box = tk.Text(f, bg="#0d0d1a", fg="#8888aa", font=("Consolas", 8), height=5, relief="flat", wrap="word", highlightthickness=0)
-            preview_box.pack(fill="both", expand=True, pady=(0, 15))
-            preview_box.insert("1.0", sub_text)
-            preview_box.config(state="disabled")
-        else:
-            tk.Frame(f, bg="#0f0f1e", height=60).pack(fill="x")
-
-        # Fungsi Aksi
-        def on_confirm(event=None):
-            name_val = v_name.get().strip()
-            if not name_val:
-                messagebox.showwarning("Peringatan", "Nama catatan tidak boleh kosong!", parent=dialog)
-                return
-            dialog_result["saved"] = True
-            dialog_result["name"] = name_val
-            dialog.destroy()
-
-        def on_cancel():
-            dialog.destroy()
-
-        # Binds
-        ent.bind("<Return>", on_confirm)
-
-        # 4. Tombol Aksi di bagian bawah
-        btn_frame = tk.Frame(f, bg="#0f0f1e")
-        btn_frame.pack(fill="x")
-
-        tk.Button(btn_frame, text="Batal", command=on_cancel, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=20, pady=4).pack(side="left")
-        tk.Button(btn_frame, text="Simpan Catatan", command=on_confirm, bg="#e94560", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=20, pady=4).pack(side="right")
-
-        # Tunggu dialog ditutup
-        self.wait_window(dialog)
-        
-        if was_playing:
-            self.engine.set_playing(True)
-            self.btn_play.config(text="Pause")
-            
-        if not dialog_result["saved"]:
-            return
-            
-        note_name = dialog_result["name"]
-        self.scenes.append((self.mark_start, self.mark_end, note_name, sub_text))
-        
-        disp = f"{note_name}: {format_time(self.mark_start)} -> {format_time(self.mark_end)} ({dur:.2f}s)"
-        self.sc_lb.insert("end", disp)
-        
-        self.mark_start = None
-        self.mark_end = None
-        self.lbl_mk.config(text=f"Tersimpan: {note_name}")
-        self.render_current_frame()
-        
-        # Simpan database JSON dan ekspor teks otomatis
-        from vidstamp.utils.file_manager import save_scenes_data
-        save_scenes_data(self.engine.video_path, self.scenes)
-        self._auto_export_scenes()
-
-    def _jump_sc(self, event=None):
-        s = self.sc_lb.curselection()
-        if s and self.engine.cap:
-            start_sec = self.scenes[s[0]][0]
-            self.engine.seek_to(int(start_sec * self.engine.fps))
-            self.seek_var.set(self.engine.cur_idx)
-            self.render_current_frame()
-
-    def _del_sc(self):
-        s = self.sc_lb.curselection()
-        if s:
-            self.scenes.pop(s[0])
-            self.sc_lb.delete(s[0])
-            
-            # Reset panel detail setelah hapus
-            self.txt_detail.config(state="normal")
-            self.txt_detail.delete("1.0", "end")
-            self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
-            self.txt_detail.config(state="disabled")
-            self.detail_frame.pack_forget() # Sembunyikan detail frame!
-            
-            # Simpan database JSON dan ekspor teks otomatis setelah penghapusan
-            from vidstamp.utils.file_manager import save_scenes_data
-            save_scenes_data(self.engine.video_path, self.scenes)
-            self._auto_export_scenes()
-
-    def _on_sc_select(self, event=None):
-        selection = self.sc_lb.curselection()
-        if not selection:
-            self.detail_frame.pack_forget() # Sembunyikan jika deselect
-            return
-            
-        idx = selection[0]
-        if idx < len(self.scenes):
-            _, _, label, subs = self.scenes[idx]
-            self.txt_detail.config(state="normal")
-            self.txt_detail.delete("1.0", "end")
-            if subs:
-                self.txt_detail.insert("1.0", f"Adegan: {label}\n{subs}")
-            else:
-                self.txt_detail.insert("1.0", f"Adegan: {label}\n(Tidak ada subtitel/dialog terekam)")
-            self.txt_detail.config(state="disabled")
-            
-            # Tampilkan detail frame secara dinamis hanya jika tidak fullscreen
-            if not self.is_fullscreen:
-                self.detail_frame.pack(fill="x", padx=6, pady=(0, 4), after=self.sc_label_frame)
-
-    def _auto_export_scenes(self):
-        """Mengekspor daftar adegan secara otomatis ke file teks default di folder catatan."""
-        if not self.engine.cap or not self.engine.video_path:
-            return
-        try:
-            from vidstamp.utils.file_manager import ensure_note_folder
-            note_dir = ensure_note_folder(self.engine.video_path)
-            video_name = os.path.basename(self.engine.video_path)
-            video_base, _ = os.path.splitext(video_name)
-            default_file = os.path.join(note_dir, f"{video_base}_catatan_adegan.txt")
-            
-            # Ambil path absolut video dan folder catatan
-            abs_video_path = os.path.abspath(self.engine.video_path)
-            abs_note_dir = os.path.abspath(note_dir)
-            note_folder_name = os.path.basename(abs_note_dir)
-            
-            with open(default_file, "w", encoding="utf-8") as f:
-                f.write("=" * 65 + "\n")
-                f.write("                  CATATAN ADEGAN & SUBTITLE\n")
-                f.write(f"  Video File Name  : {video_name}\n")
-                f.write(f"  Video Abs Path   : {abs_video_path}\n")
-                f.write(f"  Note Folder Name : {note_folder_name}\n")
-                f.write(f"  Note Folder Path : {abs_note_dir}\n")
-                f.write("=" * 65 + "\n\n")
-                
-                for i, (s, e, label, subs) in enumerate(self.scenes, 1):
-                    f.write(f"[{i:02d}] {label}\n")
-                    f.write(f"     Mulai  : {format_time(s)} ({s:.3f}s)\n")
-                    f.write(f"     Akhir  : {format_time(e)} ({e:.3f}s)\n")
-                    f.write(f"     Durasi : {e-s:.3f} detik\n")
-                    if subs:
-                        f.write(f"     --- Subtitle / Transkrip Adegan ---\n")
-                        indented_subs = "\n".join(["       " + line for line in subs.split("\n")])
-                        f.write(f"{indented_subs}\n")
-                    f.write("\n" + "-" * 40 + "\n\n")
-        except Exception as err:
-            print(f"Gagal melakukan ekspor otomatis catatan: {err}")
-
-    def load_saved_scenes(self):
-        """Memuat database adegan lama dari scenes.json ke GUI."""
-        self.scenes = []
-        self.sc_lb.delete(0, "end")
-        
-        # Reset detail text dan sembunyikan frame detail
-        self.txt_detail.config(state="normal")
-        self.txt_detail.delete("1.0", "end")
-        self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
-        self.txt_detail.config(state="disabled")
-        self.detail_frame.pack_forget()
-        
-        if not self.engine.cap or not self.engine.video_path:
-            return
-            
-        from vidstamp.utils.file_manager import load_scenes_data
-        saved = load_scenes_data(self.engine.video_path)
-        for item in saved:
-            s = item.get("start", 0.0)
-            e = item.get("end", 0.0)
-            label = item.get("label", "")
-            subs = item.get("subtitles", "")
-            self.scenes.append((s, e, label, subs))
-            
-            dur = e - s
-            disp = f"{label}: {format_time(s)} -> {format_time(e)} ({dur:.2f}s)"
-            self.sc_lb.insert("end", disp)
-
-    def _exp_sc(self):
-        if not self.scenes:
-            messagebox.showinfo("Info", "Belum ada adegan yang dicatat!")
-            return
-            
-        try:
-            note_dir = ensure_note_folder(self.engine.video_path)
-        except Exception as e:
-            messagebox.showerror("Error", f"Gagal membuat folder catatan: {e}")
-            return
-            
-        video_name = os.path.basename(self.engine.video_path)
-        video_base, _ = os.path.splitext(video_name)
-        
-        default_file = os.path.join(note_dir, f"{video_base}_catatan_adegan.txt")
-        
-        p = filedialog.asksaveasfilename(title="Simpan Catatan ke Berkas Teks",
-                                         defaultextension=".txt",
-                                         initialfile=os.path.basename(default_file),
-                                         initialdir=note_dir,
-                                         filetypes=[("Text File", "*.txt")])
-        if not p:
-            return
-            
-        try:
-            # Ambil path absolut video dan folder catatan
-            abs_video_path = os.path.abspath(self.engine.video_path)
-            abs_note_dir = os.path.abspath(note_dir)
-            note_folder_name = os.path.basename(abs_note_dir)
-            
-            with open(p, "w", encoding="utf-8") as f:
-                f.write("=" * 65 + "\n")
-                f.write("                  CATATAN ADEGAN & SUBTITLE (SEO)\n")
-                f.write(f"  Video File Name  : {video_name}\n")
-                f.write(f"  Video Abs Path   : {abs_video_path}\n")
-                f.write(f"  Note Folder Name : {note_folder_name}\n")
-                f.write(f"  Note Folder Path : {abs_note_dir}\n")
-                f.write("=" * 65 + "\n\n")
-                
-                for i, (s, e, label, subs) in enumerate(self.scenes, 1):
-                    f.write(f"[{i:02d}] {label}\n")
-                    f.write(f"     Mulai  : {format_time(s)} ({s:.3f}s)\n")
-                    f.write(f"     Akhir  : {format_time(e)} ({e:.3f}s)\n")
-                    f.write(f"     Durasi : {e-s:.3f} detik\n")
-                    if subs:
-                        f.write(f"     --- Subtitle / Transkrip Adegan ---\n")
-                        indented_subs = "\n".join(["       " + line for line in subs.split("\n")])
-                        f.write(f"{indented_subs}\n")
-                    f.write("\n" + "-" * 40 + "\n\n")
-                    
-            messagebox.showinfo("Sukses", f"Catatan berhasil diexport ke:\n{p}")
-        except Exception as err:
-            messagebox.showerror("Error", f"Gagal mengekspor file: {err}")
-
-    # ── Rendering Helper ──
-    def _wrap_text(self, text, font, font_scale, thickness, max_width):
-        """Membungkus kata-kata dalam teks agar total lebar visual piksel tidak melebihi max_width."""
-        words = text.split(' ')
-        lines = []
-        current_line = []
-        
-        for word in words:
-            test_line = ' '.join(current_line + [word]) if current_line else word
-            (tw, _), _ = cv2.getTextSize(test_line, font, font_scale, thickness)
-            
-            if tw <= max_width or not current_line:
-                current_line.append(word)
-            else:
-                lines.append(' '.join(current_line))
-                current_line = [word]
-                
-        if current_line:
-            lines.append(' '.join(current_line))
-            
-        return lines
+    def _auto_save_playback_state(self):
+        if self.engine.cap and self.engine.playing and self.engine.video_path:
+            cur_sec = self.engine.cur_idx / self.engine.fps
+            from vidstamp.utils.file_manager import save_playback_state
+            save_playback_state(self.engine.video_path, cur_sec)
 
     def render_current_frame(self):
         if not self.engine.cap:
             return
         frame = self.engine.read_single_frame(self.engine.cur_idx)
         if frame is not None:
-            self.draw_frame(frame)
+            self._draw_frame_on_canvas(frame)
 
-    def draw_frame(self, frame):
-        h, w = frame.shape[:2]
+    def _draw_frame_on_canvas(self, frame):
+        h, w, _ = frame.shape
         sec = self.engine.cur_idx / self.engine.fps
         
-        # ─ Tampilkan Overlay skip text ─
-        if self.skip_overlay_text and self.skip_overlay_timer > 0:
-            self.skip_overlay_timer -= 1
-            # Cari posisi teks tengah
-            (tw, th), _ = cv2.getTextSize(self.skip_overlay_text, FONT, 1.2, 3)
+        if self.skip_overlay_text:
+            (tw, th), _ = cv2.getTextSize(self.skip_overlay_text, FONT, 1.2, 7)
             tx = (w - tw) // 2
-            ty = (h + th) // 2
-            
-            # Teks bayangan hitam
+            ty = h // 3
             cv2.putText(frame, self.skip_overlay_text, (tx, ty), FONT, 1.2, COLOR_BG, 7, cv2.LINE_AA)
-            # Teks utama oranye menyala
             cv2.putText(frame, self.skip_overlay_text, (tx, ty), FONT, 1.2, (50, 150, 255), 3, cv2.LINE_AA)
-        else:
-            self.skip_overlay_text = ""
             
-        if self.show_ts.get():
-            lbl = f"  {format_time(sec, self.show_ms.get())}"
+        if self.show_ts_enabled:
+            lbl = f"  {format_time(sec, self.show_ms_enabled)}"
             cv2.putText(frame, lbl, (8, 44), FONT, 1.1, COLOR_BG, 6, cv2.LINE_AA)
             cv2.putText(frame, lbl, (8, 44), FONT, 1.1, COLOR_TS, 2, cv2.LINE_AA)
             
@@ -967,42 +666,33 @@ class RightPlayerPanel(tk.Frame):
             cv2.putText(frame, t, (8, h - 28), FONT, 0.75, COLOR_MARK, 2, cv2.LINE_AA)
             
             if self.mark_end is None:
-                self._upmk(sec)
-                running_sec = sec - self.mark_start
-                run_m = int(running_sec) // 60
-                run_s = int(running_sec) % 60
-                t_rec = f"REC: {run_m:02d}:{run_s:02d}"
+                t_rec = f"REC: {format_time(sec - self.mark_start)}"
                 cv2.putText(frame, t_rec, (8, h - 56), FONT, 0.75, COLOR_BG, 4, cv2.LINE_AA)
                 cv2.putText(frame, t_rec, (8, h - 56), FONT, 0.75, (0, 0, 255), 2, cv2.LINE_AA)
-            
+                
         if self.mark_end is not None:
             t = f"END: {format_time(self.mark_end)}"
             (tw, _), _ = cv2.getTextSize(t, FONT, 0.75, 2)
             cv2.putText(frame, t, (w - tw - 12, h - 28), FONT, 0.75, COLOR_BG, 4, cv2.LINE_AA)
             cv2.putText(frame, t, (w - tw - 12, h - 28), FONT, 0.75, COLOR_END, 2, cv2.LINE_AA)
             
-        # ─ Render Subtitle Live Preview ke Frame ─
         if self.subtitle_list:
-            import re
             active_subs = [s for s in self.subtitle_list if s['start'] <= sec < s['end']]
             if active_subs:
                 sub_text = active_subs[0]['text']
                 sub_text = re.sub(r'<[^>]*>', '', sub_text)
                 sub_text = re.sub(r'\{[^}]*\}', '', sub_text).strip()
                 
-                # Font scale proporsional terhadap tinggi frame (lebar area 1:1 di tengah)
                 font_scale = max(0.35, min(0.7, h / 1300.0))
                 thickness = max(1, int(2.0 * font_scale))
                 shadow_thickness = thickness + 2
                 
-                # Batas lebar maksimum teks 85% dari lebar efektif area 1:1 di tengah (tinggi h)
                 max_text_width = int(h * 0.85)
-                
                 raw_lines = sub_text.split('\n')
                 wrapped_lines = []
                 for rl in raw_lines:
                     wrapped_lines.extend(self._wrap_text(rl, FONT, font_scale, thickness, max_text_width))
-                
+                    
                 line_height = int(28 * font_scale)
                 base_y = h - 35 - (len(wrapped_lines) - 1) * line_height
                 
@@ -1011,28 +701,261 @@ class RightPlayerPanel(tk.Frame):
                     tx = (w - tw) // 2
                     ty = base_y + line_idx * line_height
                     
-                    # Shadow hitam outline
                     cv2.putText(frame, line, (tx, ty), FONT, font_scale, COLOR_BG, shadow_thickness, cv2.LINE_AA)
-                    # Text utama putih
                     cv2.putText(frame, line, (tx, ty), FONT, font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
+                    
+        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        ch_h, ch_w, ch = rgb_image.shape
+        bytes_per_line = ch * ch_w
+        qimg = QImage(rgb_image.data, ch_w, ch_h, bytes_per_line, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(qimg)
+        
+        self.lbl_canvas.setPixmap(pixmap.scaled(
+            self.lbl_canvas.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+        ))
 
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    def _wrap_text(self, text, font, scale, thickness, max_w):
+        words = text.split(' ')
+        lines = []
+        curr = ""
+        for w in words:
+            test_line = f"{curr} {w}".strip()
+            (tw, _), _ = cv2.getTextSize(test_line, font, scale, thickness)
+            if tw <= max_w:
+                curr = test_line
+            else:
+                if curr:
+                    lines.append(curr)
+                curr = w
+        if curr:
+            lines.append(curr)
+        return lines
+
+    def seek_offset(self, seconds):
+        if not self.engine.cap:
+            return
+        target = self.engine.cur_idx + int(seconds * self.engine.fps)
+        self.engine.seek_to(target)
+        self._update_time_slider()
+        if not self.engine.playing:
+            self.render_current_frame()
+
+    def _on_slider_pressed(self):
+        self._was_playing = self.engine.playing
+        if self._was_playing:
+            self.timer.stop()
+
+    def _on_slider_released(self):
+        if self._was_playing:
+            self.timer.start()
+
+    def _on_slider_moved(self, val):
+        if not self.engine.cap:
+            return
+        self.engine.seek_to(val)
+        self.lbl_time_cur.setText(format_time(val / self.engine.fps))
+        if not self.engine.playing:
+            self.render_current_frame()
+
+    def _on_canvas_clicked(self, event):
+        self.toggle_play()
+
+    def toggle_fullscreen(self, event=None):
+        self.is_fullscreen = not self.is_fullscreen
+        parent_window = self.window()
+        if self.is_fullscreen:
+            self.top_bar.hide()
+            self.seek_frame.hide()
+            self.ctrl_panel.hide()
+            self.inf_bar.hide()
+            self.sc_label_frame.hide()
+            self.detail_frame.hide()
+            parent_window.showFullScreen()
+        else:
+            self.top_bar.show()
+            self.seek_frame.show()
+            self.ctrl_panel.show()
+            self.inf_bar.show()
+            self.sc_label_frame.show()
+            if self.sc_lb.currentItem():
+                self.detail_frame.show()
+            parent_window.showNormal()
+        self.render_current_frame()
+
+    def _on_speed_changed(self, text):
+        val = float(text.replace("x", ""))
+        self.engine.set_speed(val)
+        self.timer.setInterval(int(15 / val))
+
+    def _jump_to_seconds(self):
+        if not self.engine.cap:
+            return
+        t = self.txt_go.text().strip()
+        try:
+            if ":" in t:
+                parts = t.split(":")
+                secs = 0.0
+                for p in parts:
+                    secs = secs * 60 + float(p)
+            else:
+                secs = float(t)
+            self.engine.seek_to(int(secs * self.engine.fps))
+            self._update_time_slider()
+            self.render_current_frame()
+        except ValueError:
+            pass
+
+    def _mark_start_fn(self):
+        if not self.engine.cap:
+            return
+        self.mark_start = self.engine.cur_idx / self.engine.fps
+        self.btn_start.setText(f"S: {format_time(self.mark_start)}")
+        self.lbl_status_bar_update("Batas START tercatat. Jalankan video dan klik [N] End untuk mengunci adegan.")
+        self.render_current_frame()
+
+    def _mark_end_fn(self):
+        if not self.engine.cap or self.mark_start is None:
+            return
+        self.mark_end = self.engine.cur_idx / self.engine.fps
+        self.btn_end.setText(f"E: {format_time(self.mark_end)}")
+        self.render_current_frame()
         
-        # Ambil dimensi aktual Canvas tanpa memblokir thread via update_idletasks()
-        cw = self.canvas.winfo_width()
-        ch = self.canvas.winfo_height()
-        
-        # Fallback jika widget belum dirender sepenuhnya (nilai <= 1)
-        if cw <= 1 or ch <= 1:
-            cw = 760
-            ch = 428
+        from PySide6.QtWidgets import QInputDialog
+        label, ok = QInputDialog.getItem(self, "Jenis Adegan", "Pilih label adegan skip:", ["Skip_Opening", "Skip_Ending"], 0, False)
+        if ok and label:
+            subs_in_range = []
+            for s in self.subtitle_list:
+                if s['start'] >= self.mark_start and s['end'] <= self.mark_end:
+                    clean_txt = re.sub(r'<[^>]*>', '', s['text'])
+                    clean_txt = re.sub(r'\{[^}]*\}', '', clean_txt).strip()
+                    if clean_txt:
+                        subs_in_range.append(f"[{format_time(s['start'])}] {clean_txt}")
+                        
+            sub_summary = "\n".join(subs_in_range)
+            self.scenes.append((self.mark_start, self.mark_end, label, sub_summary))
             
-        sc = min(cw / w, ch / h)
-        nw, nh = max(1, int(w * sc)), max(1, int(h * sc))
+            from vidstamp.utils.file_manager import save_scenes_data
+            save_scenes_data(self.engine.video_path, self.scenes)
+            self._auto_export_scenes()
+            
+            self.load_saved_scenes()
+            self.lbl_status_bar_update(f"Adegan '{label}' berhasil disimpan.")
+            
+            self.mark_start = None
+            self.mark_end = None
+            self.btn_start.setText("[M] Start")
+            self.btn_end.setText("[N] End")
+            self.render_current_frame()
+
+    def load_saved_scenes(self):
+        self.scenes = []
+        self.sc_lb.clear()
+        self.detail_frame.hide()
         
-        rgb = cv2.resize(rgb, (nw, nh), interpolation=cv2.INTER_NEAREST)
-        img = ImageTk.PhotoImage(Image.fromarray(rgb))
-        
-        self.canvas.delete("all")
-        self.canvas.create_image(cw // 2, ch // 2, anchor="center", image=img)
-        self._img_ref = img
+        if not self.engine.cap or not self.engine.video_path:
+            return
+            
+        from vidstamp.utils.file_manager import load_scenes_data
+        saved = load_scenes_data(self.engine.video_path)
+        for item in saved:
+            s = item.get("start", 0.0)
+            e = item.get("end", 0.0)
+            label = item.get("label", "")
+            subs = item.get("subtitles", "")
+            self.scenes.append((s, e, label, subs))
+            
+            dur = e - s
+            disp = f"{label}: {format_time(s)} -> {format_time(e)} ({dur:.2f}s)"
+            self.sc_lb.addItem(disp)
+
+    def _on_sc_select(self):
+        selected = self.sc_lb.currentRow()
+        if selected < 0 or selected >= len(self.scenes):
+            self.detail_frame.hide()
+            return
+            
+        s_start, s_end, label, subs = self.scenes[selected]
+        self.txt_detail.clear()
+        if subs:
+            self.txt_detail.setPlainText(f"Adegan: {label}\n{subs}")
+        else:
+            self.txt_detail.setPlainText(f"Adegan: {label}\n(Tidak ada subtitel/dialog terekam)")
+            
+        if not self.is_fullscreen:
+            self.detail_frame.show()
+
+    def _jump_sc(self):
+        selected = self.sc_lb.currentRow()
+        if selected >= 0 and selected < len(self.scenes):
+            s_start, _, _, _ = self.scenes[selected]
+            self.engine.seek_to(int(s_start * self.engine.fps))
+            self._update_time_slider()
+            self.render_current_frame()
+
+    def _del_sc(self):
+        selected = self.sc_lb.currentRow()
+        if selected >= 0 and selected < len(self.scenes):
+            reply = QMessageBox.question(self, "Konfirmasi", 
+                                         "Hapus catatan adegan terpilih?",
+                                         QMessageBox.Yes | QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.scenes.pop(selected)
+                
+                from vidstamp.utils.file_manager import save_scenes_data
+                save_scenes_data(self.engine.video_path, self.scenes)
+                self._auto_export_scenes()
+                
+                self.load_saved_scenes()
+                self.lbl_status_bar_update("Adegan dihapus.")
+
+    def _exp_sc(self):
+        selected = self.sc_lb.currentRow()
+        if selected >= 0 and selected < len(self.scenes):
+            s_start, s_end, label, _ = self.scenes[selected]
+            fn, _ = QFileDialog.getSaveFileName(self, "Export Potongan Adegan Video", 
+                                                os.path.dirname(self.engine.video_path), 
+                                                "Video MP4 (*.mp4)")
+            if fn:
+                self.lbl_status_bar_update("Mengekspor potongan adegan via FFmpeg... Mohon tunggu.")
+                import threading
+                from vidstamp.core.exporter import cut_video_single
+                def run_cut():
+                    success, msg = cut_video_single(self.engine.video_path, s_start, s_end, fn)
+                    if success:
+                        self.lbl_status_bar_update("Ekspor adegan sukses!")
+                    else:
+                        self.lbl_status_bar_update(f"Ekspor adegan gagal: {msg}")
+                threading.Thread(target=run_cut, daemon=True).start()
+
+    def _auto_export_scenes(self):
+        if not self.engine.cap or not self.engine.video_path:
+            return
+        try:
+            from vidstamp.utils.file_manager import ensure_note_folder
+            note_dir = ensure_note_folder(self.engine.video_path)
+            video_name = os.path.basename(self.engine.video_path)
+            video_base, _ = os.path.splitext(video_name)
+            default_file = os.path.join(note_dir, f"{video_base}_catatan_adegan.txt")
+            
+            with open(default_file, "w", encoding="utf-8") as f:
+                f.write(f"=== CATATAN ADEGAN VIDEO ===\n")
+                f.write(f"Video Asli: {os.path.abspath(self.engine.video_path)}\n")
+                f.write(f"Total Adegan Tercatat: {len(self.scenes)}\n\n")
+                
+                for idx, (s, e, label, subs) in enumerate(self.scenes):
+                    dur = e - s
+                    f.write(f"{idx+1}. [{format_time(s)} -> {format_time(e)}] ({dur:.2f}s) - {label}\n")
+                    if subs:
+                        f.write(f"--- Dialog Tercatat ---\n{subs}\n")
+                    f.write("="*40 + "\n")
+        except Exception as err:
+            print(f"Gagal melakukan ekspor otomatis catatan: {err}")
+
+    def _open_file_dialog(self):
+        fn, _ = QFileDialog.getOpenFileName(self, "Pilih Berkas Video", "", "Video Files (*.mkv *.mp4 *.avi)")
+        if fn:
+            self.load_video(fn)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.render_current_frame()

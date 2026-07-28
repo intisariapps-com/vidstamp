@@ -3,8 +3,6 @@ scratch/test_new_features.py - Uji Bootstrap Visual Jendela Baru (Launcher & Ext
 """
 import os
 import sys
-import tkinter as tk
-
 # Tambahkan root proyek ke sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -30,19 +28,22 @@ def test_launcher_bootstrap():
 
 def test_extractor_bootstrap():
     print("Memulai tes bootstrap AudioSubExtractorWizard...")
-    root = tk.Tk()
-    root.withdraw()
-    
+    from PySide6.QtWidgets import QApplication
+    from PySide6.QtCore import QTimer
     from vidstamp.ui.extractor_tool import AudioSubExtractorWizard
-    extractor = AudioSubExtractorWizard(root, os.getcwd())
+    
+    app = QApplication(sys.argv) if QApplication.instance() is None else QApplication.instance()
+    
+    extractor = AudioSubExtractorWizard(None, os.getcwd())
+    extractor.show()
     
     def close():
         print("Menutup Extractor. Sukses!")
-        extractor.destroy()
-        root.destroy()
+        extractor.close()
+        app.quit()
         
-    extractor.after(1500, close)
-    extractor.mainloop()
+    QTimer.singleShot(1500, close)
+    app.exec()
 
 if __name__ == "__main__":
     test_launcher_bootstrap()
