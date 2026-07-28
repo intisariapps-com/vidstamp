@@ -64,12 +64,32 @@ class PlayerView(QWidget):
         self.save_timer.start()
 
     def _build_ui(self):
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(6, 6, 6, 6)
-        self.main_layout.setSpacing(6)
+        # 1. Main Horizontal Layout (membagi Area Player kiri dan Sidebar Adegan kanan)
+        self.main_h_layout = QHBoxLayout(self)
+        self.main_h_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_h_layout.setSpacing(6)
         
+        # Container Kiri (Area Player)
+        self.player_container = QWidget(self)
+        self.player_container.setObjectName("PlayerContainer")
+        self.player_layout = QVBoxLayout(self.player_container)
+        self.player_layout.setContentsMargins(6, 6, 6, 6)
+        self.player_layout.setSpacing(6)
+        
+        # Container Kanan (Sidebar Adegan)
+        self.sidebar_container = QWidget(self)
+        self.sidebar_container.setObjectName("SidebarContainer")
+        self.sidebar_container.setFixedWidth(280) # Batas lebar tetap agar sidebar rapi
+        self.sidebar_layout = QVBoxLayout(self.sidebar_container)
+        self.sidebar_layout.setContentsMargins(6, 6, 6, 6)
+        self.sidebar_layout.setSpacing(8)
+        
+        self.main_h_layout.addWidget(self.player_container)
+        self.main_h_layout.addWidget(self.sidebar_container)
+        
+        # ───────────────── CONTAINER KIRI: VIDEO PLAYER ─────────────────
         # 1. Top Bar (Nama Berkas & Tombol load)
-        self.top_bar = QWidget(self)
+        self.top_bar = QWidget(self.player_container)
         self.top_bar.setObjectName("TopBar")
         top_layout = QHBoxLayout(self.top_bar)
         top_layout.setContentsMargins(5, 2, 5, 2)
@@ -85,10 +105,10 @@ class PlayerView(QWidget):
         top_layout.addWidget(self.lbl_title)
         top_layout.addStretch()
         top_layout.addWidget(btn_open)
-        self.main_layout.addWidget(self.top_bar)
+        self.player_layout.addWidget(self.top_bar)
         
         # 2. Canvas Panel (Display Frame OpenCV)
-        self.canvas_container = QWidget(self)
+        self.canvas_container = QWidget(self.player_container)
         self.canvas_container.setObjectName("CanvasContainer")
         self.canvas_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         canvas_layout = QVBoxLayout(self.canvas_container)
@@ -104,10 +124,10 @@ class PlayerView(QWidget):
         self.lbl_canvas.mousePressEvent = self._on_canvas_clicked
         
         canvas_layout.addWidget(self.lbl_canvas)
-        self.main_layout.addWidget(self.canvas_container)
+        self.player_layout.addWidget(self.canvas_container)
         
         # 3. Seek Bar & Time Display
-        self.seek_frame = QWidget(self)
+        self.seek_frame = QWidget(self.player_container)
         seek_layout = QHBoxLayout(self.seek_frame)
         seek_layout.setContentsMargins(5, 0, 5, 0)
         
@@ -128,10 +148,10 @@ class PlayerView(QWidget):
         seek_layout.addWidget(self.lbl_time_cur)
         seek_layout.addWidget(self.slider)
         seek_layout.addWidget(self.lbl_time_total)
-        self.main_layout.addWidget(self.seek_frame)
+        self.player_layout.addWidget(self.seek_frame)
         
         # 4. Control Panel (Playback Navigasi & Markers)
-        self.ctrl_panel = QWidget(self)
+        self.ctrl_panel = QWidget(self.player_container)
         ctrl_layout = QHBoxLayout(self.ctrl_panel)
         ctrl_layout.setContentsMargins(5, 0, 5, 0)
         ctrl_layout.setSpacing(6)
@@ -203,27 +223,29 @@ class PlayerView(QWidget):
         ctrl_layout.addStretch()
         ctrl_layout.addWidget(self.btn_start)
         ctrl_layout.addWidget(self.btn_end)
-        self.main_layout.addWidget(self.ctrl_panel)
+        self.player_layout.addWidget(self.ctrl_panel)
         
         # 5. Info Bar Pintasan
-        self.inf_bar = QLabel("Space = Play/Pause | DoubleClick = Fullscreen | Ctrl+T = Record | Ctrl+Space = Batal | Q = Keluar", self)
+        self.inf_bar = QLabel("Space = Play/Pause | DoubleClick = Fullscreen | Ctrl+T = Record | Ctrl+Space = Batal | Q = Keluar", self.player_container)
         self.inf_bar.setObjectName("InfoBar")
         self.inf_bar.setAlignment(Qt.AlignCenter)
-        self.main_layout.addWidget(self.inf_bar)
+        self.player_layout.addWidget(self.inf_bar)
         
+        # ───────────────── CONTAINER KANAN: SIDEBAR ADEGAN ─────────────────
         # 6. Scene Catatan Adegan Panel
-        self.sc_label_frame = QGroupBox(" Adegan Tercatat ", self)
+        self.sc_label_frame = QGroupBox(" Adegan Tercatat ", self.sidebar_container)
         self.sc_label_frame.setObjectName("SceneFrame")
-        sc_layout = QHBoxLayout(self.sc_label_frame)
+        sc_layout = QVBoxLayout(self.sc_label_frame)
         sc_layout.setContentsMargins(8, 8, 8, 8)
+        sc_layout.setSpacing(6)
         
         self.sc_lb = QListWidget(self.sc_label_frame)
         self.sc_lb.setObjectName("SceneList")
-        self.sc_lb.setFixedHeight(120)
+        self.sc_lb.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.sc_lb.itemSelectionChanged.connect(self._on_sc_select)
         self.sc_lb.itemDoubleClicked.connect(self._jump_sc)
         
-        sc_btn_layout = QVBoxLayout()
+        sc_btn_layout = QHBoxLayout()
         sc_btn_layout.setSpacing(4)
         
         self.btn_sc_jump = QPushButton("Lompat", self.sc_label_frame)
@@ -244,22 +266,22 @@ class PlayerView(QWidget):
             
         sc_layout.addWidget(self.sc_lb)
         sc_layout.addLayout(sc_btn_layout)
-        self.main_layout.addWidget(self.sc_label_frame)
+        self.sidebar_layout.addWidget(self.sc_label_frame)
         
         # 7. Detail Preview Adegan Terpilih
-        self.detail_frame = QGroupBox(" Detail Adegan & Subtitel Terpilih ", self)
+        self.detail_frame = QGroupBox(" Detail Adegan & Subtitel ", self.sidebar_container)
         self.detail_frame.setObjectName("DetailFrame")
+        self.detail_frame.setFixedHeight(150)
         det_layout = QVBoxLayout(self.detail_frame)
         det_layout.setContentsMargins(6, 6, 6, 6)
         
         self.txt_detail = QTextEdit(self.detail_frame)
         self.txt_detail.setObjectName("DetailText")
         self.txt_detail.setReadOnly(True)
-        self.txt_detail.setFixedHeight(60)
         self.txt_detail.setPlainText("Pilih adegan di atas untuk melihat detail subtitel...")
         
         det_layout.addWidget(self.txt_detail)
-        self.main_layout.addWidget(self.detail_frame)
+        self.sidebar_layout.addWidget(self.detail_frame)
         self.detail_frame.hide() # sembunyi secara default
 
     def _apply_stylesheet(self):
@@ -768,17 +790,14 @@ class PlayerView(QWidget):
             self.seek_frame.hide()
             self.ctrl_panel.hide()
             self.inf_bar.hide()
-            self.sc_label_frame.hide()
-            self.detail_frame.hide()
+            self.sidebar_container.hide()
             parent_window.showFullScreen()
         else:
             self.top_bar.show()
             self.seek_frame.show()
             self.ctrl_panel.show()
             self.inf_bar.show()
-            self.sc_label_frame.show()
-            if self.sc_lb.currentItem():
-                self.detail_frame.show()
+            self.sidebar_container.show()
             parent_window.showNormal()
         self.render_current_frame()
 
