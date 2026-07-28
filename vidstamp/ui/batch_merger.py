@@ -77,7 +77,13 @@ class BatchMergerWizard(tk.Toplevel):
         self.btn_change_folder = tk.Button(header_frame, text="📁 Ganti Folder...", command=self._change_folder_action,
                                            bg="#1a1a3e", fg="#7ec8e3", relief="flat", font=("Segoe UI", 9, "bold"),
                                            padx=12, pady=4)
-        self.btn_change_folder.pack(side="right", padx=15, pady=4)
+        self.btn_change_folder.pack(side="right", padx=(5, 15), pady=4)
+
+        # Tombol Jendela Baru
+        self.btn_new_wizard = tk.Button(header_frame, text="➕ Jendela Baru", command=self._open_new_wizard_action,
+                                        bg="#0f3460", fg="white", relief="flat", font=("Segoe UI", 9, "bold"),
+                                        padx=12, pady=4)
+        self.btn_new_wizard.pack(side="right", padx=(15, 5), pady=4)
 
         # 2. Tombol Pintasan Aksi (Terjangkar di paling bawah)
         btn_frame = tk.Frame(self, bg="#0d0d1a", pady=10)
@@ -508,3 +514,7 @@ class BatchMergerWizard(tk.Toplevel):
                 self.tree.delete(item)
                 
         self.lbl_status_text.config(text=f"Siap memproses {len(self.video_files)} episode video.")
+
+    def _open_new_wizard_action(self):
+        from vidstamp.ui.batch_merger import BatchMergerWizard
+        BatchMergerWizard(self.master, self.parent_dir)
