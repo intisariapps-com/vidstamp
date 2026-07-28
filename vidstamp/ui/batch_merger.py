@@ -138,6 +138,26 @@ class BatchMergerWizard(tk.Toplevel):
         ocr_scale.pack(side="left", padx=5)
         tk.Label(params_frame, text="detik", bg="#0d0d1a", fg="#8888aa", font=("Segoe UI", 8)).pack(side="left", padx=2)
         
+        # Opsi Kustomisasi Subtitle (Hardsub Style & Wrap)
+        sub_style_frame = tk.Frame(opts_frame, bg="#0d0d1a")
+        sub_style_frame.pack(fill="x", pady=4)
+        
+        tk.Label(sub_style_frame, text="Ukuran Font Hardsub:", bg="#0d0d1a", fg="white", 
+                 font=("Segoe UI", 9, "bold")).pack(side="left", padx=(0, 10))
+        
+        self.v_font_size = tk.StringVar(value="Default")
+        self.font_size_combo = ttk.Combobox(sub_style_frame, textvariable=self.v_font_size, state="readonly", width=12,
+                                             values=["Default", "20 (Kecil)", "28 (Sedang)", "36 (Besar)", "48 (Sangat Besar)"])
+        self.font_size_combo.pack(side="left", padx=5)
+        
+        tk.Label(sub_style_frame, text="Batas Panjang Baris:", bg="#0d0d1a", fg="white", 
+                 font=("Segoe UI", 9, "bold")).pack(side="left", padx=(20, 10))
+                 
+        self.v_line_limit = tk.StringVar(value="Default (Tanpa Batas)")
+        self.line_limit_combo = ttk.Combobox(sub_style_frame, textvariable=self.v_line_limit, state="readonly", width=22,
+                                              values=["Default (Tanpa Batas)", "30 Karakter", "40 Karakter", "50 Karakter", "60 Karakter"])
+        self.line_limit_combo.pack(side="left", padx=5)
+
         # Penamaan Output File Gabungan
         output_name_frame = tk.Frame(opts_frame, bg="#0d0d1a")
         output_name_frame.pack(fill="x", pady=6)
@@ -298,6 +318,8 @@ class BatchMergerWizard(tk.Toplevel):
         merge = self.v_merge_video.get()
         out_path = self.v_output_path.get()
         ocr_tolerance = self.v_ocr_tolerance.get()
+        font_size_val = self.v_font_size.get()
+        line_limit_val = self.v_line_limit.get()
         
         # Override sementara file output dan toleransi OCR di core exporter secara lokal
         # Modifikasi global/module-level variables di exporter jika perlu, tapi kita bisa berikan
@@ -349,10 +371,26 @@ class BatchMergerWizard(tk.Toplevel):
                 self.after(0, lambda: self.progress_var.set(overall_pct))
                 self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
             
+            # Parsing font size & line limit
+            f_size = "default"
+            if font_size_val != "Default":
+                import re
+                match = re.search(r'\d+', font_size_val)
+                if match:
+                    f_size = int(match.group())
+                    
+            l_limit = None
+            if "Default" not in line_limit_val:
+                import re
+                match = re.search(r'\d+', line_limit_val)
+                if match:
+                    l_limit = int(match.group())
+
             try:
                 success, msg = export_bulk_and_merge(
                     self.parent_dir, mode=mode, merge_to_one=merge,
-                    progress_callback=progress_callback, cancel_event=self.cancel_event
+                    progress_callback=progress_callback, cancel_event=self.cancel_event,
+                    font_size=f_size, line_limit=l_limit
                 )
                 
                 # Jika user memilih gabungkan, dan output path kustom berbeda dengan default [NamaFolder]_clean.mp4, pindahkan berkas.

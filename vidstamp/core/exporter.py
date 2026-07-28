@@ -163,11 +163,45 @@ def merge_duplicate_ocr_subtitles(subs_list):
     merged.append(current)
     return merged
 
-def cut_and_shift_srt(input_srt_path, keep_ranges, output_srt_path):
+def wrap_text_by_char_limit(text, limit):
+    """
+    Membagi teks menjadi maksimal dua baris secara seimbang jika melebihi batas limit karakter.
+    Mempertahankan kata agar tidak terpotong di tengah jalan.
+    """
+    if not limit or limit <= 0:
+        return text
+        
+    # Gabungkan baris yang terpisah spasi/baris baru agar bersih
+    single_line = " ".join([l.strip() for l in text.split('\n') if l.strip()])
+    if len(single_line) <= limit:
+        return single_line
+        
+    words = single_line.split()
+    line1 = []
+    line2 = []
+    
+    total_len = len(single_line)
+    mid_point = total_len // 2
+    
+    current_len = 0
+    for word in words:
+        # Tumpuk ke baris pertama selama di bawah batas limit dan berada di sebelah kiri split point tengah
+        if not line2 and (current_len + len(word) <= limit) and (current_len < mid_point or current_len + len(word)//2 < mid_point):
+            line1.append(word)
+            current_len += len(word) + 1
+        else:
+            line2.append(word)
+            
+    if line2:
+        return " ".join(line1) + "\n" + " ".join(line2)
+    return " ".join(line1)
+
+def cut_and_shift_srt(input_srt_path, keep_ranges, output_srt_path, line_limit=None):
     """
     Membaca berkas SRT input, mempertahankan subtitle yang masuk dalam keep_ranges,
     menggeser waktunya agar selaras dengan video baru yang terpotong,
-    menjalankan pembersih duplikat OCR spam, dan menyimpannya ke berkas SRT output.
+    mengjalankan pembersih duplikat OCR spam, membatasi panjang karakter baris,
+    dan menyimpannya ke berkas SRT output.
     """
     if not os.path.exists(input_srt_path):
         return False
@@ -197,6 +231,10 @@ def cut_and_shift_srt(input_srt_path, keep_ranges, output_srt_path):
                     clean_text = clean_srt_text("\n".join(dialogue_lines))
                     
                     if clean_text:
+                        # Terapkan pembatasan panjang karakter per baris jika diatur
+                        if line_limit:
+                            clean_text = wrap_text_by_char_limit(clean_text, line_limit)
+                            
                         ts_line = lines[ts_line_idx]
                         parts = ts_line.split("-->")
                         if len(parts) == 2:
@@ -292,7 +330,7 @@ def run_ffmpeg_process(cmd, total_duration, progress_callback=None, cancel_event
         process.terminate()
         return False, str(e)
 
-def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, output_video_path, output_srt_path, mode="softsub", progress_callback=None, cancel_event=None):
+def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, output_video_path, output_srt_path, mode="softsub", progress_callback=None, cancel_event=None, font_size=None, line_limit=None):
     """
     Fungsi utama untuk melakukan pemotongan video (dan hardsub jika dipilih) serta penyelarasan subtitel.
     """
@@ -342,7 +380,7 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
     # Selaraskan subtitle
     srt_success = False
     if srt_to_shift:
-        srt_success = cut_and_shift_srt(srt_to_shift, keep_ranges, output_srt_path)
+        srt_success = cut_and_shift_srt(srt_to_shift, keep_ranges, output_srt_path, line_limit=line_limit)
         if os.path.exists(temp_extract_srt):
             try: os.remove(temp_extract_srt)
             except: pass
@@ -361,7 +399,14 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
     # Hardsub atau Softsub
     if mode == "hardsub" and srt_success and os.path.exists(output_srt_path):
         srt_escaped = escape_path_for_ffmpeg_filter(output_srt_path)
-        subtitle_node = f"[v_cut]subtitles='{srt_escaped}'[v_final]"
+        
+        # Tambahkan force_style jika font_size dikustomisasi
+        if font_size and str(font_size).lower() != "default":
+            # Berikan outline 2, shadow 0 agar rapi, dan line spacing proporsional otomatis di libass
+            subtitle_node = f"[v_cut]subtitles='{srt_escaped}':force_style='Fontsize={font_size},Outline=2,Shadow=0'[v_final]"
+        else:
+            subtitle_node = f"[v_cut]subtitles='{srt_escaped}'[v_final]"
+            
         filter_complex = "; ".join(filter_v_nodes + filter_a_nodes) + "; " + concat_node + "; " + subtitle_node
         map_video = "[v_final]"
     else:
@@ -380,8 +425,8 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
     # Jalankan render FFmpeg
     success, msg = run_ffmpeg_process(cmd, total_keep_duration, progress_callback, cancel_event)
     return success, msg
-
-def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progress_callback=None, cancel_event=None):
+ 
+def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progress_callback=None, cancel_event=None, font_size=None, line_limit=None):
     """
     Memproses seluruh episode dalam folder: memotong OP/ED, menggeser subtitle,
     dan jika merge_to_one=True, menggabungkannya menjadi 1 file MP4 utama dan 1 file SRT global.
@@ -479,7 +524,7 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
         srt_success = False
         if srt_to_shift:
             # Shift untuk episode saat ini (selaras dengan video episode ini)
-            srt_success = cut_and_shift_srt(srt_to_shift, keep_ranges, out_s)
+            srt_success = cut_and_shift_srt(srt_to_shift, keep_ranges, out_s, line_limit=line_limit)
             
             # Jika merger diaktifkan, kumpulkan juga sub yang di-offset secara global
             if merge_to_one:
@@ -501,6 +546,9 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
                                 dialogue_lines = lines[ts_line_idx+1:]
                                 clean_txt = clean_srt_text("\n".join(dialogue_lines))
                                 if clean_txt:
+                                    if line_limit:
+                                        clean_txt = wrap_text_by_char_limit(clean_txt, line_limit)
+                                        
                                     parts = lines[ts_line_idx].split("-->")
                                     if len(parts) == 2:
                                         start_s = srt_time_to_seconds(parts[0])
@@ -542,7 +590,10 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
         
         if mode == "hardsub" and srt_success and os.path.exists(out_s):
             srt_escaped = escape_path_for_ffmpeg_filter(out_s)
-            subtitle_node = f"[v_cut]subtitles='{srt_escaped}'[v_final]"
+            if font_size and str(font_size).lower() != "default":
+                subtitle_node = f"[v_cut]subtitles='{srt_escaped}':force_style='Fontsize={font_size},Outline=2,Shadow=0'[v_final]"
+            else:
+                subtitle_node = f"[v_cut]subtitles='{srt_escaped}'[v_final]"
             filter_complex = "; ".join(filter_v_nodes + filter_a_nodes) + "; " + concat_node + "; " + subtitle_node
             map_video = "[v_final]"
         else:
