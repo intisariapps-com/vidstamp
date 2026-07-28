@@ -18,6 +18,9 @@ class BatchMergerWizard(tk.Toplevel):
         self.geometry("850x680")
         self.minsize(800, 550)
         
+        self.transient(parent)
+        self.grab_set()
+        
         self.parent_dir = current_dir
         self.cancel_event = threading.Event()
         self.processing = False
