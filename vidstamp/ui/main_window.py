@@ -177,6 +177,23 @@ class VideoAppController(QMainWindow):
             self.open_video_dialog()
         elif modifiers & Qt.ControlModifier and key == Qt.Key_L:
             self.right_panel.open_scenes_dialog()
+        elif modifiers & Qt.ControlModifier and key == Qt.Key_T:
+            # Ctrl+T: Toggle record pintar
+            if self.right_panel.mark_start is None:
+                self.right_panel._mark_start_fn()
+            else:
+                self.right_panel._mark_end_fn()
+        elif modifiers & Qt.ControlModifier and key == Qt.Key_Space:
+            # Ctrl+Space: Batal rekam
+            self.right_panel.mark_start = None
+            self.right_panel.mark_end = None
+            self.right_panel.btn_start.setText("[M] Start")
+            self.right_panel.btn_end.setText("[N] End")
+            self.right_panel.lbl_status_bar_update("Perekaman dibatalkan.")
+        elif key == Qt.Key_M:
+            self.right_panel._mark_start_fn()
+        elif key == Qt.Key_N:
+            self.right_panel._mark_end_fn()
         elif key == Qt.Key_Tab:
             self.toggle_browser()
         elif key == Qt.Key_Space:
