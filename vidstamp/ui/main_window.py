@@ -2,7 +2,7 @@
 vidstamp/ui/main_window.py - Koordinator Window Utama dan Event Loops
 """
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk, filedialog
 import sys
 import os
 import time
