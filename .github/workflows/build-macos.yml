@@ -1,0 +1,107 @@
+name: Build macOS Release (.dmg)
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-name: '3.10'
+        cache: 'pip'
+
+    - name: Create bin/mac Directories
+      run: mkdir -p bin/mac
+
+    - name: Download statis FFmpeg & FFprobe macOS
+      run: |
+        curl -L -o bin/mac/ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.4.1/ffmpeg-4.4.1-osx-64.zip
+        unzip -o bin/mac/ffmpeg.zip -d bin/mac/
+        rm bin/mac/ffmpeg.zip
+        chmod +x bin/mac/ffmpeg
+
+        curl -L -o bin/mac/ffprobe.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.4.1/ffprobe-4.4.1-osx-64.zip
+        unzip -o bin/mac/ffprobe.zip -d bin/mac/
+        rm bin/mac/ffprobe.zip
+        chmod +x bin/mac/ffprobe
+
+    - name: Compile macOS .icns Icon
+      run: |
+        PNG_ICON="vidstamp/ui/assets/icon.png"
+        ICNS_ICON="vidstamp/ui/assets/icon.icns"
+        if [ -f "$PNG_ICON" ]; then
+          mkdir -p VidStamp.iconset
+          sips -z 16 16     "$PNG_ICON" --out VidStamp.iconset/icon_16x16.png
+          sips -z 32 32     "$PNG_ICON" --out VidStamp.iconset/icon_16x16@2x.png
+          sips -z 32 32     "$PNG_ICON" --out VidStamp.iconset/icon_32x32.png
+          sips -z 64 64     "$PNG_ICON" --out VidStamp.iconset/icon_32x32@2x.png
+          sips -z 128 128   "$PNG_ICON" --out VidStamp.iconset/icon_128x128.png
+          sips -z 256 256   "$PNG_ICON" --out VidStamp.iconset/icon_128x128@2x.png
+          sips -z 256 256   "$PNG_ICON" --out VidStamp.iconset/icon_256x256.png
+          sips -z 512 512   "$PNG_ICON" --out VidStamp.iconset/icon_256x256@2x.png
+          sips -z 512 512   "$PNG_ICON" --out VidStamp.iconset/icon_512x512.png
+          sips -z 1024 1024 "$PNG_ICON" --out VidStamp.iconset/icon_512x512@2x.png
+          iconutil -c icns VidStamp.iconset
+          mv VidStamp.icns "$ICNS_ICON"
+          rm -rf VidStamp.iconset
+          echo "Ikon macOS (.icns) berhasil dipersiapkan."
+        else
+          echo "Peringatan: icon.png tidak ditemukan."
+        fi
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Build with PyInstaller
+      run: pyinstaller --clean -y vidstamp.spec
+
+    - name: Install create-dmg tool
+      run: brew install create-dmg
+
+    - name: Build Disk Image (.dmg) Installer
+      run: |
+        ICNS_ICON="vidstamp/ui/assets/icon.icns"
+        create-dmg \
+          --volname "VidStamp Installer" \
+          --volicon "$ICNS_ICON" \
+          --window-pos 200 120 \
+          --window-size 800 400 \
+          --icon-size 100 \
+          --icon "VidStamp.app" 200 190 \
+          --hide-extension "VidStamp.app" \
+          --app-drop-link 600 190 \
+          "dist/VidStamp_Setup.dmg" \
+          "dist/VidStamp.app"
+
+    - name: Upload Artifact (.dmg)
+      uses: actions/upload-artifact@v3
+      with:
+        name: VidStamp_macOS_Setup
+        path: dist/VidStamp_Setup.dmg
+
+    - name: Create Release (Only on Tags)
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/VidStamp_Setup.dmg
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

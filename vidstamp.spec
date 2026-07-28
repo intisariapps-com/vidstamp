@@ -9,14 +9,18 @@ block_cipher = None
 # Dapatkan lokasi absolut library ffpyplayer untuk menyalin DLL pendukungnya secara manual
 ffpyplayer_path = os.path.dirname(ffpyplayer.__file__)
 
-# Tentukan file biner FFmpeg yang akan disertakan berdasarkan platform target
+# Tentukan file biner FFmpeg & FFprobe yang akan disertakan berdasarkan platform target
 binaries = []
 if sys.platform.startswith('win'):
     if os.path.exists('bin/win/ffmpeg.exe'):
         binaries.append(('bin/win/ffmpeg.exe', 'bin'))
+    if os.path.exists('bin/win/ffprobe.exe'):
+        binaries.append(('bin/win/ffprobe.exe', 'bin'))
 elif sys.platform.startswith('darwin'):
     if os.path.exists('bin/mac/ffmpeg'):
         binaries.append(('bin/mac/ffmpeg', 'bin'))
+    if os.path.exists('bin/mac/ffprobe'):
+        binaries.append(('bin/mac/ffprobe', 'bin'))
 
 # Tambahkan seluruh direktori ffpyplayer sebagai data tambahan agar DLL SDL2/FFmpeg termuat dengan benar
 datas = [
@@ -70,3 +74,29 @@ coll = COLLECT(
     upx_exclude=[],
     name='VidStamp',
 )
+
+if sys.platform.startswith('darwin'):
+    app = BUNDLE(
+        coll,
+        name='VidStamp.app',
+        icon='vidstamp/ui/assets/icon.icns' if os.path.exists('vidstamp/ui/assets/icon.icns') else None,
+        bundle_identifier='com.intisariapps.vidstamp',
+        info_plist={
+            'NSPrincipalClass': 'NSApplication',
+            'NSAppleScriptEnabled': False,
+            'CFBundleDocumentTypes': [
+                {
+                    'CFBundleTypeName': 'Video File',
+                    'CFBundleTypeRole': 'Viewer',
+                    'LSHandlerRank': 'Alternate',
+                    'LSItemContentTypes': [
+                        'public.movie',
+                        'public.video',
+                        'com.apple.quicktime-movie',
+                        'public.avi',
+                        'public.mpeg-4'
+                    ]
+                }
+            ]
+        }
+    )
