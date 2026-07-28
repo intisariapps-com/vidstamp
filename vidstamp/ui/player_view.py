@@ -422,7 +422,6 @@ class PlayerView(QWidget):
         
         success = self.engine.load(path)
         if success:
-            self.lbl_title.setText(os.path.basename(path))
             self.lbl_time_total.setText(format_time(self.engine.total_frames / self.engine.fps))
             self.slider.setRange(0, self.engine.total_frames - 1)
             self.slider.setValue(0)
