@@ -47,7 +47,22 @@ Log kronologis aktivitas harian sesi pengembangan.
   - Mengembangkan visualisasi progress bar (`show_export_progress_window`) berbasis Threading non-blocking di Tkinter yang melacak kemajuan render FFmpeg per detik secara real-time dan mendukung pembatalan (Cancel).
   - Memperbarui dokumentasi memori proyek (`memory/features_existing.md`) dengan fitur-fitur baru yang telah stabil ini.
 * **Status**: Sukses besar, fitur deteksi bab otomatis dan ekspor video bersih berjalan sangat lancar dan responsif tanpa memblokir antarmuka utama (UI).
-* **Langkah Selanjutnya**: Evaluasi kinerja ekspor massal untuk folder berskala besar dan persiapan untuk migrasi UI ke CustomTkinter.
+* **Langkah Selanjutnya**: Rencana perombakan arsitektur besar-besaran ke Opsi B (Companion App MPC-HC).
+
+## 2026-07-28 - Sesi Refaktor Total PySide6, Optimasi Performa Video, & Rencana Arsitektur Opsi B
+* **Aktivitas**:
+  - Menyelesaikan migrasi penuh seluruh antarmuka VidStamp dari Tkinter ke **PySide6 (Qt6)** secara mandiri (termasuk Launcher, Browser, Player, Batch Merger, dan Extractor).
+  - Mengatasi RuntimeError libshiboken dengan mendesain ulang arsitektur event loop `QApplication` agar berjalan tunggal (*single instance*).
+  - Melakukan optimasi video stuttering (patah-patah) dengan mengganti transform filter dari `Qt.SmoothTransformation` menjadi **`Qt.FastTransformation`** di rendering canvas, yang menurunkan beban CPU secara signifikan.
+  - Memisahkan visual adegan tercatat ke kelas dialog mandiri **`SceneListDialog`** (`QDialog`) untuk membersihkan area player.
+  - Merapikan menu bar utama dengan menambahkan menu **Berkas** (Buka Video `Ctrl+O`, Keluar `Ctrl+Q`) dan menu **Peralatan** (Daftar Adegan `Ctrl+L`).
+  - Menghapus Top Bar dari player view agar video player membesar 100% penuh mengisi window dan bebas dari kotak hitam kosong di kiri/kanan video.
+  - Menyembunyikan Folder Browser panel kiri secara default pada saat startup agar video langsung terfokus, dengan dukungan shortcut `Tab` untuk membuka/tutup.
+  - Memperbarui berkas spesifikasi `Agent.md` dan `docs/srs/srs_pyside6_layout.md` secara otonom untuk mendokumentasikan arsitektur baru.
+  - Mengonseptualisasikan rencana transisi arsitektur masa depan ke **Opsi B (Companion App MPC-HC)** yang mengontrol MPC-HC eksternal via Web API `http://localhost:13579/Variables` untuk menghilangkan 100% beban rendering dari Python.
+* **Status**: Sukses besar, aplikasi berjalan stabil, performa video mulus, dan rencana arsitektur Opsi B telah didokumentasikan di memori proyek.
+* **Langkah Selanjutnya**: Eksekusi perombakan sistem ke Opsi B (Companion App MPC-HC) pada sesi mendatang.
+
 
 
 
