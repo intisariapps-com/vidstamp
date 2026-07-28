@@ -434,12 +434,12 @@ class BatchMergerWizard(tk.Toplevel):
                 
                 if not self.cancel_event.is_set():
                     if success:
-                        self.after(0, lambda: messagebox.showinfo("Sukses", f"Proses Batch Selesai!\n{msg}"))
+                        self.after(0, self._reset_ui_state)
                         self.after(0, lambda: self.lbl_status_text.config(text="Tugas selesai! Silakan ganti folder atau mulai tugas baru."))
-                        self.after(0, self._reset_ui_state)
+                        self.after(0, lambda: messagebox.showinfo("Sukses", f"Proses Batch Selesai!\n{msg}"))
                     else:
-                        self.after(0, lambda: messagebox.showerror("Gagal Ekspor Massal", f"Terjadi kesalahan:\n{msg}"))
                         self.after(0, self._reset_ui_state)
+                        self.after(0, lambda: messagebox.showerror("Gagal Ekspor Massal", f"Terjadi kesalahan:\n{msg}"))
             except Exception as ex:
                 core_exporter.merge_duplicate_ocr_subtitles = original_merge_logic
                 self.after(0, lambda: messagebox.showerror("Error", f"Terjadi kesalahan internal:\n{ex}"))
