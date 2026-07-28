@@ -6,12 +6,12 @@ Berikut adalah daftar fitur yang sudah selesai dibangun dan berstatus stabil di 
 * **Deskripsi**: Struktur direktori dasar, konfigurasi Git, manajemen sesi modular, dan runner runner minimalis.
 * **Status**: Selesai
 
-## 2. Playback Engine Terintegrasi Audio (ffpyplayer + OpenCV)
-* **Deskripsi**: Menangani pemutaran frame video OpenCV sinkron dengan audio track menggunakan ffpyplayer secara real-time.
+## 2. Mesin Pemutus Video Companion App MPC-HC (REST HTTP API)
+* **Deskripsi**: Mengendalikan media player eksternal MPC-HC secara asinkron menggunakan klien HTTP bawaan Python (`mpc_client.py`) yang ringan. Status pemutaran, timeline detik aktif, dan durasi disinkronkan secara real-time melalui polling QTimer (200ms) di tingkat window utama.
 * **Status**: Selesai
 
-## 3. Optimasi Video Super Mulus (Anti Patah-patah)
-* **Deskripsi**: Toleransi desync audio-video diperbesar ke 6 frame untuk menghindari pemanggilan set-frame OpenCV yang berat. Resize canvas menggunakan interpolasi `cv2.INTER_NEAREST` untuk performa CPU ringan. Selain itu, pemanggilan pemblokiran layout `self.canvas.update_idletasks()` di loop render dan kueri sinkron OpenCV `cap.get(cv2.CAP_PROP_POS_FRAMES)` dieliminasi serta digantikan dengan pelacakan frame index in-memory (`self.cur_idx`).
+## 3. Rendering Mulus 100% Bebas CPU Overhead
+* **Deskripsi**: Seluruh pemrosesan decoding pixel video OpenCV dan audio track engine ffpyplayer internal Python dihilangkan secara total. Proses rendering sepenuhnya dialihkan ke MPC-HC eksternal dengan akselerasi GPU bawaan, menjamin tontonan berjalan mulus tanpa lag.
 * **Status**: Selesai
 
 ## 4. Deteksi Subtitle Eksternal (.srt) Otomatis
