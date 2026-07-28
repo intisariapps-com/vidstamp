@@ -1,20 +1,22 @@
-# Software Requirements Specification (SRS): Tata Letak Antarmuka Video & Sidebar Adegan PySide6
+# Software Requirements Specification (SRS): Optimasi Performa Video & Jendela Catatan Terpisah
 
 ## 1. Latar Belakang & Masalah
-Pada resolusi layar widescreen, penempatan panel "Adegan Tercatat" di bagian bawah video player memakan ruang vertikal yang sangat besar. Hal ini memaksa area visual video player menyusut secara vertikal, menyisakan area kosong hitam (kotak hitam) yang tidak estetis di sisi kiri dan kanan video demi mempertahankan aspek rasio video (16:9).
+* **Masalah Video Patah-patah**: Penggunaan `Qt.SmoothTransformation` untuk menskalakan frame OpenCV beresolusi tinggi pada setiap iterasi timer (15ms) memakan resource CPU yang sangat besar, menyebabkan penurunan framerate (stuttering).
+* **Kerapian Layar Video**: Pengguna ingin area menonton video benar-benar bersih dan lapang. Panel adegan tercatat sebaiknya dipisahkan ke jendela dialog mengambang (seperti menu Batch Merger) daripada menempel di sidebar.
 
-## 2. Solusi & Desain Tata Letak Baru
-Untuk memaksimalkan tinggi rendering video dan memberikan tampilan professional ala media editor premium (seperti Adobe Premiere / DaVinci Resolve), tata letak dirombak menggunakan pembagian horizontal:
+## 2. Solusi Desain Baru & Optimasi
+### A. Optimasi Rendering Video (Anti-Stuttering)
+* Mengganti `Qt.SmoothTransformation` dengan **`Qt.FastTransformation`** di dalam fungsi rendering `_draw_frame_on_canvas`.
+* Ini akan memotong beban CPU rendering Qt hingga 80%, mengembalikan kenyamanan pemutaran video secara mulus (smooth playback).
 
-### A. Bagian Kiri (Area Pemutar Video - Lebar Dominan)
-* **Video Canvas**: Menempati ruang vertikal maksimal di bagian atas kiri.
-* **Seek Bar**: Slider horizontal tepat di bawah video canvas.
-* **Control Bar**: Baris tombol navigasi tipis (Play/Pause, speed combo, auto skip, marker) di bawah seek bar.
-
-### B. Bagian Kanan (Sidebar Adegan - Lebar Tetap ~260px)
-* **Scene List (`QListWidget`)**: Daftar catatan adegan memanjang vertikal ke bawah.
-* **Aksi Adegan**: Tombol-tombol "Lompat", "Hapus", dan "Export" disusun rapi di bawah list.
-* **Panel Detail**: Teks preview detail adegan di bagian terbawah sidebar, yang muncul dinamis saat adegan dipilih.
+### B. Jendela Catatan Adegan Terpisah (`SceneListDialog`)
+* Membuat kelas dialog baru bernama `SceneListDialog` (`QDialog`) yang menampung:
+  * List adegan tercatat (`QListWidget`).
+  * Tombol aksi ("Lompat", "Hapus", "Export").
+  * Preview detail adegan (`QTextEdit`).
+* Jendela dialog ini diluncurkan dari menu utama **Peralatan** -> **Daftar Catatan Adegan...** atau dengan pintasan keyboard **`Ctrl+L`**.
+* Ketika tombol "Lompat" diklik di dialog, ia akan memicu fungsi `seek_to` pada player utama secara real-time.
+* File `player_view.py` akan dibersihkan dari panel adegan bawah/samping, sehingga area player menjadi 100% luas dan fokus menonton.
 
 ---
 
