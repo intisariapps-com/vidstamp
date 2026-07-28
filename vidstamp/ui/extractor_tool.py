@@ -14,9 +14,6 @@ class AudioSubExtractorWizard(tk.Toplevel):
         self.geometry("600x420")
         self.resizable(False, False)
         
-        self.transient(parent)
-        self.grab_set()
-        
         self.parent = parent
         self.initial_dir = initial_dir or os.path.expanduser("~")
         self.processing = False

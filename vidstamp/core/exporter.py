@@ -363,7 +363,9 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
     
     # 1. Penyelarasan Subtitel
     # Cari berkas SRT eksternal, atau ekstrak dari mkv jika ada
-    temp_extract_srt = output_srt_path + ".temp_extract.srt"
+    import uuid
+    unique_suffix = uuid.uuid4().hex[:8]
+    temp_extract_srt = output_srt_path + f".temp_extract_{unique_suffix}.srt"
     srt_to_shift = None
     
     # Deteksi srt eksternal
@@ -431,6 +433,8 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
     Memproses seluruh episode dalam folder: memotong OP/ED, menggeser subtitle,
     dan jika merge_to_one=True, menggabungkannya menjadi 1 file MP4 utama dan 1 file SRT global.
     """
+    import uuid
+    unique_id = uuid.uuid4().hex[:8]
     from vidstamp.config import VIDEO_EXTS
     from vidstamp.utils.file_manager import load_skip_config
     from vidstamp.core.subtitle import find_external_subtitle, extract_mkv_subtitles
@@ -511,7 +515,9 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
         out_s = f"{base_name}_clean.srt"
         
         # Cari subtitle eksternal atau internal
-        temp_extract_srt = out_s + ".temp_extract.srt"
+        import uuid
+        unique_suffix = uuid.uuid4().hex[:8]
+        temp_extract_srt = out_s + f".temp_extract_{unique_suffix}.srt"
         srt_to_shift = None
         
         external_srt = find_external_subtitle(file)
@@ -601,7 +607,7 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
             map_video = "[v_cut]"
             
         # Target output video untuk concat global jika diaktifkan
-        temp_video_out = out_v if not merge_to_one else os.path.join(parent_dir, f"temp_clean_ep{idx}{ext}")
+        temp_video_out = out_v if not merge_to_one else os.path.join(parent_dir, f"temp_clean_ep{idx}_{unique_id}{ext}")
         episode_temp_videos.append(temp_video_out)
         
         cmd = [
@@ -635,7 +641,7 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
             progress_callback(total_files - 1, total_files, 95.0, "Menggabungkan semua episode bersih...")
             
         # Tulis list file concat
-        mylist_path = os.path.join(parent_dir, "mylist_temp.txt")
+        mylist_path = os.path.join(parent_dir, f"mylist_temp_{unique_id}.txt")
         with open(mylist_path, 'w', encoding='utf-8') as f_list:
             for temp_v in episode_temp_videos:
                 safe_path = temp_v.replace("\\", "/")
