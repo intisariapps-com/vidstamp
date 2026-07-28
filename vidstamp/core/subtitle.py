@@ -13,6 +13,42 @@ def parse_srt_timestamp(ts_str):
     h, m, s, ms = map(int, match.groups())
     return h * 3600 + m * 60 + s + ms / 1000.0
 
+def filter_karaoke_spam(subtitles_list):
+    """
+    Menyaring potongan suku kata karaoke ASS yang sangat pendek (<= 3 karakter)
+    yang tumpang tindih dengan subtitle terjemahan yang lebih panjang.
+    """
+    if len(subtitles_list) <= 1:
+        return subtitles_list
+        
+    cleaned = []
+    # Urutkan berdasarkan waktu mulai, lalu panjang teks secara menurun
+    sorted_subs = sorted(subtitles_list, key=lambda x: (x['start'], -len(x['text'])))
+    
+    for sub in sorted_subs:
+        txt = sub['text'].strip()
+        if not txt:
+            continue
+            
+        if len(txt) <= 3:
+            is_spam = False
+            for other in sorted_subs:
+                if other is sub:
+                    continue
+                if len(other['text'].strip()) > 3:
+                    # Deteksi tumpang tindih waktu (overlap)
+                    overlap = not (sub['end'] <= other['start'] or sub['start'] >= other['end'])
+                    if overlap:
+                        is_spam = True
+                        break
+            if is_spam:
+                continue
+                
+        cleaned.append(sub)
+        
+    # Kembalikan dengan urutan waktu mulai semula
+    return sorted(cleaned, key=lambda x: x['start'])
+
 def parse_srt_file(srt_path):
     """
     Memparsing file SRT ke list of dict format:
@@ -50,14 +86,17 @@ def parse_srt_file(srt_path):
                     # Bersihkan tag HTML (seperti <font>) dan tag ASS/SSA (seperti {\an8})
                     text_clean = re.sub(r"<[^>]*>", "", text)
                     text_clean = re.sub(r"\{[^}]*\}", "", text_clean).strip()
-                    subtitles.append({
-                        'start': start_sec,
-                        'end': end_sec,
-                        'text': text_clean
-                    })
+                    if text_clean: # Pastikan tidak memasukkan baris kosong
+                        subtitles.append({
+                            'start': start_sec,
+                            'end': end_sec,
+                            'text': text_clean
+                        })
     except Exception as e:
         print(f"Error parsing SRT: {e}")
         
+    # Saring spam suku kata karaoke ASS
+    subtitles = filter_karaoke_spam(subtitles)
     return subtitles
 
 def extract_mkv_subtitles(video_path, temp_srt_path):
