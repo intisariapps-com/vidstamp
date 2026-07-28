@@ -186,6 +186,7 @@ class RightPlayerPanel(tk.Frame):
                                activestyle="none", relief="flat", highlightthickness=0)
         self.sc_lb.pack(side="left", fill="x", expand=True)
         self.sc_lb.bind("<Double-Button-1>", self._jump_sc)
+        self.sc_lb.bind("<<ListboxSelect>>", self._on_sc_select)
         
         scbf = tk.Frame(self.sc_label_frame, bg="#0d0d1a")
         scbf.pack(side="right", padx=4)
@@ -195,6 +196,17 @@ class RightPlayerPanel(tk.Frame):
                              ("Export", self._exp_sc, "#1e5f3a")]:
             tk.Button(scbf, text=txt, command=cmd, bg=col, fg="white", relief="flat",
                       font=("Segoe UI", 7), padx=6, pady=2).pack(fill="x", pady=1)
+
+        # Detail Preview Adegan Terpilih
+        self.detail_frame = tk.LabelFrame(self, text=" Detail Adegan & Subtitel Terpilih ", bg="#0d0d1a", fg="#a8dadc",
+                                          font=("Segoe UI", 8, "bold"), pady=2)
+        self.detail_frame.pack(fill="x", padx=6, pady=(0, 4))
+        
+        self.txt_detail = tk.Text(self.detail_frame, bg="#0b0b18", fg="#8888aa", font=("Consolas", 8),
+                                  height=3, relief="flat", wrap="word", highlightthickness=0)
+        self.txt_detail.pack(fill="x", padx=5, pady=2)
+        self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
+        self.txt_detail.config(state="disabled")
 
     # ── Playback control wrappers ──
     def toggle_play(self):
@@ -732,10 +744,33 @@ class RightPlayerPanel(tk.Frame):
         if s:
             self.scenes.pop(s[0])
             self.sc_lb.delete(s[0])
+            
+            # Reset panel detail setelah hapus
+            self.txt_detail.config(state="normal")
+            self.txt_detail.delete("1.0", "end")
+            self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
+            self.txt_detail.config(state="disabled")
+            
             # Simpan database JSON dan ekspor teks otomatis setelah penghapusan
             from vidstamp.utils.file_manager import save_scenes_data
             save_scenes_data(self.engine.video_path, self.scenes)
             self._auto_export_scenes()
+
+    def _on_sc_select(self, event=None):
+        selection = self.sc_lb.curselection()
+        if not selection:
+            return
+            
+        idx = selection[0]
+        if idx < len(self.scenes):
+            _, _, label, subs = self.scenes[idx]
+            self.txt_detail.config(state="normal")
+            self.txt_detail.delete("1.0", "end")
+            if subs:
+                self.txt_detail.insert("1.0", f"Adegan: {label}\n{subs}")
+            else:
+                self.txt_detail.insert("1.0", f"Adegan: {label}\n(Tidak ada subtitel/dialog terekam)")
+            self.txt_detail.config(state="disabled")
 
     def _auto_export_scenes(self):
         """Mengekspor daftar adegan secara otomatis ke file teks default di folder catatan."""
@@ -779,6 +814,13 @@ class RightPlayerPanel(tk.Frame):
         """Memuat database adegan lama dari scenes.json ke GUI."""
         self.scenes = []
         self.sc_lb.delete(0, "end")
+        
+        # Reset detail text
+        self.txt_detail.config(state="normal")
+        self.txt_detail.delete("1.0", "end")
+        self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
+        self.txt_detail.config(state="disabled")
+        
         if not self.engine.cap or not self.engine.video_path:
             return
             
