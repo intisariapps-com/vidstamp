@@ -13,11 +13,16 @@ from vidstamp.utils.file_manager import ensure_note_folder, save_skip_config
 from vidstamp.core.subtitle import get_subtitles_in_range
 
 class RightPlayerPanel(tk.Frame):
-    def __init__(self, parent, engine, on_toggle_browser_callback, *args, **kwargs):
+    def __init__(self, parent, engine, on_open_folder_callback, on_open_file_callback, on_select_video_callback, on_open_batch_merger_callback, on_open_extractor_callback, on_open_notes_folder_callback, *args, **kwargs):
         super().__init__(parent, bg="#0d0d1a", *args, **kwargs)
         
         self.engine = engine
-        self.on_toggle_browser = on_toggle_browser_callback
+        self.on_open_folder = on_open_folder_callback
+        self.on_open_file = on_open_file_callback
+        self.on_select_video = on_select_video_callback
+        self.on_open_batch_merger = on_open_batch_merger_callback
+        self.on_open_extractor = on_open_extractor_callback
+        self.on_open_notes_folder = on_open_notes_folder_callback
         
         self._seeking = False
         self.mark_start = None
@@ -46,13 +51,25 @@ class RightPlayerPanel(tk.Frame):
         self.top_bar = tk.Frame(self, bg="#16213e", pady=3)
         self.top_bar.pack(fill="x")
         
-        self.btn_toggle_side = tk.Button(self.top_bar, text="📁 Toggle Browser (Tab)", 
-                                         command=self.on_toggle_browser, bg="#1a1a3e",
+        self.btn_open_folder = tk.Button(self.top_bar, text="📁 Buka Folder", 
+                                         command=self.on_open_folder, bg="#1a1a3e",
                                          fg="#7ec8e3", relief="flat", font=("Segoe UI", 8, "bold"),
                                          padx=6, pady=2)
-        self.btn_toggle_side.pack(side="left", padx=6)
+        self.btn_open_folder.pack(side="left", padx=6)
+
+        self.btn_open_file = tk.Button(self.top_bar, text="📄 Buka Video", 
+                                       command=self.on_open_file, bg="#1a1a3e",
+                                       fg="#7ec8e3", relief="flat", font=("Segoe UI", 8, "bold"),
+                                       padx=6, pady=2)
+        self.btn_open_file.pack(side="left", padx=2)
         
-        self.lbl_file = tk.Label(self.top_bar, text="Double-klik video di panel kiri",
+        tk.Label(self.top_bar, text="🎬 Video:", bg="#16213e", fg="#a8dadc", font=("Segoe UI", 8, "bold")).pack(side="left", padx=(10, 2))
+        self.video_combo = ttk.Combobox(self.top_bar, state="readonly", width=25, font=("Segoe UI", 8))
+        self.video_combo.pack(side="left", padx=2)
+        self.video_combo.set("Pilih Video...")
+        self.video_combo.bind("<<ComboboxSelected>>", self._on_video_combo_change)
+        
+        self.lbl_file = tk.Label(self.top_bar, text="Gunakan tombol kiri atas untuk membuka video",
                                   bg="#16213e", fg="#a8dadc", font=("Segoe UI", 9))
         self.lbl_file.pack(side="left", padx=10)
         
@@ -61,22 +78,36 @@ class RightPlayerPanel(tk.Frame):
         self.show_ms = tk.BooleanVar(value=True)
         
         # Tombol set OP/ED dan Checkbox Auto-Skip
+        tk.Button(self.top_bar, text="⚙️ Set Skip OP/ED", command=self.setup_skip_oped_dialog,
+                  bg="#e94560", fg="white", relief="flat", font=("Segoe UI", 8, "bold"),
+                  padx=6, pady=1).pack(side="right", padx=4)
+                  
+        tk.Checkbutton(self.top_bar, text="Auto-Skip OP/ED", variable=self.auto_skip,
+                        bg="#16213e", fg="#ffd700", selectcolor="#0f3460",
+                        activebackground="#16213e", font=("Segoe UI", 8, "bold")).pack(side="right", padx=2)
+                        
+        tk.Frame(self.top_bar, bg="#e94560", width=1, height=18).pack(side="right", padx=8, fill="y")
+        
         tk.Checkbutton(self.top_bar, text="ms", variable=self.show_ms,
                         bg="#16213e", fg="#a8dadc", selectcolor="#0f3460",
                         activebackground="#16213e", font=("Segoe UI", 8)).pack(side="right", padx=(2, 6))
         tk.Checkbutton(self.top_bar, text="Timestamp", variable=self.show_ts,
                         bg="#16213e", fg="#a8dadc", selectcolor="#0f3460",
                         activebackground="#16213e", font=("Segoe UI", 8)).pack(side="right", padx=2)
-                        
+
         tk.Frame(self.top_bar, bg="#e94560", width=1, height=18).pack(side="right", padx=8, fill="y")
-        
-        tk.Checkbutton(self.top_bar, text="Auto-Skip OP/ED", variable=self.auto_skip,
-                        bg="#16213e", fg="#ffd700", selectcolor="#0f3460",
-                        activebackground="#16213e", font=("Segoe UI", 8, "bold")).pack(side="right", padx=2)
-                        
-        tk.Button(self.top_bar, text="⚙️ Set Skip OP/ED", command=self.setup_skip_oped_dialog,
-                  bg="#e94560", fg="white", relief="flat", font=("Segoe UI", 8, "bold"),
-                  padx=6, pady=1).pack(side="right", padx=4)
+
+        # Tombol Peralatan (Dropdown Melayang)
+        self.tools_popup = tk.Menu(self, tearoff=0)
+        self.tools_popup.add_command(label="🛠️ Batch Merger Wizard (Ctrl+M)", command=self.on_open_batch_merger)
+        self.tools_popup.add_command(label="🎵 Ekstraktor Subtitle & Audio", command=self.on_open_extractor)
+        self.tools_popup.add_command(label="📂 Buka Folder Catatan", command=self.on_open_notes_folder)
+
+        self.btn_tools = tk.Button(self.top_bar, text="🛠️ Peralatan ▾", 
+                                   command=self.post_tools_menu, bg="#0f3460",
+                                   fg="white", relief="flat", font=("Segoe UI", 8, "bold"),
+                                   padx=6, pady=1)
+        self.btn_tools.pack(side="right", padx=4)
 
         # ─ Canvas Video ─
         self.canvas_container = tk.Frame(self, bg="#000000")
@@ -1036,3 +1067,13 @@ class RightPlayerPanel(tk.Frame):
         self.canvas.delete("all")
         self.canvas.create_image(cw // 2, ch // 2, anchor="center", image=img)
         self._img_ref = img
+
+    def _on_video_combo_change(self, event=None):
+        val = self.video_combo.get()
+        if val and val != "Pilih Video..." and val != "Tidak ada video":
+            self.on_select_video(val)
+
+    def post_tools_menu(self):
+        x = self.btn_tools.winfo_rootx()
+        y = self.btn_tools.winfo_rooty() + self.btn_tools.winfo_height()
+        self.tools_popup.post(x, y)

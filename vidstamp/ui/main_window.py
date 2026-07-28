@@ -24,44 +24,46 @@ class VideoAppController:
         self.engine = VideoPlayerEngine()
         self.temp_srt_path = os.path.join(os.path.expanduser("~"), "temp_video_sub.srt")
         
-        # Container layout paned window
-        self.paned_window = tk.PanedWindow(self.root, orient="horizontal", bg="#0d0d1a",
-                                           sashwidth=5, sashrelief="flat")
-        self.paned_window.pack(fill="both", expand=True)
-        
-        self.browser_visible = True
-        
         # State Penanda Skip OP/ED
         self.skipped_op = False
         self.skipped_ed = False
         
-        # Panel Kiri
-        self.left_panel = LeftBrowserPanel(self.paned_window, 
-                                           on_video_select_callback=self.load_video,
-                                           def_dir_callback=self.get_default_dir)
-        self.paned_window.add(self.left_panel, minsize=180)
+        # State Folder & Daftar Video
+        self.current_folder = None
+        self.video_list = []
+        self.video_names = []
         
-        # Panel Kanan
-        self.right_panel = RightPlayerPanel(self.paned_window, self.engine,
-                                             on_toggle_browser_callback=self.toggle_browser)
-        self.paned_window.add(self.right_panel, minsize=600)
+        # Panel Utama (RightPlayerPanel memenuhi jendela)
+        self.right_panel = RightPlayerPanel(
+            self.root, self.engine,
+            on_open_folder_callback=self.open_folder_action,
+            on_open_file_callback=self.open_file_action,
+            on_select_video_callback=self.select_video_action,
+            on_open_batch_merger_callback=self.open_batch_merger,
+            on_open_extractor_callback=self.open_extractor_tool,
+            on_open_notes_folder_callback=self.open_notes_folder_action
+        )
+        self.right_panel.pack(fill="both", expand=True)
         
-        # Setup Menu Bar
-        self.menu_bar = tk.Menu(self.root, bg="#0d0d1a", fg="white", activebackground="#1a1a3e", activeforeground="white")
+        # Setup Menu Bar OS Native agar responsif di Windows
+        self.menu_bar = tk.Menu(self.root)
         self.root.config(menu=self.menu_bar)
         
-        self.tools_menu = tk.Menu(self.menu_bar, tearoff=0, bg="#0d0d1a", fg="white", activebackground="#1a1a3e")
+        self.tools_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="Peralatan", menu=self.tools_menu)
         self.tools_menu.add_command(label="Batch Merger Wizard... (Ctrl+M)", command=self.open_batch_merger)
         self.tools_menu.add_command(label="Ekstraktor Subtitle & Audio...", command=self.open_extractor_tool)
+        self.tools_menu.add_command(label="Buka Folder Catatan adegan", command=self.open_notes_folder_action)
 
         self._bind_global_shortcuts()
         
         init_path = start_path or self.get_default_dir()
         if init_path and os.path.isdir(init_path):
-            self.left_panel.navigate_to(init_path)
+            self.update_video_list_from_folder(init_path)
+            if self.video_list:
+                self.load_video(self.video_list[0])
         elif init_path and os.path.isfile(init_path):
-            self.left_panel.navigate_to(os.path.dirname(init_path))
+            self.update_video_list_from_folder(os.path.dirname(init_path))
             self.load_video(init_path)
             
         self.playback_loop()
@@ -113,7 +115,11 @@ class VideoAppController:
         else:
             self.right_panel.lbl_file.config(text=os.path.basename(video_path))
             
-        self.left_panel.highlight_video(video_path)
+        # Sinkronkan pilihan dropdown video
+        if hasattr(self.right_panel, "video_combo") and self.video_names:
+            filename = os.path.basename(video_path)
+            if filename in self.video_names:
+                self.right_panel.video_combo.set(filename)
         
         total_sec = self.engine.total_frames / self.engine.fps
         self.right_panel.lbl_tot.config(text=format_remaining(0, total_sec))
@@ -172,27 +178,12 @@ class VideoAppController:
         self.root.title(f"VidStamp - {os.path.basename(video_path)}")
         self.right_panel.render_current_frame()
 
-    def toggle_browser(self, event=None):
-        self.browser_visible = not self.browser_visible
-        if self.browser_visible:
-            # Hapus panel kanan terlebih dahulu agar urutan penambahan kembali konsisten (kiri lalu kanan)
-            self.paned_window.forget(self.right_panel)
-            self.paned_window.add(self.left_panel, minsize=180)
-            self.paned_window.add(self.right_panel, minsize=600)
-            self.left_panel.pack(fill="both", expand=True)
-        else:
-            self.paned_window.forget(self.left_panel)
-            
-        self.root.update_idletasks()
-        self.right_panel.render_current_frame()
-
     def _bind_global_shortcuts(self):
         self.root.bind("<space>",       lambda e: self.right_panel.toggle_play())
         self.root.bind("<Left>",        lambda e: self.right_panel._delta(-1))
         self.root.bind("<Right>",       lambda e: self.right_panel._delta(1))
         self.root.bind("<Shift-Left>",  lambda e: self.right_panel._delta(-10))
         self.root.bind("<Shift-Right>", lambda e: self.right_panel._delta(10))
-        self.root.bind("<Tab>",         self.toggle_browser)
         self.root.bind("<F11>",         self.right_panel.toggle_fullscreen)
         self.root.bind("<Escape>",      self._exit_fullscreen_only)
         self.root.bind("<Control-t>",   self._record_shortcut_handler)
@@ -265,28 +256,87 @@ class VideoAppController:
         else:
             self.root.after(50, self.playback_loop)
 
+    def open_folder_action(self):
+        folder = filedialog.askdirectory(initialdir=self.current_folder or self.get_default_dir(),
+                                         title="Pilih Folder Video")
+        if folder:
+            self.update_video_list_from_folder(folder)
+            if self.video_list:
+                self.load_video(self.video_list[0])
+            else:
+                messagebox.showinfo("Informasi", "Tidak ditemukan berkas video di folder terpilih.")
+
+    def open_file_action(self):
+        from vidstamp.config import VIDEO_EXTS
+        file_types = [
+            ("Video Files", " ".join(f"*{ext}" for ext in VIDEO_EXTS)),
+            ("All Files", "*.*")
+        ]
+        file_path = filedialog.askopenfilename(initialdir=self.current_folder or self.get_default_dir(),
+                                               title="Buka Berkas Video",
+                                               filetypes=file_types)
+        if file_path:
+            folder = os.path.dirname(file_path)
+            self.update_video_list_from_folder(folder)
+            self.load_video(file_path)
+
+    def select_video_action(self, video_name):
+        if self.current_folder and video_name:
+            target_path = os.path.join(self.current_folder, video_name)
+            if os.path.exists(target_path):
+                self.load_video(target_path)
+
+    def update_video_list_from_folder(self, folder_path):
+        self.current_folder = folder_path
+        self.video_list = []
+        self.video_names = []
+        
+        from vidstamp.config import VIDEO_EXTS
+        if os.path.isdir(folder_path):
+            files = sorted(os.listdir(folder_path))
+            for f in files:
+                ext = os.path.splitext(f)[1].lower()
+                if ext in VIDEO_EXTS:
+                    full_path = os.path.join(folder_path, f)
+                    self.video_list.append(full_path)
+                    self.video_names.append(f)
+                    
+        if hasattr(self.right_panel, "video_combo"):
+            if self.video_names:
+                self.right_panel.video_combo.config(values=self.video_names)
+            else:
+                self.right_panel.video_combo.config(values=["Tidak ada video"])
+
+    def open_notes_folder_action(self):
+        if self.engine.video_path:
+            folder = os.path.dirname(self.engine.video_path)
+            if os.path.exists(folder):
+                os.startfile(folder)
+        else:
+            folder = self.current_folder or self.get_default_dir()
+            if os.path.exists(folder):
+                os.startfile(folder)
+
     def open_batch_merger(self, event=None):
-        # Tentukan folder aktif saat ini
         current_dir = None
         if self.engine.video_path:
             current_dir = os.path.dirname(self.engine.video_path)
         else:
-            current_dir = self.left_panel.cur_folder or self.get_default_dir()
+            current_dir = self.current_folder or self.get_default_dir()
             
         if not current_dir or not os.path.isdir(current_dir):
-            messagebox.showerror("Pemberitahuan", "Silakan buka folder video terlebih dahulu pada panel folder kiri.")
+            messagebox.showerror("Pemberitahuan", "Silakan buka folder video terlebih dahulu.")
             return
             
         from vidstamp.ui.batch_merger import BatchMergerWizard
         BatchMergerWizard(self.root, current_dir)
 
     def open_extractor_tool(self, event=None):
-        # Tentukan folder aktif saat ini untuk initial directory dialog
         current_dir = None
         if self.engine.video_path:
             current_dir = os.path.dirname(self.engine.video_path)
         else:
-            current_dir = self.left_panel.cur_folder or self.get_default_dir()
+            current_dir = self.current_folder or self.get_default_dir()
             
         from vidstamp.ui.extractor_tool import AudioSubExtractorWizard
         AudioSubExtractorWizard(self.root, current_dir)
