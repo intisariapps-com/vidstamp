@@ -9,7 +9,7 @@ from tkinterdnd2 import DND_FILES, TkinterDnD
 
 # Impor dari paket vidstamp
 from vidstamp.config import ROOT_DIRS
-from vidstamp.utils.time_formatter import format_time
+from vidstamp.utils.time_formatter import format_time, format_remaining
 from vidstamp.core.subtitle import extract_mkv_subtitles, parse_srt_file, find_external_subtitle
 from vidstamp.core.player import VideoPlayerEngine
 from vidstamp.ui.browser import LeftBrowserPanel
@@ -54,6 +54,15 @@ class VideoAppController:
         self.right_panel.canvas.drop_target_register(DND_FILES)
         self.right_panel.canvas.dnd_bind('<<Drop>>', self._on_file_drop)
         
+        # Setup Menu Bar
+        self.menu_bar = tk.Menu(self.root, bg="#0d0d1a", fg="white", activebackground="#1a1a3e", activeforeground="white")
+        self.root.config(menu=self.menu_bar)
+        
+        self.tools_menu = tk.Menu(self.menu_bar, tearoff=0, bg="#0d0d1a", fg="white", activebackground="#1a1a3e")
+        self.menu_bar.add_cascade(label="Peralatan", menu=self.tools_menu)
+        self.tools_menu.add_command(label="Batch Merger Wizard... (Ctrl+M)", command=self.open_batch_merger)
+        self.tools_menu.add_command(label="Ekstraktor Subtitle & Audio...", command=self.open_extractor_tool)
+
         self._bind_global_shortcuts()
         
         init_path = start_path or self.get_default_dir()
@@ -127,9 +136,10 @@ class VideoAppController:
             
         self.left_panel.highlight_video(video_path)
         
-        tot_sec = self.engine.total_frames / self.engine.fps
-        self.right_panel.lbl_time.configure(text=f"00:00.000 / {format_time(tot_sec, self.right_panel.show_ms.get())}")
-        self.right_panel.seek_bar.configure(to=max(1, self.engine.total_frames - 1))
+        total_sec = self.engine.total_frames / self.engine.fps
+        self.right_panel.lbl_tot.config(text=format_remaining(0, total_sec))
+        self.right_panel.lbl_cur.config(text=format_time(0))
+        self.right_panel.seek_bar.config(to=max(1, self.engine.total_frames - 1))
         
         # Muat database adegan lama
         self.right_panel.load_saved_scenes()
@@ -139,22 +149,14 @@ class VideoAppController:
         state = load_playback_state(video_path)
         last_pos = state.get("last_position_sec")
         if last_pos is not None:
-            import cv2
-            # Posisikan OpenCV frame secara instan agar user langsung melihat gambarnya
+            # Jeda 350ms untuk mencegah race condition/segfault di FFmpeg/ffpyplayer pada video bermasalah dengan header rusak
             target_frame = int(last_pos * self.engine.fps)
-            target_frame = max(0, min(target_frame, self.engine.total_frames - 1))
-            self.engine.cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
-            self.engine.cur_idx = int(self.engine.cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1
-            self.right_panel.seek_var.set(self.engine.cur_idx)
-            
-            # Tunda pemanggilan seek audio player selama 500ms agar thread ffpyplayer siap
-            def delayed_audio_seek():
-                if self.engine.video_path == video_path and self.engine.audio_player:
-                    try:
-                        self.engine.audio_player.seek(last_pos, relative=False)
-                    except:
-                        pass
-            self.root.after(500, delayed_audio_seek)
+            def deferred_resume():
+                if self.engine.cap and self.engine.video_path == video_path:
+                    self.engine.seek_to(target_frame)
+                    self.right_panel.seek_var.set(self.engine.cur_idx)
+                    self.right_panel.render_current_frame()
+            self.root.after(350, deferred_resume)
         else:
             self.right_panel.seek_var.set(0)
 
@@ -165,6 +167,21 @@ class VideoAppController:
         
         # Load Konfigurasi Skip OP/ED jika ada
         skip_data = load_skip_config(video_path)
+        if not skip_data and video_path.lower().endswith(".mkv"):
+            from vidstamp.core.exporter import get_mkv_chapters
+            from vidstamp.utils.file_manager import save_skip_config
+            detected_chapters = get_mkv_chapters(video_path)
+            if detected_chapters:
+                skip_data = detected_chapters
+                # Simpan juga ke skip_config.json secara otomatis biar permanen
+                save_skip_config(video_path, {
+                    "op_start": skip_data.get("op_start"),
+                    "op_end": skip_data.get("op_end"),
+                    "ed_start": skip_data.get("ed_start"),
+                    "ed_end": skip_data.get("ed_end"),
+                    "auto_skip_enabled": True
+                })
+                
         self.right_panel.op_start = skip_data.get("op_start")
         self.right_panel.op_end = skip_data.get("op_end")
         self.right_panel.ed_start = skip_data.get("ed_start")
@@ -215,7 +232,10 @@ class VideoAppController:
     def toggle_browser(self, event=None):
         self.browser_visible = not self.browser_visible
         if self.browser_visible:
-            self.paned_window.add(self.left_panel, before=self.right_panel, minsize=180)
+            # Hapus panel kanan terlebih dahulu agar urutan penambahan kembali konsisten (kiri lalu kanan)
+            self.paned_window.forget(self.right_panel)
+            self.paned_window.add(self.left_panel, minsize=180)
+            self.paned_window.add(self.right_panel, minsize=600)
             self.left_panel.pack(fill="both", expand=True)
         else:
             self.paned_window.forget(self.left_panel)
@@ -235,6 +255,8 @@ class VideoAppController:
         self.root.bind("<Control-t>",   self._record_shortcut_handler)
         self.root.bind("<Control-T>",   self._record_shortcut_handler)
         self.root.bind("<Control-space>", lambda e: self.right_panel.cancel_recording_action())
+        self.root.bind("<Control-m>",   lambda e: self.open_batch_merger())
+        self.root.bind("<Control-M>",   lambda e: self.open_batch_merger())
         self.root.bind("q",             lambda e: self.quit_app())
         self.root.bind("Q",             lambda e: self.quit_app())
 
@@ -283,11 +305,12 @@ class VideoAppController:
             ret, frame = self.engine.get_next_frame()
             if ret:
                 self.right_panel.draw_frame(frame)
+                cur_sec = self.engine.cur_idx / self.engine.fps
+                total_sec = self.engine.total_frames / self.engine.fps
                 if not self.right_panel._seeking:
                     self.right_panel.seek_var.set(self.engine.cur_idx)
-                cur_sec = self.engine.cur_idx / self.engine.fps
-                tot_sec = self.engine.total_frames / self.engine.fps
-                self.right_panel.lbl_time.configure(text=f"{format_time(cur_sec, self.right_panel.show_ms.get())} / {format_time(tot_sec, self.right_panel.show_ms.get())}")
+                self.right_panel.lbl_cur.config(text=format_time(cur_sec))
+                self.right_panel.lbl_tot.config(text=format_remaining(cur_sec, total_sec))
             else:
                 self.engine.set_playing(False)
                 self.right_panel.btn_play.configure(text="▶")
@@ -298,6 +321,32 @@ class VideoAppController:
             self.root.after(delay, self.playback_loop)
         else:
             self.root.after(50, self.playback_loop)
+
+    def open_batch_merger(self, event=None):
+        # Tentukan folder aktif saat ini
+        current_dir = None
+        if self.engine.video_path:
+            current_dir = os.path.dirname(self.engine.video_path)
+        else:
+            current_dir = self.left_panel.cur_folder or self.get_default_dir()
+            
+        if not current_dir or not os.path.isdir(current_dir):
+            messagebox.showerror("Pemberitahuan", "Silakan buka folder video terlebih dahulu pada panel folder kiri.")
+            return
+            
+        from vidstamp.ui.batch_merger import BatchMergerWizard
+        BatchMergerWizard(self.root, current_dir)
+
+    def open_extractor_tool(self, event=None):
+        # Tentukan folder aktif saat ini untuk initial directory dialog
+        current_dir = None
+        if self.engine.video_path:
+            current_dir = os.path.dirname(self.engine.video_path)
+        else:
+            current_dir = self.left_panel.cur_folder or self.get_default_dir()
+            
+        from vidstamp.ui.extractor_tool import AudioSubExtractorWizard
+        AudioSubExtractorWizard(self.root, current_dir)
 
     def quit_app(self):
         # Simpan posisi pemutaran detik terakhir saat aplikasi ditutup
@@ -353,28 +402,58 @@ class CTkDnD(ctk.CTk, TkinterDnD.DnDWrapper):
         self.TkdndVersion = TkinterDnD._require(self)
 
 def start_gui(start_path=None):
-    ctk.set_appearance_mode("dark")
-    ctk.set_default_color_theme("blue")
+    from vidstamp.ui.launcher import LauncherWindow
+    from vidstamp.config import ROOT_DIRS
     
-    root = CTkDnD()
-    root.geometry("1200x760")
-    root.minsize(900, 580)
-    
-    def report_callback_exception(exc, val, tb):
-        import traceback
-        try:
-            with open("crash.log", "a", encoding="utf-8") as f:
-                f.write("=== TKINTER CALLBACK EXCEPTION ===\n")
-                traceback.print_exception(exc, val, tb, file=f)
-        except:
-            pass
-        sys.__stderr__.write("Tkinter Callback Exception:\n")
-        traceback.print_exception(exc, val, tb, file=sys.__stderr__)
+    def get_default_dir():
+        for d in ROOT_DIRS:
+            if os.path.isdir(d):
+                return d
+        return os.path.expanduser("~")
 
-    root.report_callback_exception = report_callback_exception
-    
-    # Inisialisasi controller utama
-    app = VideoAppController(root, start_path)
-    root.protocol("WM_DELETE_WINDOW", app.quit_app)
-    root.mainloop()
+    def launch_player():
+        root = tk.Tk()
+        from vidstamp.utils.logger import register_tkinter_exception_handler
+        register_tkinter_exception_handler(root)
+        root.geometry("1200x760")
+        root.minsize(900, 580)
+        
+        style = ttk.Style(root)
+        style.theme_use("clam")
+        style.configure("Horizontal.TScale", background="#0d0d1a", troughcolor="#1a1a3e",
+                         sliderthickness=14, sliderrelief="flat")
+                         
+        app = VideoAppController(root, start_path)
+        root.protocol("WM_DELETE_WINDOW", app.quit_app)
+        root.mainloop()
 
+    def launch_wizard(folder_path):
+        root = tk.Tk()
+        root.withdraw() # Sembunyikan window root
+        
+        from vidstamp.utils.logger import register_tkinter_exception_handler
+        register_tkinter_exception_handler(root)
+        
+        from vidstamp.ui.batch_merger import BatchMergerWizard
+        wizard = BatchMergerWizard(root, folder_path)
+        
+        def on_wizard_close():
+            try: wizard.destroy()
+            except: pass
+            try: root.destroy()
+            except: pass
+            
+        wizard.protocol("WM_DELETE_WINDOW", on_wizard_close)
+        root.mainloop()
+
+    # Jika start_path diberikan dan berupa file/folder valid, langsung buka player
+    if start_path and os.path.exists(start_path):
+        launch_player()
+    else:
+        # Jalankan launcher screen
+        launcher = LauncherWindow(
+            launch_player_fn=launch_player,
+            launch_wizard_fn=launch_wizard,
+            get_def_dir_fn=get_default_dir
+        )
+        launcher.mainloop()

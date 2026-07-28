@@ -6,12 +6,48 @@ import subprocess
 import re
 
 def parse_srt_timestamp(ts_str):
-    """Konversi format SRT HH:MM:SS,mmm ke detik float"""
-    match = re.match(r"(\d+):(\d+):(\d+),(\d+)", ts_str)
+    """Konversi format SRT HH:MM:SS,mmm atau HH:MM:SS.mmm ke detik float"""
+    match = re.match(r"(\d+):(\d+):(\d+)[.,](\d+)", ts_str.strip())
     if not match:
         return 0.0
     h, m, s, ms = map(int, match.groups())
     return h * 3600 + m * 60 + s + ms / 1000.0
+
+def filter_karaoke_spam(subtitles_list):
+    """
+    Menyaring potongan suku kata karaoke ASS yang sangat pendek (<= 3 karakter)
+    yang tumpang tindih dengan subtitle terjemahan yang lebih panjang.
+    """
+    if len(subtitles_list) <= 1:
+        return subtitles_list
+        
+    cleaned = []
+    # Urutkan berdasarkan waktu mulai, lalu panjang teks secara menurun
+    sorted_subs = sorted(subtitles_list, key=lambda x: (x['start'], -len(x['text'])))
+    
+    for sub in sorted_subs:
+        txt = sub['text'].strip()
+        if not txt:
+            continue
+            
+        if len(txt) <= 3:
+            is_spam = False
+            for other in sorted_subs:
+                if other is sub:
+                    continue
+                if len(other['text'].strip()) > 3:
+                    # Deteksi tumpang tindih waktu (overlap)
+                    overlap = not (sub['end'] <= other['start'] or sub['start'] >= other['end'])
+                    if overlap:
+                        is_spam = True
+                        break
+            if is_spam:
+                continue
+                
+        cleaned.append(sub)
+        
+    # Kembalikan dengan urutan waktu mulai semula
+    return sorted(cleaned, key=lambda x: x['start'])
 
 def parse_srt_file(srt_path):
     """
@@ -47,15 +83,20 @@ def parse_srt_file(srt_path):
                     start_sec = parse_srt_timestamp(times[0].strip())
                     end_sec = parse_srt_timestamp(times[1].strip())
                     text = " ".join(lines[text_start_idx:])
-                    text_clean = re.sub(r"<[^>]*>", "", text).strip()
-                    subtitles.append({
-                        'start': start_sec,
-                        'end': end_sec,
-                        'text': text_clean
-                    })
+                    # Bersihkan tag HTML (seperti <font>) dan tag ASS/SSA (seperti {\an8})
+                    text_clean = re.sub(r"<[^>]*>", "", text)
+                    text_clean = re.sub(r"\{[^}]*\}", "", text_clean).strip()
+                    if text_clean: # Pastikan tidak memasukkan baris kosong
+                        subtitles.append({
+                            'start': start_sec,
+                            'end': end_sec,
+                            'text': text_clean
+                        })
     except Exception as e:
         print(f"Error parsing SRT: {e}")
         
+    # Saring spam suku kata karaoke ASS
+    subtitles = filter_karaoke_spam(subtitles)
     return subtitles
 
 def extract_mkv_subtitles(video_path, temp_srt_path):
@@ -94,7 +135,7 @@ def extract_mkv_subtitles(video_path, temp_srt_path):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            timeout=15
+            timeout=60
         )
         if os.path.exists(temp_srt_path) and os.path.getsize(temp_srt_path) > 0:
             return True
@@ -102,6 +143,51 @@ def extract_mkv_subtitles(video_path, temp_srt_path):
         print(f"FFmpeg subtitle extraction error: {e}")
         
     return False
+
+def extract_audio_from_video(video_path, output_audio_path):
+    """
+    Mengekstrak audio track dari video (MP4/MKV) ke file audio (MP3/WAV)
+    menggunakan subprocess FFmpeg.
+    """
+    if os.path.exists(output_audio_path):
+        try:
+            os.remove(output_audio_path)
+        except:
+            pass
+
+    from vidstamp.utils.path_helper import get_ffmpeg_path
+    ffmpeg_cmd = get_ffmpeg_path()
+    
+    cmd = [
+        ffmpeg_cmd, '-y',
+        '-i', video_path,
+        '-vn',
+        '-c:a', 'libmp3lame' if output_audio_path.lower().endswith('.mp3') else 'pcm_s16le',
+        '-q:a', '2' if output_audio_path.lower().endswith('.mp3') else '0',
+        output_audio_path
+    ]
+    
+    startupinfo = None
+    if os.name == 'nt':
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = 0
+
+    try:
+        res = subprocess.run(
+            cmd,
+            startupinfo=startupinfo,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=180 # 3 menit untuk audio 2 jam
+        )
+        if os.path.exists(output_audio_path) and os.path.getsize(output_audio_path) > 0:
+            return True, "Sukses"
+        else:
+            return False, f"FFmpeg error: {res.stderr}"
+    except Exception as e:
+        return False, str(e)
 
 def get_subtitles_in_range(subtitles_list, start_sec, end_sec):
     """

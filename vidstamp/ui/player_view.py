@@ -8,7 +8,7 @@ import os
 import cv2
 import customtkinter as ctk
 from vidstamp.config import FONT, COLOR_TS, COLOR_MARK, COLOR_END, COLOR_BG
-from vidstamp.utils.time_formatter import format_time
+from vidstamp.utils.time_formatter import format_time, format_remaining
 from vidstamp.utils.text_cleaner import get_first_4_words
 from vidstamp.utils.file_manager import ensure_note_folder, save_skip_config
 from vidstamp.core.subtitle import get_subtitles_in_range
@@ -109,16 +109,19 @@ class RightPlayerPanel(ctk.CTkFrame):
         self.canvas.create_text(380, 214, text="<-- Double-klik video dari panel kiri",
                                  fill="#333355", font=("Segoe UI", 13), tags="ph")
         
-        # Binding Klik & Double Klik & Klik Kanan
+        # Binding Klik, Double Klik, & Resize Jendela
         self.canvas.bind("<Button-1>", self._on_canvas_click)
         self.canvas.bind("<Double-Button-1>", self.toggle_fullscreen)
-        self.canvas.bind("<Button-3>", self.show_context_menu)
+        self.canvas.bind("<Configure>", lambda e: self.render_current_frame())
 
-        # ─ Compact Control Bar (Modern ala MPC-HC) ─
-        self.control_bar_frame = ctk.CTkFrame(self.tab_player, fg_color="#0d0d1a", corner_radius=0)
-        self.control_bar_frame.pack(fill="x", padx=6, pady=2)
-
-        # Seek Bar tipis di baris atas Control Bar
+        # ─ Seek Bar Frame ─
+        self.seek_frame = tk.Frame(self, bg="#0d0d1a", pady=2)
+        self.seek_frame.pack(fill="x", padx=6)
+        
+        self.lbl_cur = tk.Label(self.seek_frame, text="00:00:00", bg="#0d0d1a", fg="#e94560",
+                                 font=("Consolas", 10, "bold"), width=9)
+        self.lbl_cur.pack(side="left", padx=4)
+        
         self.seek_var = tk.DoubleVar(value=0)
         self.seek_bar = ctk.CTkSlider(self.control_bar_frame, from_=0, to=100, variable=self.seek_var,
                                       command=self._sk_move, height=12, fg_color="#1a1a3e",
@@ -129,6 +132,10 @@ class RightPlayerPanel(ctk.CTkFrame):
         # Gunakan binding untuk mendeteksi penekanan manual
         self.seek_bar.bind("<ButtonPress-1>", self._sk_press)
         self.seek_bar.bind("<ButtonRelease-1>", self._sk_release)
+        
+        self.lbl_tot = tk.Label(self.seek_frame, text="-00:00:00", bg="#0d0d1a", fg="#a8dadc",
+                                 font=("Consolas", 10), width=10)
+        self.lbl_tot.pack(side="left", padx=4)
 
         # Baris tombol & info terpadu (horizontal)
         ctrl_buttons_row = ctk.CTkFrame(self.control_bar_frame, fg_color="transparent")
@@ -216,6 +223,7 @@ class RightPlayerPanel(ctk.CTkFrame):
                                 activestyle="none", relief="flat", highlightthickness=0, bd=0)
         self.sc_lb.pack(side="left", fill="x", expand=True, padx=6, pady=(0, 6))
         self.sc_lb.bind("<Double-Button-1>", self._jump_sc)
+        self.sc_lb.bind("<<ListboxSelect>>", self._on_sc_select)
         
         scbf = ctk.CTkFrame(self.sc_label_frame, fg_color="transparent")
         scbf.pack(side="right", padx=8, pady=(0, 6))
@@ -419,6 +427,16 @@ class RightPlayerPanel(ctk.CTkFrame):
             messagebox.showerror("Error", "Gagal menyimpan berkas konfigurasi.")
 
 
+        # Detail Preview Adegan Terpilih
+        self.detail_frame = tk.LabelFrame(self, text=" Detail Adegan & Subtitel Terpilih ", bg="#0d0d1a", fg="#a8dadc",
+                                          font=("Segoe UI", 8, "bold"), pady=2)
+        
+        self.txt_detail = tk.Text(self.detail_frame, bg="#0b0b18", fg="#8888aa", font=("Consolas", 8),
+                                  height=3, relief="flat", wrap="word", highlightthickness=0)
+        self.txt_detail.pack(fill="x", padx=5, pady=2)
+        self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
+        self.txt_detail.config(state="disabled")
+
     # ── Playback control wrappers ──
     def toggle_play(self):
         if not self.engine.cap:
@@ -437,8 +455,9 @@ class RightPlayerPanel(ctk.CTkFrame):
         self.engine.seek_to(target)
         self.seek_var.set(self.engine.cur_idx)
         cur_sec = self.engine.cur_idx / self.engine.fps
-        tot_sec = self.engine.tot_frames / self.engine.fps
-        self.lbl_time.configure(text=f"{format_time(cur_sec, self.show_ms.get())} / {format_time(tot_sec, self.show_ms.get())}")
+        total_sec = self.engine.total_frames / self.engine.fps
+        self.lbl_cur.config(text=format_time(cur_sec))
+        self.lbl_tot.config(text=format_remaining(cur_sec, total_sec))
         self.render_current_frame()
 
     def _sk_press(self, e=None):
@@ -455,9 +474,10 @@ class RightPlayerPanel(ctk.CTkFrame):
         if not self.engine.cap:
             return
         try:
-            sec = int(float(v)) / self.engine.fps
-            tot_sec = self.engine.tot_frames / self.engine.fps
-            self.lbl_time.configure(text=f"{format_time(sec, self.show_ms.get())} / {format_time(tot_sec, self.show_ms.get())}")
+            cur_sec = int(float(v)) / self.engine.fps
+            total_sec = self.engine.total_frames / self.engine.fps
+            self.lbl_cur.config(text=format_time(cur_sec))
+            self.lbl_tot.config(text=format_remaining(cur_sec, total_sec))
         except:
             pass
 
@@ -494,25 +514,13 @@ class RightPlayerPanel(ctk.CTkFrame):
         self.is_fullscreen = not self.is_fullscreen
         
         if self.is_fullscreen:
-            # Jeda video sejenak agar rendering tidak tabrakan
-            was_playing = self.engine.playing
-            
-            # Buat jendela fullscreen Toplevel baru yang gelap gulita
-            self.fs_window = tk.Toplevel(self)
-            self.fs_window.title("VidStamp Fullscreen")
-            self.fs_window.attributes("-fullscreen", True)
-            self.fs_window.configure(bg="black")
-            
-            # Ikat tombol pintasan keluar fullscreen di jendela baru
-            self.fs_window.bind("<Escape>", self.toggle_fullscreen)
-            self.fs_window.bind("<Double-Button-1>", self.toggle_fullscreen)
-            
-            # Pindahkan kanvas video ke jendela fullscreen baru
-            self.canvas_container.pack_forget()
-            self.canvas_container.pack(in_=self.fs_window, fill="both", expand=True)
-            
-            # Berikan fokus utama
-            self.fs_window.focus_set()
+            self.top_bar.pack_forget()
+            self.seek_frame.pack_forget()
+            self.ctrl_panel.pack_forget()
+            self.inf_bar.pack_forget()
+            self.sc_label_frame.pack_forget()
+            self.detail_frame.pack_forget() # Sembunyikan detail frame visual!
+            root.attributes("-fullscreen", True)
         else:
             # Pindahkan kanvas video kembali ke tab pemutar
             self.canvas_container.pack_forget()
@@ -531,6 +539,10 @@ class RightPlayerPanel(ctk.CTkFrame):
                 
             root.focus_set()
             
+            # Tampilkan kembali detail frame hanya jika ada adegan terpilih
+            if self.sc_lb.curselection():
+                self.detail_frame.pack(fill="x", padx=6, pady=(0, 4), after=self.sc_label_frame)
+            
         self.update_idletasks()
         self.render_current_frame()
 
@@ -548,7 +560,7 @@ class RightPlayerPanel(ctk.CTkFrame):
             
         dialog = tk.Toplevel(self)
         dialog.title("⚙️ Atur Waktu Skip OP/ED")
-        dialog.geometry("340x260")
+        dialog.geometry("420x260")
         dialog.configure(bg="#0f0f1e")
         dialog.resizable(False, False)
         dialog.transient(self.winfo_toplevel())
@@ -631,8 +643,162 @@ class RightPlayerPanel(ctk.CTkFrame):
         btn_frame = tk.Frame(f, bg="#0f0f1e")
         btn_frame.grid(row=5, column=0, columnspan=2, pady=10)
         
-        tk.Button(btn_frame, text="Batal", command=dialog.destroy, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="left", padx=10)
-        tk.Button(btn_frame, text="Simpan", command=save, bg="#1e5f3a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="left", padx=10)
+        tk.Button(btn_frame, text="Batal", command=dialog.destroy, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=12).pack(side="left", padx=5)
+        tk.Button(btn_frame, text="Simpan Settings", command=save, bg="#1e5f3a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=12).pack(side="left", padx=5)
+        tk.Button(btn_frame, text="✂️ Ekspor Video Bersih", command=lambda: self.setup_export_clean_dialog(dialog, v_op_start, v_op_end, v_ed_start, v_ed_end), bg="#e94560", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=10).pack(side="left", padx=5)
+
+    def setup_export_clean_dialog(self, parent_dialog, v_op_start, v_op_end, v_ed_start, v_ed_end):
+        if not self.engine.video_path:
+            return
+            
+        # Parse inputs dari parent dialog
+        try:
+            op_s = float(v_op_start.get().strip()) if v_op_start.get().strip() else None
+            op_e = float(v_op_end.get().strip()) if v_op_end.get().strip() else None
+            ed_s = float(v_ed_start.get().strip()) if v_ed_start.get().strip() else None
+            ed_e = float(v_ed_end.get().strip()) if v_ed_end.get().strip() else None
+        except ValueError:
+            messagebox.showerror("Error", "Masukkan format angka detik saja di pengaturan skip!")
+            return
+            
+        dialog = tk.Toplevel(self)
+        dialog.title("✂️ Konfigurasi Ekspor Bersih")
+        dialog.geometry("380x310")
+        dialog.configure(bg="#0f0f1e")
+        dialog.resizable(False, False)
+        dialog.transient(parent_dialog)
+        dialog.grab_set()
+        
+        lbl_style = dict(bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 9, "bold"))
+        
+        # Opsi 1: Mode Subtitel (Hardsub vs Softsub)
+        tk.Label(dialog, text="Mode Subtitel:", **lbl_style).pack(anchor="w", padx=20, pady=(12, 3))
+        v_sub_mode = tk.StringVar(value="softsub")
+        tk.Radiobutton(dialog, text="Softsub (Potong subtitel terpisah .srt)", variable=v_sub_mode, value="softsub",
+                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
+                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
+        tk.Radiobutton(dialog, text="Hardsub (Tempel teks ke dalam video)", variable=v_sub_mode, value="hardsub",
+                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
+                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
+                       
+        # Opsi 2: Cakupan (Satu file vs Bulk folder)
+        tk.Label(dialog, text="Cakupan Ekspor:", **lbl_style).pack(anchor="w", padx=20, pady=(10, 3))
+        v_scope = tk.BooleanVar(value=False) # False = Single, True = Bulk
+        tk.Radiobutton(dialog, text="Hanya episode aktif saat ini", variable=v_scope, value=False,
+                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
+                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
+        tk.Radiobutton(dialog, text="Semua video di folder aktif saat ini (Bulk)", variable=v_scope, value=True,
+                       bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
+                       activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
+                       
+        v_merge_bulk = tk.BooleanVar(value=True)
+        chk_merge = tk.Checkbutton(dialog, text="Gabungkan hasil bulk menjadi 1 file utama (MP4 & SRT)", variable=v_merge_bulk,
+                        bg="#0f0f1e", fg="#ffd700", selectcolor="#1a1a3e", activebackground="#0f0f1e",
+                        activeforeground="#ffd700", font=("Segoe UI", 8, "bold"))
+        chk_merge.pack(anchor="w", padx=35, pady=(5, 0))
+                       
+        def start_export():
+            video_path = self.engine.video_path
+            mode = v_sub_mode.get()
+            is_bulk = v_scope.get()
+            is_merge = v_merge_bulk.get()
+            
+            # Default output paths
+            base_name, ext = os.path.splitext(video_path)
+            output_video = f"{base_name}_clean{ext}"
+            output_srt = f"{base_name}_clean.srt"
+            
+            # Tutup dialog opsi dan dialog skip parent
+            dialog.destroy()
+            parent_dialog.destroy()
+            
+            # Buka progress window
+            self.show_export_progress_window(
+                video_path, op_s, op_e, ed_s, ed_e,
+                output_video, output_srt, mode, is_bulk, is_merge
+            )
+            
+        # Tombol aksi
+        btn_frame_opts = tk.Frame(dialog, bg="#0f0f1e")
+        btn_frame_opts.pack(fill="x", pady=12)
+        
+        tk.Button(btn_frame_opts, text="Batal", command=dialog.destroy, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="left", padx=25)
+        tk.Button(btn_frame_opts, text="Mulai Ekspor", command=start_export, bg="#1e5f3a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="right", padx=25)
+
+    def show_export_progress_window(self, video_path, op_start, op_end, ed_start, ed_end, output_video, output_srt, mode, is_bulk, is_merge=False):
+        import threading
+        
+        progress_dialog = tk.Toplevel(self)
+        progress_dialog.title("✂️ Memproses Ekspor Video Bersih")
+        progress_dialog.geometry("400x190")
+        progress_dialog.configure(bg="#0f0f1e")
+        progress_dialog.resizable(False, False)
+        progress_dialog.transient(self.winfo_toplevel())
+        progress_dialog.grab_set()
+        
+        lbl_status = tk.Label(progress_dialog, text="Menyiapkan ekspor...", bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 10, "bold"))
+        lbl_status.pack(pady=(20, 5))
+        
+        lbl_file = tk.Label(progress_dialog, text=os.path.basename(video_path), bg="#0f0f1e", fg="white", font=("Segoe UI", 9))
+        lbl_file.pack(pady=5)
+        
+        progress_var = tk.DoubleVar(value=0)
+        progress_bar = ttk.Progressbar(progress_dialog, variable=progress_var, maximum=100, length=320)
+        progress_bar.pack(pady=10)
+        
+        cancel_event = threading.Event()
+        
+        def cancel_action():
+            if messagebox.askyesno("Batal", "Apakah Anda yakin ingin membatalkan proses ekspor?"):
+                cancel_event.set()
+                progress_dialog.destroy()
+                
+        btn_cancel = tk.Button(progress_dialog, text="Batal", command=cancel_action, bg="#5c1a1a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15)
+        btn_cancel.pack(pady=5)
+        
+        def run_export_thread():
+            from vidstamp.core.exporter import export_clean_video_and_srt, export_bulk_and_merge
+            
+            def progress_callback(pct):
+                self.after(0, lambda: progress_var.set(pct))
+                self.after(0, lambda: lbl_status.config(text=f"Rendering: {pct:.1f}%"))
+                
+            if not is_bulk:
+                success, msg = export_clean_video_and_srt(
+                    video_path, op_start, op_end, ed_start, ed_end,
+                    output_video, output_srt, mode=mode,
+                    progress_callback=progress_callback, cancel_event=cancel_event
+                )
+                
+                if not cancel_event.is_set():
+                    if success:
+                        self.after(0, lambda: messagebox.showinfo("Sukses", f"Ekspor berhasil selesai!\nVideo: {os.path.basename(output_video)}\nSubtitel: {os.path.basename(output_srt)}"))
+                    else:
+                        self.after(0, lambda: messagebox.showerror("Gagal Ekspor", f"Terjadi kesalahan saat mengekspor:\n{msg}"))
+                    self.after(0, progress_dialog.destroy)
+            else:
+                # Pemrosesan Massal (Bulk Folder)
+                parent_dir = os.path.dirname(video_path)
+                
+                def bulk_progress_callback(file_idx, total, pct, status_text):
+                    overall_pct = (file_idx / total) * 100 + (pct / total)
+                    self.after(0, lambda: progress_var.set(overall_pct))
+                    self.after(0, lambda: lbl_status.config(text=f"Eps {file_idx+1}/{total} - {pct:.1f}%"))
+                    self.after(0, lambda: lbl_file.config(text=status_text))
+                    
+                success, msg = export_bulk_and_merge(
+                    parent_dir, mode=mode, merge_to_one=is_merge,
+                    progress_callback=bulk_progress_callback, cancel_event=cancel_event
+                )
+                
+                if not cancel_event.is_set():
+                    if success:
+                        self.after(0, lambda: messagebox.showinfo("Sukses", f"Ekspor Massal Selesai!\n{msg}"))
+                    else:
+                        self.after(0, lambda: messagebox.showerror("Gagal Ekspor Massal", f"Terjadi kesalahan:\n{msg}"))
+                    self.after(0, progress_dialog.destroy)
+                    
+        threading.Thread(target=run_export_thread, daemon=True).start()
 
     # ── Mark & Catatan ──
     def mark_start_action(self):
@@ -652,7 +818,9 @@ class RightPlayerPanel(ctk.CTkFrame):
         e = f"E:{format_time(self.mark_end)}"   if self.mark_end   is not None else "E:--"
         if self.mark_start is not None and self.mark_end is None and current_sec is not None:
             diff = current_sec - self.mark_start
-            self.lbl_mk.configure(text=f"{s}  {e}  ({diff:.2f}s)")
+            diff_m = int(diff) // 60
+            diff_s = int(diff) % 60
+            self.lbl_mk.config(text=f"{s}  {e}  ({diff_m:02d}:{diff_s:02d})")
         else:
             self.lbl_mk.configure(text=f"{s}  {e}")
 
@@ -682,69 +850,116 @@ class RightPlayerPanel(ctk.CTkFrame):
         was_playing = self.engine.playing
         if was_playing:
             self.engine.set_playing(False)
+            self.btn_play.config(text="Play")
             
-        # Buat jendela kustom dialog input yang resizable (bisa diperbesar/fleksibel)
-        dialog = tk.Toplevel(self)
-        dialog.title("💾 Simpan Catatan Adegan")
-        dialog.geometry("480x160")
-        dialog.minsize(380, 140)
-        dialog.configure(bg="#0f0f1e")
-        dialog.transient(self.winfo_toplevel())
-        dialog.grab_set()
-        
-        # Izinkan jendela diperbesar secara bebas oleh user
-        dialog.resizable(True, True)
-        
-        v_title = tk.StringVar(value=default_name)
-        
-        container = ctk.CTkFrame(dialog, fg_color="#0f0f1e")
-        container.pack(fill="both", expand=True, padx=15, pady=15)
-        
-        lbl = ctk.CTkLabel(container, text="Beri nama/judul catatan adegan ini:", text_color="#a8dadc", font=("Segoe UI", 10, "bold"))
-        lbl.pack(anchor="w", pady=(0, 4))
-        
-        entry = ctk.CTkEntry(container, textvariable=v_title, fg_color="#1a1a3e", text_color="white", border_width=0, corner_radius=6, font=("Segoe UI", 11))
-        entry.pack(fill="x", expand=True, pady=4)
-        entry.focus_set()
-        
-        # Select all teks awal
-        entry.after(50, lambda: entry.select_range(0, tk.END))
-        
-        btn_frame = ctk.CTkFrame(container, fg_color="transparent")
-        btn_frame.pack(fill="x", pady=(8, 0))
-        
-        result = {"title": None}
-        
-        def on_save(e=None):
-            val = v_title.get().strip()
-            if val:
-                result["title"] = val
-                dialog.destroy()
-                
-        def on_cancel(e=None):
-            dialog.destroy()
-            
-        entry.bind("<Return>", on_save)
-        entry.bind("<Escape>", on_cancel)
-        
-        ctk.CTkButton(btn_frame, text="Batal", command=on_cancel, fg_color="#333", hover_color="#555", text_color="white", width=80, height=26, corner_radius=6).pack(side="right", padx=6)
-        ctk.CTkButton(btn_frame, text="Simpan", command=on_save, fg_color="#1e5f3a", hover_color="#52b788", text_color="white", width=90, height=26, corner_radius=6).pack(side="right", padx=6)
-        
-        self.wait_window(dialog)
-        note_name = result["title"]
-        
-        if was_playing:
-            self.engine.set_playing(True)
-            
-        if not note_name:
-            return
-            
+        # Dapatkan subtitle pratinjau
         sub_text = ""
         if self.subtitle_list:
             matched_subs = get_subtitles_in_range(self.subtitle_list, self.mark_start, self.mark_end)
             if matched_subs:
                 sub_text = "\n".join([f"[{format_time(s['start'])}] {s['text']}" for s in matched_subs])
-                
+
+        # State untuk menangkap data dialog
+        dialog_result = {"saved": False, "name": ""}
+
+        # Toplevel Dialog Kustom
+        dialog = tk.Toplevel(self)
+        dialog.title("💾 Simpan Catatan Adegan")
+        dialog.geometry("460x330")
+        dialog.configure(bg="#0f0f1e")
+        dialog.resizable(False, False)
+        dialog.transient(self.winfo_toplevel())
+        dialog.grab_set()
+
+        # Pusatkan dialog relatif terhadap main window
+        try:
+            parent_x = self.winfo_toplevel().winfo_x()
+            parent_y = self.winfo_toplevel().winfo_y()
+            parent_w = self.winfo_toplevel().winfo_width()
+            parent_h = self.winfo_toplevel().winfo_height()
+            dialog_x = parent_x + (parent_w - 460) // 2
+            dialog_y = parent_y + (parent_h - 330) // 2
+            dialog.geometry(f"460x330+{max(0, dialog_x)}+{max(0, dialog_y)}")
+        except:
+            pass
+
+        # Frame Kontainer utama
+        f = tk.Frame(dialog, bg="#0f0f1e", padx=15, pady=15)
+        f.pack(fill="both", expand=True)
+
+        # 1. Info Adegan (Waktu & Durasi)
+        info_frame = tk.Frame(f, bg="#16213e", padx=10, pady=8)
+        info_frame.pack(fill="x", pady=(0, 10))
+
+        lbl_style = dict(bg="#16213e", fg="#a8dadc", font=("Segoe UI", 9))
+        val_style = dict(bg="#16213e", fg="#ffd700", font=("Consolas", 9, "bold"))
+
+        tk.Label(info_frame, text="Mulai:", **lbl_style).grid(row=0, column=0, sticky="w")
+        tk.Label(info_frame, text=format_time(self.mark_start), **val_style).grid(row=0, column=1, sticky="w", padx=(5, 15))
+        
+        tk.Label(info_frame, text="Selesai:", **lbl_style).grid(row=0, column=2, sticky="w")
+        tk.Label(info_frame, text=format_time(self.mark_end), **val_style).grid(row=0, column=3, sticky="w", padx=(5, 15))
+
+        tk.Label(info_frame, text="Durasi:", **lbl_style).grid(row=0, column=4, sticky="w")
+        tk.Label(info_frame, text=f"{dur:.2f}s", **val_style).grid(row=0, column=5, sticky="w", padx=5)
+
+        # 2. Input Kolom Nama Catatan
+        tk.Label(f, text="Nama Catatan Adegan:", bg="#0f0f1e", fg="#ffd700", font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(0, 4))
+        
+        v_name = tk.StringVar(value=default_name)
+        ent = tk.Entry(f, textvariable=v_name, bg="#1a1a3e", fg="white", insertbackground="white",
+                       relief="flat", font=("Segoe UI", 10), highlightthickness=1, highlightbackground="#333366",
+                       highlightcolor="#e94560")
+        ent.pack(fill="x", ipady=4, pady=(0, 10))
+        
+        # Fokus otomatis & seleksi teks
+        ent.focus_set()
+        ent.select_range(0, tk.END)
+
+        # 3. Preview Subtitle (Jika ada)
+        if sub_text:
+            tk.Label(f, text="Preview Subtitle / Transkrip:", bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 8, "bold")).pack(anchor="w", pady=(0, 2))
+            preview_box = tk.Text(f, bg="#0d0d1a", fg="#8888aa", font=("Consolas", 8), height=5, relief="flat", wrap="word", highlightthickness=0)
+            preview_box.pack(fill="both", expand=True, pady=(0, 15))
+            preview_box.insert("1.0", sub_text)
+            preview_box.config(state="disabled")
+        else:
+            tk.Frame(f, bg="#0f0f1e", height=60).pack(fill="x")
+
+        # Fungsi Aksi
+        def on_confirm(event=None):
+            name_val = v_name.get().strip()
+            if not name_val:
+                messagebox.showwarning("Peringatan", "Nama catatan tidak boleh kosong!", parent=dialog)
+                return
+            dialog_result["saved"] = True
+            dialog_result["name"] = name_val
+            dialog.destroy()
+
+        def on_cancel():
+            dialog.destroy()
+
+        # Binds
+        ent.bind("<Return>", on_confirm)
+
+        # 4. Tombol Aksi di bagian bawah
+        btn_frame = tk.Frame(f, bg="#0f0f1e")
+        btn_frame.pack(fill="x")
+
+        tk.Button(btn_frame, text="Batal", command=on_cancel, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=20, pady=4).pack(side="left")
+        tk.Button(btn_frame, text="Simpan Catatan", command=on_confirm, bg="#e94560", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=20, pady=4).pack(side="right")
+
+        # Tunggu dialog ditutup
+        self.wait_window(dialog)
+        
+        if was_playing:
+            self.engine.set_playing(True)
+            self.btn_play.config(text="Pause")
+            
+        if not dialog_result["saved"]:
+            return
+            
+        note_name = dialog_result["name"]
         self.scenes.append((self.mark_start, self.mark_end, note_name, sub_text))
         
         disp = f"{note_name}: {format_time(self.mark_start)} -> {format_time(self.mark_end)} ({dur:.2f}s)"
@@ -773,10 +988,39 @@ class RightPlayerPanel(ctk.CTkFrame):
         if s:
             self.scenes.pop(s[0])
             self.sc_lb.delete(s[0])
+            
+            # Reset panel detail setelah hapus
+            self.txt_detail.config(state="normal")
+            self.txt_detail.delete("1.0", "end")
+            self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
+            self.txt_detail.config(state="disabled")
+            self.detail_frame.pack_forget() # Sembunyikan detail frame!
+            
             # Simpan database JSON dan ekspor teks otomatis setelah penghapusan
             from vidstamp.utils.file_manager import save_scenes_data
             save_scenes_data(self.engine.video_path, self.scenes)
             self._auto_export_scenes()
+
+    def _on_sc_select(self, event=None):
+        selection = self.sc_lb.curselection()
+        if not selection:
+            self.detail_frame.pack_forget() # Sembunyikan jika deselect
+            return
+            
+        idx = selection[0]
+        if idx < len(self.scenes):
+            _, _, label, subs = self.scenes[idx]
+            self.txt_detail.config(state="normal")
+            self.txt_detail.delete("1.0", "end")
+            if subs:
+                self.txt_detail.insert("1.0", f"Adegan: {label}\n{subs}")
+            else:
+                self.txt_detail.insert("1.0", f"Adegan: {label}\n(Tidak ada subtitel/dialog terekam)")
+            self.txt_detail.config(state="disabled")
+            
+            # Tampilkan detail frame secara dinamis hanya jika tidak fullscreen
+            if not self.is_fullscreen:
+                self.detail_frame.pack(fill="x", padx=6, pady=(0, 4), after=self.sc_label_frame)
 
     def _auto_export_scenes(self):
         """Mengekspor daftar adegan secara otomatis ke file teks default di folder catatan."""
@@ -789,11 +1033,18 @@ class RightPlayerPanel(ctk.CTkFrame):
             video_base, _ = os.path.splitext(video_name)
             default_file = os.path.join(note_dir, f"{video_base}_catatan_adegan.txt")
             
+            # Ambil path absolut video dan folder catatan
+            abs_video_path = os.path.abspath(self.engine.video_path)
+            abs_note_dir = os.path.abspath(note_dir)
+            note_folder_name = os.path.basename(abs_note_dir)
+            
             with open(default_file, "w", encoding="utf-8") as f:
                 f.write("=" * 65 + "\n")
                 f.write("                  CATATAN ADEGAN & SUBTITLE\n")
-                f.write(f"  Video Source: {video_name}\n")
-                f.write(f"  Folder: {note_dir}\n")
+                f.write(f"  Video File Name  : {video_name}\n")
+                f.write(f"  Video Abs Path   : {abs_video_path}\n")
+                f.write(f"  Note Folder Name : {note_folder_name}\n")
+                f.write(f"  Note Folder Path : {abs_note_dir}\n")
                 f.write("=" * 65 + "\n\n")
                 
                 for i, (s, e, label, subs) in enumerate(self.scenes, 1):
@@ -813,6 +1064,14 @@ class RightPlayerPanel(ctk.CTkFrame):
         """Memuat database adegan lama dari scenes.json ke GUI."""
         self.scenes = []
         self.sc_lb.delete(0, "end")
+        
+        # Reset detail text dan sembunyikan frame detail
+        self.txt_detail.config(state="normal")
+        self.txt_detail.delete("1.0", "end")
+        self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
+        self.txt_detail.config(state="disabled")
+        self.detail_frame.pack_forget()
+        
         if not self.engine.cap or not self.engine.video_path:
             return
             
@@ -854,11 +1113,18 @@ class RightPlayerPanel(ctk.CTkFrame):
             return
             
         try:
+            # Ambil path absolut video dan folder catatan
+            abs_video_path = os.path.abspath(self.engine.video_path)
+            abs_note_dir = os.path.abspath(note_dir)
+            note_folder_name = os.path.basename(abs_note_dir)
+            
             with open(p, "w", encoding="utf-8") as f:
                 f.write("=" * 65 + "\n")
                 f.write("                  CATATAN ADEGAN & SUBTITLE (SEO)\n")
-                f.write(f"  Video Source: {video_name}\n")
-                f.write(f"  Folder: {note_dir}\n")
+                f.write(f"  Video File Name  : {video_name}\n")
+                f.write(f"  Video Abs Path   : {abs_video_path}\n")
+                f.write(f"  Note Folder Name : {note_folder_name}\n")
+                f.write(f"  Note Folder Path : {abs_note_dir}\n")
                 f.write("=" * 65 + "\n\n")
                 
                 for i, (s, e, label, subs) in enumerate(self.scenes, 1):
@@ -877,6 +1143,27 @@ class RightPlayerPanel(ctk.CTkFrame):
             messagebox.showerror("Error", f"Gagal mengekspor file: {err}")
 
     # ── Rendering Helper ──
+    def _wrap_text(self, text, font, font_scale, thickness, max_width):
+        """Membungkus kata-kata dalam teks agar total lebar visual piksel tidak melebihi max_width."""
+        words = text.split(' ')
+        lines = []
+        current_line = []
+        
+        for word in words:
+            test_line = ' '.join(current_line + [word]) if current_line else word
+            (tw, _), _ = cv2.getTextSize(test_line, font, font_scale, thickness)
+            
+            if tw <= max_width or not current_line:
+                current_line.append(word)
+            else:
+                lines.append(' '.join(current_line))
+                current_line = [word]
+                
+        if current_line:
+            lines.append(' '.join(current_line))
+            
+        return lines
+
     def render_current_frame(self):
         if not self.engine.cap:
             return
@@ -908,7 +1195,8 @@ class RightPlayerPanel(ctk.CTkFrame):
             cv2.putText(frame, lbl, (8, 44), FONT, 1.1, COLOR_BG, 6, cv2.LINE_AA)
             cv2.putText(frame, lbl, (8, 44), FONT, 1.1, COLOR_TS, 2, cv2.LINE_AA)
             
-            sl = f"{sec:.2f}s"
+            total_sec = self.engine.total_frames / self.engine.fps
+            sl = format_remaining(sec, total_sec)
             (tw, _), _ = cv2.getTextSize(sl, FONT, 1.0, 2)
             cv2.putText(frame, sl, (w - tw - 12, 44), FONT, 1.0, COLOR_BG, 5, cv2.LINE_AA)
             cv2.putText(frame, sl, (w - tw - 12, 44), FONT, 1.0, (255, 220, 80), 2, cv2.LINE_AA)
@@ -921,7 +1209,9 @@ class RightPlayerPanel(ctk.CTkFrame):
             if self.mark_end is None:
                 self._upmk(sec)
                 running_sec = sec - self.mark_start
-                t_rec = f"REC: {running_sec:.2f}s"
+                run_m = int(running_sec) // 60
+                run_s = int(running_sec) % 60
+                t_rec = f"REC: {run_m:02d}:{run_s:02d}"
                 cv2.putText(frame, t_rec, (8, h - 56), FONT, 0.75, COLOR_BG, 4, cv2.LINE_AA)
                 cv2.putText(frame, t_rec, (8, h - 56), FONT, 0.75, (0, 0, 255), 2, cv2.LINE_AA)
             
@@ -931,10 +1221,52 @@ class RightPlayerPanel(ctk.CTkFrame):
             cv2.putText(frame, t, (w - tw - 12, h - 28), FONT, 0.75, COLOR_BG, 4, cv2.LINE_AA)
             cv2.putText(frame, t, (w - tw - 12, h - 28), FONT, 0.75, COLOR_END, 2, cv2.LINE_AA)
             
+        # ─ Render Subtitle Live Preview ke Frame ─
+        if self.subtitle_list:
+            import re
+            active_subs = [s for s in self.subtitle_list if s['start'] <= sec < s['end']]
+            if active_subs:
+                sub_text = active_subs[0]['text']
+                sub_text = re.sub(r'<[^>]*>', '', sub_text)
+                sub_text = re.sub(r'\{[^}]*\}', '', sub_text).strip()
+                
+                # Font scale proporsional terhadap tinggi frame (lebar area 1:1 di tengah)
+                font_scale = max(0.35, min(0.7, h / 1300.0))
+                thickness = max(1, int(2.0 * font_scale))
+                shadow_thickness = thickness + 2
+                
+                # Batas lebar maksimum teks 85% dari lebar efektif area 1:1 di tengah (tinggi h)
+                max_text_width = int(h * 0.85)
+                
+                raw_lines = sub_text.split('\n')
+                wrapped_lines = []
+                for rl in raw_lines:
+                    wrapped_lines.extend(self._wrap_text(rl, FONT, font_scale, thickness, max_text_width))
+                
+                line_height = int(28 * font_scale)
+                base_y = h - 35 - (len(wrapped_lines) - 1) * line_height
+                
+                for line_idx, line in enumerate(wrapped_lines):
+                    (tw, th), _ = cv2.getTextSize(line, FONT, font_scale, thickness)
+                    tx = (w - tw) // 2
+                    ty = base_y + line_idx * line_height
+                    
+                    # Shadow hitam outline
+                    cv2.putText(frame, line, (tx, ty), FONT, font_scale, COLOR_BG, shadow_thickness, cv2.LINE_AA)
+                    # Text utama putih
+                    cv2.putText(frame, line, (tx, ty), FONT, font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
+
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        cw = self.canvas.winfo_width() or 760
-        ch = self.canvas.winfo_height() or 428
         
+        # Ambil dimensi aktual Canvas tanpa memblokir thread via update_idletasks()
+        cw = self.canvas.winfo_width()
+        ch = self.canvas.winfo_height()
+        
+        # Fallback jika widget belum dirender sepenuhnya (nilai <= 1)
+        if cw <= 1 or ch <= 1:
+            cw = 760
+            ch = 428
+            
         sc = min(cw / w, ch / h)
         nw, nh = max(1, int(w * sc)), max(1, int(h * sc))
         

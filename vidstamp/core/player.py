@@ -19,6 +19,7 @@ class VideoPlayerEngine:
         self.cur_idx = 0
         self.speed = 1.0
         self._seek_target = None
+        self._caffeinate_process = None
 
     def load(self, path):
         """Memuat berkas video dan mempersiapkan audio player MediaPlayer."""
@@ -53,6 +54,8 @@ class VideoPlayerEngine:
         self.playing = state
         if self.audio_player:
             self.audio_player.set_pause(not state)
+            
+        self._set_sleep_prevention(state)
 
     def set_speed(self, val: float):
         """Mengubah kecepatan video."""
@@ -83,24 +86,27 @@ class VideoPlayerEngine:
         if not self.cap:
             return False, None
 
+        # Tentukan indeks frame target
+        target_idx = self.cur_idx + 1
+
         # Jika ada antrean seek target
         if self._seek_target is not None:
-            self.cap.set(cv2.CAP_PROP_POS_FRAMES, self._seek_target)
+            target_idx = self._seek_target
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_idx)
             self._seek_target = None
-
         # Jika sedang memutar, sinkronkan video ke audio PTS
-        if self.playing and self.audio_player:
+        elif self.playing and self.audio_player:
             pts = self.audio_player.get_pts()
             if pts > 0:
                 target_frame = int(pts * self.fps)
                 # Hanya lakukan seek (set frame) jika desync lebih dari 6 frame (~200ms)
                 if abs(self.cur_idx - target_frame) >= 6:
-                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
-                    self.cur_idx = target_frame
+                    target_idx = target_frame
+                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_idx)
 
         ret, frame = self.cap.read()
         if ret:
-            self.cur_idx = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES)) - 1
+            self.cur_idx = target_idx
             
         return ret, frame
 
@@ -108,12 +114,14 @@ class VideoPlayerEngine:
         """Membaca satu frame spesifik tanpa mengubah posisi playback."""
         if not self.cap:
             return None
-        prev_pos = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
         ret, frame = self.cap.read()
         
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, prev_pos)
+        # Kembalikan posisi cap ke frame berikutnya yang seharusnya dibaca
+        next_pos = max(0, self.cur_idx + 1)
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, next_pos)
+        
         if ret:
             return frame
         return None
@@ -121,6 +129,7 @@ class VideoPlayerEngine:
     def release(self):
         """Menutup stream video & audio player."""
         self.playing = False
+        self._set_sleep_prevention(False)
         if self.cap:
             self.cap.release()
             self.cap = None
@@ -129,3 +138,34 @@ class VideoPlayerEngine:
             self.audio_player = None
         self.cur_idx = 0
         self._seek_target = None
+
+    def _set_sleep_prevention(self, prevent: bool):
+        """Mencegah atau mengizinkan layar mati / tidur secara otomatis (Windows & macOS)."""
+        import os
+        import sys
+        if os.name == 'nt':
+            try:
+                import ctypes
+                ES_CONTINUOUS = 0x80000000
+                ES_SYSTEM_REQUIRED = 0x00000001
+                ES_DISPLAY_REQUIRED = 0x00000002
+                if prevent:
+                    ctypes.windll.kernel32.SetThreadExecutionState(
+                        ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED
+                    )
+                else:
+                    ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS)
+            except Exception as e:
+                print(f"Error sleep prevention Windows: {e}")
+        elif sys.platform == 'darwin':
+            import subprocess
+            if prevent:
+                if not self._caffeinate_process or self._caffeinate_process.poll() is not None:
+                    try:
+                        self._caffeinate_process = subprocess.Popen(['caffeinate', '-d'])
+                    except Exception as e:
+                        print(f"Error starting caffeinate macOS: {e}")
+            else:
+                if self._caffeinate_process and self._caffeinate_process.poll() is None:
+                    self._caffeinate_process.terminate()
+                    self._caffeinate_process = None

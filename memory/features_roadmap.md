@@ -16,6 +16,7 @@ Daftar fitur, peningkatan, atau perbaikan yang akan dikerjakan ke depannya pada 
   * [ ] Mengemas bundel `.app` menjadi berkas installer `.dmg` dengan latar belakang grafis pemandu drag-and-drop.
 
 ## 🎯 Prioritas Utama (Backlog Fitur)
+* [ ] **Integrasi API Groq Whisper**: Transkripsi audio hasil ekstrak (`.mp3`/`.wav`) ke format subtitle `.srt` otomatis yang sinkron dengan video secara pintar.
 * [ ] Integrasi database anime online (API AniSkip) untuk auto-fetch durasi OP/ED anime populer secara langsung tanpa setting manual.
 * [ ] Ekstraksi trek subtitle lebih dari satu (multilingual subtitle track selection).
 * [ ] Fitur preview thumbnail di seek bar saat pointer hover di atasnya.

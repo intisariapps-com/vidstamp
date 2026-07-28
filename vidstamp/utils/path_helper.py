@@ -45,3 +45,36 @@ def get_ffmpeg_path():
 
     # Jika semua gagal, kembalikan 'ffmpeg' mentah dengan harapan ada di PATH
     return "ffmpeg"
+
+def get_ffprobe_path():
+    """
+    Mendeteksi dan mengembalikan path biner FFprobe yang valid.
+    Urutan deteksi:
+    1. Runtime extraction path PyInstaller (sys._MEIPASS/bin)
+    2. Folder bin lokal (./bin/win/ffprobe.exe atau ./bin/mac/ffprobe)
+    3. Fallback pencarian biner di PATH sistem.
+    """
+    # 1. Cek di lingkungan PyInstaller
+    try:
+        base_path = sys._MEIPASS
+        ext = ".exe" if os.name == "nt" else ""
+        pyinstaller_ffprobe = os.path.join(base_path, "bin", f"ffprobe{ext}")
+        if os.path.exists(pyinstaller_ffprobe):
+            return pyinstaller_ffprobe
+    except AttributeError:
+        pass
+
+    # 2. Cek di folder bin proyek lokal
+    subfolder = "win" if os.name == "nt" else "mac"
+    ext = ".exe" if os.name == "nt" else ""
+    local_path = os.path.join(os.path.abspath("."), "bin", subfolder, f"ffprobe{ext}")
+    if os.path.exists(local_path):
+        return local_path
+
+    # 3. Fallback ke PATH global sistem
+    system_ffprobe = shutil.which("ffprobe")
+    if system_ffprobe:
+        return system_ffprobe
+
+    # Jika semua gagal, kembalikan 'ffprobe' mentah dengan harapan ada di PATH
+    return "ffprobe"
