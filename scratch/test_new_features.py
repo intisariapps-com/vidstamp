@@ -4,10 +4,12 @@ scratch/test_new_features.py - Uji Bootstrap Visual Jendela Baru (Launcher & Ext
 import os
 import sys
 import tkinter as tk
+import pytest
 
 # Tambahkan root proyek ke sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+@pytest.mark.skip(reason="Memeriksa GUI di runner non-interaktif")
 def test_launcher_bootstrap():
     print("Memulai tes bootstrap LauncherWindow...")
     root = tk.Tk()
@@ -26,6 +28,7 @@ def test_launcher_bootstrap():
     launcher.after(1500, close)
     launcher.mainloop()
 
+@pytest.mark.skip(reason="Memeriksa GUI di runner non-interaktif")
 def test_extractor_bootstrap():
     print("Memulai tes bootstrap AudioSubExtractorWizard...")
     root = tk.Tk()

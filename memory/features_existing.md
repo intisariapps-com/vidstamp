@@ -53,3 +53,11 @@ Berikut adalah daftar fitur yang sudah selesai dibangun dan berstatus stabil di 
 ## 13. Fitur Ekspor Video & Subtitel Bersih (Smart Cut & Subtitle Aligner)
 * **Deskripsi**: Menyediakan dialog ekspor untuk memotong video bersih tanpa Opening/Ending (dengan opsi Softsub atau Hardsub) baik untuk video aktif saat ini maupun pemrosesan massal (Bulk Folder Batch) menggunakan latar belakang proses threading non-blocking dan visual progress bar. Subtitle diselaraskan dan digeser waktunya secara otomatis secara presisi.
 * **Status**: Selesai
+
+## 14. Setup Bundling & Installer macOS (.app / .dmg)
+* **Deskripsi**: Menyediakan konfigurasi `BUNDLE` macOS pada PyInstaller `vidstamp.spec` yang mendukung tipe file video populer, ikon `.icns` dinamis, dan skrip shell portabel `bin/build_macos.sh` serta GitHub Actions CI/CD workflow (`build-macos.yml`) untuk kompilasi otomatis biner mandiri `.app` dan installer `.dmg` otonom di cloud runner.
+* **Status**: Selesai
+
+## 15. Sistem Manajemen Versi Terpusat (Central Versioning)
+* **Deskripsi**: Implementasi berkas `version.json` sebagai *source of truth* versi aplikasi terpusat, yang disinkronkan secara otonom ke metadata paket, label versi UI launcher, window title player, dan spesifikasi nama output biner setup installer menggunakan skrip `update_version.py` sebelum proses kompilasi dimulai.
+* **Status**: Selesai

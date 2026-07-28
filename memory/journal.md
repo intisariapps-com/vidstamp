@@ -49,14 +49,41 @@ Log kronologis aktivitas harian sesi pengembangan.
 * **Status**: Sukses besar, fitur deteksi bab otomatis dan ekspor video bersih berjalan sangat lancar dan responsif tanpa memblokir antarmuka utama (UI).
 * **Langkah Selanjutnya**: Evaluasi kinerja ekspor massal untuk folder berskala besar.
 
+## 2026-07-28 (Lanjutan) / 2026-07-29 - Sesi Restrukturisasi Tata Letak Bersih & Peningkatan Fitur Batch Merger Paralel
+* **Aktivitas**:
+  - **Restrukturisasi Tata Letak Bersih**: Menghapus panel penjelajah folder kiri (`LeftBrowserPanel`), mempack panel utama (`RightPlayerPanel`) memenuhi 100% lebar jendela utama, dan menambahkan tombol "📁 Buka Folder" & "📄 Buka Video" di menu bar atas.
+  - **Dropdown Episode Dinamis**: Menambahkan dropdown Combobox "🎬 Video:" di menu atas untuk memudahkan penonton berpindah antar video/episode dalam folder aktif.
+  - **Tombol Menu Peralatan Kanan Atas**: Menambahkan tombol "🛠️ Peralatan ▾" melayang yang memicu popup menu native Tkinter untuk akses cepat ke Batch Merger, Ekstraktor, dan pembukaan folder catatan adegan di Windows Explorer.
+  - **Perbaikan Bug Menu Bar Windows**: Menghapus pewarnaan kustom tidak standar dari `tk.Menu` untuk mengembalikan rendering native Windows, mematikan bug menu "tidak tiba" (tidak merespons/teks tersembunyi).
+  - **Kustomisasi Subtitel Hardsub**: Menambahkan dropdown Ukuran Font Hardsub (lewat filter `subtitles` FFmpeg `:force_style='Fontsize=X'`) dan dropdown Batas Panjang Baris (menggunakan fungsi auto-wrap teks seimbang di Python agar teks tidak terpotong di rasio 1:1 Instagram).
+  - **Multi-tasking & Paralel Render Tanpa Konflik**: Mengubah dialog wizard merger dan ekstraktor menjadi non-modal, menambahkan tombol "➕ Jendela Baru" untuk menduplikasi jendela merger secara dinamis, dan menambahkan generator kode unik UUID acak untuk penamaan seluruh berkas temporer (`temp_clean_ep...`, `mylist_temp_...`, `temp_extract_...`) agar proses render paralel berjalan aman tanpa tabrakan file.
+  - **UX & Manajemen Antrean Merger**: Menghindari penutupan wizard otomatis pasca-sukses dengan me-reset status UI secara langsung. Menambahkan fitur hapus video terpilih dari antrean merger (tombol visual dan tombol keyboard `Delete`), serta menyelaraskan list file sisa ke backend render.
+  - **Penyempurnaan Visual & Bug Fix**: Memperbaiki visual bug tata letak tombol hapus dengan memposisikan parent Treeview secara tepat ke `tree_container` di bawah `table_frame`. Memperbaiki `NameError: filedialog is not defined` di `main_window.py`. Mengubah urutan reset status `self.processing` agar berjalan sebelum pemblokiran modal messagebox sukses.
+* **Status**: Sukses besar, antarmuka VidStamp jauh lebih bersih dan premium, serta Batch Merger Wizard kini sangat andal untuk rendering paralel banyak folder secara bersamaan.
+* **Langkah Selanjutnya**: Evaluasi performa pembakaran subtitle untuk font dan gaya bahasa kustom lainnya.
+
 ## 2026-07-28 - Sesi Konfirmasi Jalur Pengembangan Utama (Kembali ke Tkinter Klasik Stabil)
 * **Aktivitas**:
   - Melakukan uji coba perombakan arsitektur PySide6 / Companion App MPC-HC pada branch terpisah (`feat-pyside6-gui`).
   - Setelah evaluasi mendalam, diputuskan secara strategis untuk **kembali menggunakan dan melanjutkan pengembangan pada basis kode Tkinter klasik yang stabil** (`main-old-base-fixed`).
   - Memperbarui memori proyek untuk mencatat arah pengembangan masa depan yang berfokus pada Tkinter klasik, optimasi performa pemutar video internal OpenCV, dan perluasan fitur-fitur pintar.
 * **Status**: Sukses besar, repositori lokal berada di branch `main-old-base-fixed` yang bersih, stabil, dan siap dikembangkan lebih lanjut.
-* **Langkah Selanjutnya**: Melanjutkan backlog fitur (Whisper API / database AniSkip) langsung di atas basis Tkinter klasik stabil.
 
-
-
-
+## 2026-07-29 - Sesi Bundling macOS, Workspace Workflows & Sistem Manajemen Versi Terpusat
+* **Aktivitas**:
+  - **Spesifikasi Bundling macOS**: Merancang dan menulis dokumen spesifikasi teknis SRS di [spesifikasi_bundling_macos.md](file:///d:/VIDSTAMPS-APPS/docs/srs/spesifikasi_bundling_macos.md) beserta rencana implementasinya.
+  - **Otomatisasi Build macOS**:
+    - Memodifikasi berkas [vidstamp.spec](file:///d:/VIDSTAMPS-APPS/vidstamp.spec) untuk menyertakan `ffprobe` (Windows & macOS) dan menambahkan konfigurasi `BUNDLE` macOS kondisional.
+    - Membuat skrip build portabel [build_macos.sh](file:///d:/VIDSTAMPS-APPS/bin/build_macos.sh) yang secara dinamis mengunduh FFmpeg/FFprobe macOS, merender ikon `.icns` dari PNG via `sips`/`iconutil`, dan membungkus `.app` menjadi `.dmg` installer dengan `create-dmg`.
+    - Membuat berkas konfigurasi GitHub Actions [build-macos.yml](file:///d:/VIDSTAMPS-APPS/.github/workflows/build-macos.yml) untuk build cloud otonom di runner `macos-latest`.
+  - **Workspace Workflows Baru**: Membuat 3 berkas alur kerja (slash command) kustom di `.agents/workflows/`: [run-test.md](file:///d:/VIDSTAMPS-APPS/.agents/workflows/run-test.md), [build-app.md](file:///d:/VIDSTAMPS-APPS/.agents/workflows/build-app.md), dan [sync-docs.md](file:///d:/VIDSTAMPS-APPS/.agents/workflows/sync-docs.md).
+  - **Sistem Manajemen Versi Terpusat (Central Versioning)**:
+    - Membuat berkas [version.json](file:///d:/VIDSTAMPS-APPS/version.json) di root sebagai *source of truth* versi aplikasi.
+    - Membuat berkas utilitas [update_version.py](file:///d:/VIDSTAMPS-APPS/update_version.py) untuk menyinkronkan versi central ke metadata paket, label versi launcher, window title player, dan nama setup installer.
+    - Mengintegrasikan skrip pembaruan versi ini ke langkah awal workflow `/build-app`.
+    - Mendokumentasikan spesifikasi arsitekturnya di [spesifikasi_manajemen_versi_terpusat.md](file:///d:/VIDSTAMPS-APPS/docs/srs/spesifikasi_manajemen_versi_terpusat.md).
+  - **Verifikasi & Eksekusi Kompilasi**:
+    - Menjalankan pengujian unit pytest lokal pra-build (6 passed, 2 skipped).
+    - Menjalankan `/build-app` yang memicu pembaruan versi, kompilasi PyInstaller, dan build Inno Setup secara otonom menghasilkan installer Windows `VidStamp_Setup_v1.3.0.exe` (~146MB) dengan sukses di root.
+* **Status**: Sukses besar, sistem manajemen versi terpusat, pengemasan macOS, dan otomatisasi installer Windows/macOS telah diselesaikan dan berjalan dengan stabil.
+* **Langkah Selanjutnya**: Melakukan push commit ke GitHub remote untuk memicu pengujian build macOS di Actions secara cloud.

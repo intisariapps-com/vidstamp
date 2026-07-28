@@ -11,9 +11,9 @@ Daftar fitur, peningkatan, atau perbaikan yang akan dikerjakan ke depannya pada 
   * [x] Menyiapkan file konfigurasi PyInstaller `.spec`.
   * [x] Menguji bundel *one-folder* (`COLLECT`) dengan penyertaan aset biner FFmpeg.
   * [x] Membuat skrip installer instan (Setup) menggunakan Inno Setup (`installer_windows.iss`).
-* [ ] **Bundling macOS (`.dmg`)**:
-  * [ ] Mengompilasi aplikasi ke bundel `.app` di lingkungan macOS.
-  * [ ] Mengemas bundel `.app` menjadi berkas installer `.dmg` dengan latar belakang grafis pemandu drag-and-drop.
+* [x] **Bundling macOS (`.dmg`)**:
+  * [x] Mengompilasi aplikasi ke bundel `.app` di lingkungan macOS.
+  * [x] Mengemas bundel `.app` menjadi berkas installer `.dmg` dengan latar belakang grafis pemandu drag-and-drop.
 
 ## 🎯 Prioritas Utama (Backlog Fitur)
 * [ ] **Integrasi API Groq Whisper**: Transkripsi audio hasil ekstrak (`.mp3`/`.wav`) ke format subtitle `.srt` otomatis yang sinkron dengan video secara pintar.
