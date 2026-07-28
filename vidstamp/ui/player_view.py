@@ -200,7 +200,6 @@ class RightPlayerPanel(tk.Frame):
         # Detail Preview Adegan Terpilih
         self.detail_frame = tk.LabelFrame(self, text=" Detail Adegan & Subtitel Terpilih ", bg="#0d0d1a", fg="#a8dadc",
                                           font=("Segoe UI", 8, "bold"), pady=2)
-        self.detail_frame.pack(fill="x", padx=6, pady=(0, 4))
         
         self.txt_detail = tk.Text(self.detail_frame, bg="#0b0b18", fg="#8888aa", font=("Consolas", 8),
                                   height=3, relief="flat", wrap="word", highlightthickness=0)
@@ -291,6 +290,7 @@ class RightPlayerPanel(tk.Frame):
             self.ctrl_panel.pack_forget()
             self.inf_bar.pack_forget()
             self.sc_label_frame.pack_forget()
+            self.detail_frame.pack_forget() # Sembunyikan detail frame visual!
             root.attributes("-fullscreen", True)
         else:
             root.attributes("-fullscreen", False)
@@ -300,6 +300,10 @@ class RightPlayerPanel(tk.Frame):
             self.ctrl_panel.pack(fill="x", after=self.seek_frame)
             self.inf_bar.pack(fill="x", after=self.ctrl_panel)
             self.sc_label_frame.pack(fill="x", padx=6, pady=(0, 4), after=self.inf_bar)
+            
+            # Tampilkan kembali detail frame hanya jika ada adegan terpilih
+            if self.sc_lb.curselection():
+                self.detail_frame.pack(fill="x", padx=6, pady=(0, 4), after=self.sc_label_frame)
             
         self.update_idletasks()
         self.render_current_frame()
@@ -750,6 +754,7 @@ class RightPlayerPanel(tk.Frame):
             self.txt_detail.delete("1.0", "end")
             self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
             self.txt_detail.config(state="disabled")
+            self.detail_frame.pack_forget() # Sembunyikan detail frame!
             
             # Simpan database JSON dan ekspor teks otomatis setelah penghapusan
             from vidstamp.utils.file_manager import save_scenes_data
@@ -759,6 +764,7 @@ class RightPlayerPanel(tk.Frame):
     def _on_sc_select(self, event=None):
         selection = self.sc_lb.curselection()
         if not selection:
+            self.detail_frame.pack_forget() # Sembunyikan jika deselect
             return
             
         idx = selection[0]
@@ -771,6 +777,10 @@ class RightPlayerPanel(tk.Frame):
             else:
                 self.txt_detail.insert("1.0", f"Adegan: {label}\n(Tidak ada subtitel/dialog terekam)")
             self.txt_detail.config(state="disabled")
+            
+            # Tampilkan detail frame secara dinamis hanya jika tidak fullscreen
+            if not self.is_fullscreen:
+                self.detail_frame.pack(fill="x", padx=6, pady=(0, 4), after=self.sc_label_frame)
 
     def _auto_export_scenes(self):
         """Mengekspor daftar adegan secara otomatis ke file teks default di folder catatan."""
@@ -815,11 +825,12 @@ class RightPlayerPanel(tk.Frame):
         self.scenes = []
         self.sc_lb.delete(0, "end")
         
-        # Reset detail text
+        # Reset detail text dan sembunyikan frame detail
         self.txt_detail.config(state="normal")
         self.txt_detail.delete("1.0", "end")
         self.txt_detail.insert("1.0", "Pilih adegan di atas untuk melihat detail subtitel...")
         self.txt_detail.config(state="disabled")
+        self.detail_frame.pack_forget()
         
         if not self.engine.cap or not self.engine.video_path:
             return
