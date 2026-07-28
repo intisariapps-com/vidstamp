@@ -33,6 +33,11 @@ class BatchMergerWizard(tk.Toplevel):
 
     def _setup_styles(self):
         style = ttk.Style(self)
+        
+        # Paksa menggunakan tema 'clam' agar properti fieldbackground dihormati di Windows!
+        if "clam" in style.theme_names():
+            style.theme_use("clam")
+            
         style.configure("Dark.Treeview", 
                         background="#0d0d1a", 
                         foreground="#e0e0ff",
@@ -43,7 +48,9 @@ class BatchMergerWizard(tk.Toplevel):
                         background="#16213e", 
                         foreground="#a8dadc",
                         font=("Segoe UI", 9, "bold"))
-        style.map("Dark.Treeview", background=[("selected", "#1a4a6e")])
+        style.map("Dark.Treeview", 
+                  background=[("selected", "#1a4a6e")],
+                  foreground=[("selected", "white")])
         
         # Style Progressbar
         style.configure("Emerald.Horizontal.TProgressbar", 
