@@ -11,10 +11,11 @@ Dokumen ini berfungsi sebagai panduan utama persona, arsitektur, dan aturan peng
 * **Keamanan Kredensial Desktop (Wajib)**:
   * **Tahap Pengembangan**: File `.env` hanya digunakan untuk pengembangan lokal.
   * **Tahap Produksi (Build .exe/.app)**: JANGAN PERNAH membundel berkas `.env` ke dalam executable. Gunakan metode **Remote Config Fetching (In-Memory)** menggunakan Cloudflare R2 (`https://data.intisariapps.com/v1/env`) untuk memuat kredensial/API Key langsung ke RAM saat boot-up tanpa menulis ke disk.
-* **Kualitas Desain (Rich Aesthetics - Standar MPC-HC)**:
-  * **Framework UI**: Wajib bermigrasi dari Tkinter standar ke **CustomTkinter** untuk menghapus tampilan visual kaku dengan sudut melengkung (*rounded corners*), warna gelap terpadu, dan transisi halus.
-  * **Tata Letak Ala MPC-HC**: Mengadopsi tata letak pemutar media profesional:
-    * **Compact Control Bar**: Menggabungkan seek bar, volume, penanda waktu, dan tombol kontrol navigasi (menggunakan simbol unicode minimalis) dalam satu baris tipis di bawah video.
+* **Kualitas Desain (Rich Aesthetics - Standar MPC-HC / Premiere Pro)**:
+  * **Framework UI**: Menggunakan **PySide6 (Qt6)** secara penuh untuk menghapus tampilan visual kaku, memanfaatkan widget QTreeView native asinkron, dan QThread untuk kinerja FFmpeg yang responsif.
+  * **Tata Letak Ala MPC-HC & Sidebar**:
+    * **Compact Control Bar**: Menggabungkan seek bar, tombol kontrol navigasi tipis, dan tombol marker tepat di bawah video player.
+    * **Adegan Sidebar**: Menaruh panel catatan adegan (`QListWidget`) dan detail subtitel di sidebar bagian kanan untuk memaksimalkan tinggi visual pemutar video di kiri (menghilangkan kotak hitam kosong).
     * **Drag & Drop**: Mendukung drag-and-drop file video dari Windows Explorer langsung ke canvas pemutar.
     * **Context Menu**: Klik kanan pada layar video memunculkan pop-up menu pintasan cepat.
 
@@ -23,16 +24,16 @@ Dokumen ini berfungsi sebagai panduan utama persona, arsitektur, dan aturan peng
 ---
 
 ## 2. Arsitektur Proyek
-Aplikasi ini bernama **VidStamp** (Video Timestamp & Marker) yang dikembangkan dengan arsitektur modular proper berbasis Python:
+Aplikasi ini bernama **VidStamp** (Video Timestamp & Marker) yang dikembangkan dengan arsitektur modular proper berbasis Python & PySide6 (Qt6):
 
 * **Entry Point**: `python -m vidstamp` (mengeksekusi `vidstamp/__main__.py`).
 * **vidstamp/core/**: Logika inti non-GUI.
   * `player.py`: Integrasi sinkron OpenCV dan `ffpyplayer` audio engine.
   * `subtitle.py`: Ekstraksi subtitle mkv via FFmpeg subprocess dan parser srt eksternal.
-* **vidstamp/ui/**: Antarmuka Tkinter.
-  * `main_window.py`: Controller/koordinator window utama dan loop pemutaran.
-  * `browser.py`: Panel kiri navigasi folder & pencarian berkas video.
-  * `player_view.py`: Panel kanan canvas rendering, controls, dialog, dan catatan adegan.
+* **vidstamp/ui/**: Antarmuka PySide6.
+  * `main_window.py`: Controller/koordinator window utama QMainWindow.
+  * `browser.py`: Panel kiri navigasi folder asinkron (`QTreeView` & `QFileSystemModel`).
+  * `player_view.py`: Panel kanan visual player canvas, controls, dan sidebar adegan.
 * **vidstamp/utils/**: Helper pembantu.
   * `time_formatter.py`: Formatting detik float.
   * `text_cleaner.py`: Pengolah teks (4 kata judul).
