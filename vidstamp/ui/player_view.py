@@ -934,7 +934,8 @@ class RightPlayerPanel(tk.Frame):
             active_subs = [s for s in self.subtitle_list if s['start'] <= sec < s['end']]
             if active_subs:
                 sub_text = active_subs[0]['text']
-                sub_text = re.sub(r'<[^>]*>', '', sub_text).strip()
+                sub_text = re.sub(r'<[^>]*>', '', sub_text)
+                sub_text = re.sub(r'\{[^}]*\}', '', sub_text).strip()
                 
                 # Font scale proporsional terhadap lebar frame (sweet spot)
                 font_scale = max(0.45, min(0.9, w / 1100.0))

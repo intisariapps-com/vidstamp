@@ -47,7 +47,9 @@ def parse_srt_file(srt_path):
                     start_sec = parse_srt_timestamp(times[0].strip())
                     end_sec = parse_srt_timestamp(times[1].strip())
                     text = " ".join(lines[text_start_idx:])
-                    text_clean = re.sub(r"<[^>]*>", "", text).strip()
+                    # Bersihkan tag HTML (seperti <font>) dan tag ASS/SSA (seperti {\an8})
+                    text_clean = re.sub(r"<[^>]*>", "", text)
+                    text_clean = re.sub(r"\{[^}]*\}", "", text_clean).strip()
                     subtitles.append({
                         'start': start_sec,
                         'end': end_sec,
