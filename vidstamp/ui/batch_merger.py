@@ -63,11 +63,21 @@ class BatchMergerWizard(tk.Toplevel):
         header_frame = tk.Frame(self, bg="#16213e", pady=8)
         header_frame.pack(side="top", fill="x")
         
-        tk.Label(header_frame, text="🎛️ Batch Merger & Skip Config Wizard", 
-                 bg="#16213e", fg="#a8dadc", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=15)
-        self.lbl_folder = tk.Label(header_frame, text=f"Folder Aktif: {self.parent_dir}", 
+        # Sub-frame kiri untuk judul dan status folder
+        left_sub = tk.Frame(header_frame, bg="#16213e")
+        left_sub.pack(side="left", padx=15, fill="y")
+        
+        tk.Label(left_sub, text="🎛️ Batch Merger & Skip Config Wizard", 
+                 bg="#16213e", fg="#a8dadc", font=("Segoe UI", 12, "bold")).pack(anchor="w")
+        self.lbl_folder = tk.Label(left_sub, text=f"Folder Aktif: {self.parent_dir}", 
                                    bg="#16213e", fg="#8888aa", font=("Segoe UI", 8))
-        self.lbl_folder.pack(anchor="w", padx=15, pady=(2, 0))
+        self.lbl_folder.pack(anchor="w", pady=(2, 0))
+        
+        # Tombol Ganti Folder di sebelah kanan
+        self.btn_change_folder = tk.Button(header_frame, text="📁 Ganti Folder...", command=self._change_folder_action,
+                                           bg="#1a1a3e", fg="#7ec8e3", relief="flat", font=("Segoe UI", 9, "bold"),
+                                           padx=12, pady=4)
+        self.btn_change_folder.pack(side="right", padx=15, pady=4)
 
         # 2. Tombol Pintasan Aksi (Terjangkar di paling bawah)
         btn_frame = tk.Frame(self, bg="#0d0d1a", pady=10)
@@ -411,7 +421,8 @@ class BatchMergerWizard(tk.Toplevel):
                 if not self.cancel_event.is_set():
                     if success:
                         self.after(0, lambda: messagebox.showinfo("Sukses", f"Proses Batch Selesai!\n{msg}"))
-                        self.after(0, self.destroy)
+                        self.after(0, lambda: self.lbl_status_text.config(text="Tugas selesai! Silakan ganti folder atau mulai tugas baru."))
+                        self.after(0, self._reset_ui_state)
                     else:
                         self.after(0, lambda: messagebox.showerror("Gagal Ekspor Massal", f"Terjadi kesalahan:\n{msg}"))
                         self.after(0, self._reset_ui_state)
@@ -427,7 +438,6 @@ class BatchMergerWizard(tk.Toplevel):
         self.btn_start.config(state="normal")
         self.btn_cancel.config(text="Batal / Keluar")
         self.progress_var.set(100)
-        self.lbl_status_text.config(text="Proses dibatalkan atau terhenti.")
 
     def _on_cancel(self):
         if self.processing:
@@ -436,3 +446,26 @@ class BatchMergerWizard(tk.Toplevel):
                 self._reset_ui_state()
         else:
             self.destroy()
+
+    def _change_folder_action(self):
+        if self.processing:
+            messagebox.showwarning("Peringatan", "Harap batalkan proses merger saat ini terlebih dahulu sebelum mengganti folder.")
+            return
+            
+        new_dir = filedialog.askdirectory(title="Pilih Folder Baru untuk Batch Merger", initialdir=self.parent_dir)
+        if new_dir:
+            self.parent_dir = new_dir
+            self.lbl_folder.config(text=f"Folder Aktif: {self.parent_dir}")
+            
+            # Reset dropdown file gabungan ke folder baru
+            folder_basename = os.path.basename(self.parent_dir.rstrip(r"\/"))
+            self.v_output_path.set(os.path.join(self.parent_dir, f"{folder_basename}_clean.mp4"))
+            
+            # Bersihkan Treeview
+            for item in self.tree.get_children():
+                self.tree.delete(item)
+                
+            # Scan ulang folder baru
+            self.video_files = []
+            self.video_data = {}
+            self._scan_folder_background()
