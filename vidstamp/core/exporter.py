@@ -428,7 +428,7 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
     success, msg = run_ffmpeg_process(cmd, total_keep_duration, progress_callback, cancel_event)
     return success, msg
  
-def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progress_callback=None, cancel_event=None, font_size=None, line_limit=None):
+def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progress_callback=None, cancel_event=None, font_size=None, line_limit=None, video_files_list=None):
     """
     Memproses seluruh episode dalam folder: memotong OP/ED, menggeser subtitle,
     dan jika merge_to_one=True, menggabungkannya menjadi 1 file MP4 utama dan 1 file SRT global.
@@ -440,13 +440,16 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
     from vidstamp.core.subtitle import find_external_subtitle, extract_mkv_subtitles
     
     # 1. Cari semua file video
-    try:
-        files = sorted([
-            os.path.join(parent_dir, f) for f in os.listdir(parent_dir)
-            if os.path.splitext(f)[1].lower() in VIDEO_EXTS and "_clean" not in f.lower()
-        ])
-    except Exception as e:
-        return False, f"Gagal membaca isi direktori: {e}"
+    if video_files_list is not None:
+        files = sorted(video_files_list)
+    else:
+        try:
+            files = sorted([
+                os.path.join(parent_dir, f) for f in os.listdir(parent_dir)
+                if os.path.splitext(f)[1].lower() in VIDEO_EXTS and "_clean" not in f.lower()
+            ])
+        except Exception as e:
+            return False, f"Gagal membaca isi direktori: {e}"
     
     if not files:
         return False, "Tidak ditemukan berkas video di folder tersebut."

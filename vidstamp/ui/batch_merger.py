@@ -209,11 +209,25 @@ class BatchMergerWizard(tk.Toplevel):
         self.tree.column("op_skip", width=140, anchor="center")
         self.tree.column("ed_skip", width=140, anchor="center")
         
-        sb = tk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
+        tree_container = tk.Frame(table_frame, bg="#0d0d1a")
+        tree_container.pack(fill="both", expand=True)
+
+        sb = tk.Scrollbar(tree_container, orient="vertical", command=self.tree.yview)
         self.tree.config(yscrollcommand=sb.set)
         
         self.tree.pack(side="left", fill="both", expand=True)
         sb.pack(side="right", fill="y")
+
+        # Frame aksi kontrol antrean
+        list_ctrl_frame = tk.Frame(table_frame, bg="#0d0d1a")
+        list_ctrl_frame.pack(fill="x", pady=(5, 0))
+        
+        btn_delete = tk.Button(list_ctrl_frame, text="❌ Hapus Terpilih (Del)", command=self._delete_selected_videos,
+                               bg="#5c1a1a", fg="white", relief="flat", font=("Segoe UI", 8, "bold"),
+                               padx=10, pady=2)
+        btn_delete.pack(side="left")
+        
+        self.tree.bind("<Delete>", lambda e: self._delete_selected_videos())
 
     def _browse_output_file(self):
         fn = filedialog.asksaveasfilename(title="Simpan File Gabungan", 
@@ -400,7 +414,7 @@ class BatchMergerWizard(tk.Toplevel):
                 success, msg = export_bulk_and_merge(
                     self.parent_dir, mode=mode, merge_to_one=merge,
                     progress_callback=progress_callback, cancel_event=self.cancel_event,
-                    font_size=f_size, line_limit=l_limit
+                    font_size=f_size, line_limit=l_limit, video_files_list=list(self.video_files)
                 )
                 
                 # Jika user memilih gabungkan, dan output path kustom berbeda dengan default [NamaFolder]_clean.mp4, pindahkan berkas.
@@ -469,3 +483,28 @@ class BatchMergerWizard(tk.Toplevel):
             self.video_files = []
             self.video_data = {}
             self._scan_folder_background()
+
+    def _delete_selected_videos(self):
+        if self.processing:
+            messagebox.showwarning("Peringatan", "Harap batalkan proses merger saat ini terlebih dahulu sebelum memodifikasi antrean.")
+            return
+            
+        selected_items = self.tree.selection()
+        if not selected_items:
+            return
+            
+        if not messagebox.askyesno("Konfirmasi Hapus", f"Apakah Anda yakin ingin menghapus {len(selected_items)} video terpilih dari antrean?"):
+            return
+            
+        for item in selected_items:
+            values = self.tree.item(item, "values")
+            if values:
+                filename = values[0]
+                for vf in list(self.video_files):
+                    if os.path.basename(vf) == filename:
+                        self.video_files.remove(vf)
+                        if vf in self.video_data:
+                            del self.video_data[vf]
+                self.tree.delete(item)
+                
+        self.lbl_status_text.config(text=f"Siap memproses {len(self.video_files)} episode video.")
