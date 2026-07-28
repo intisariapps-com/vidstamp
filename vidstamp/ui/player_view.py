@@ -64,51 +64,13 @@ class PlayerView(QWidget):
         self.save_timer.start()
 
     def _build_ui(self):
-        # 1. Main Horizontal Layout (membagi Area Player kiri dan Sidebar Adegan kanan)
-        self.main_h_layout = QHBoxLayout(self)
-        self.main_h_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_h_layout.setSpacing(6)
+        # Layout utama berorientasi vertikal murni
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(6, 6, 6, 6)
+        self.main_layout.setSpacing(6)
         
-        # Container Kiri (Area Player)
-        self.player_container = QWidget(self)
-        self.player_container.setObjectName("PlayerContainer")
-        self.player_layout = QVBoxLayout(self.player_container)
-        self.player_layout.setContentsMargins(6, 6, 6, 6)
-        self.player_layout.setSpacing(6)
-        
-        # Container Kanan (Sidebar Adegan)
-        self.sidebar_container = QWidget(self)
-        self.sidebar_container.setObjectName("SidebarContainer")
-        self.sidebar_container.setFixedWidth(280) # Batas lebar tetap agar sidebar rapi
-        self.sidebar_layout = QVBoxLayout(self.sidebar_container)
-        self.sidebar_layout.setContentsMargins(6, 6, 6, 6)
-        self.sidebar_layout.setSpacing(8)
-        
-        self.main_h_layout.addWidget(self.player_container)
-        self.main_h_layout.addWidget(self.sidebar_container)
-        
-        # ───────────────── CONTAINER KIRI: VIDEO PLAYER ─────────────────
-        # 1. Top Bar (Nama Berkas & Tombol load)
-        self.top_bar = QWidget(self.player_container)
-        self.top_bar.setObjectName("TopBar")
-        top_layout = QHBoxLayout(self.top_bar)
-        top_layout.setContentsMargins(5, 2, 5, 2)
-        
-        self.lbl_title = QLabel("Tidak ada video yang dimuat", self.top_bar)
-        self.lbl_title.setObjectName("VideoTitle")
-        
-        btn_open = QPushButton("Buka Video...", self.top_bar)
-        btn_open.setObjectName("OpenButton")
-        btn_open.setCursor(Qt.PointingHandCursor)
-        btn_open.clicked.connect(self._open_file_dialog)
-        
-        top_layout.addWidget(self.lbl_title)
-        top_layout.addStretch()
-        top_layout.addWidget(btn_open)
-        self.player_layout.addWidget(self.top_bar)
-        
-        # 2. Canvas Panel (Display Frame OpenCV)
-        self.canvas_container = QWidget(self.player_container)
+        # 1. Canvas Panel (Display Frame OpenCV)
+        self.canvas_container = QWidget(self)
         self.canvas_container.setObjectName("CanvasContainer")
         self.canvas_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         canvas_layout = QVBoxLayout(self.canvas_container)
@@ -124,10 +86,10 @@ class PlayerView(QWidget):
         self.lbl_canvas.mousePressEvent = self._on_canvas_clicked
         
         canvas_layout.addWidget(self.lbl_canvas)
-        self.player_layout.addWidget(self.canvas_container)
+        self.main_layout.addWidget(self.canvas_container)
         
-        # 3. Seek Bar & Time Display
-        self.seek_frame = QWidget(self.player_container)
+        # 2. Seek Bar & Time Display
+        self.seek_frame = QWidget(self)
         seek_layout = QHBoxLayout(self.seek_frame)
         seek_layout.setContentsMargins(5, 0, 5, 0)
         
@@ -148,10 +110,10 @@ class PlayerView(QWidget):
         seek_layout.addWidget(self.lbl_time_cur)
         seek_layout.addWidget(self.slider)
         seek_layout.addWidget(self.lbl_time_total)
-        self.player_layout.addWidget(self.seek_frame)
+        self.main_layout.addWidget(self.seek_frame)
         
-        # 4. Control Panel (Playback Navigasi & Markers)
-        self.ctrl_panel = QWidget(self.player_container)
+        # 3. Control Panel (Playback Navigasi & Markers)
+        self.ctrl_panel = QWidget(self)
         ctrl_layout = QHBoxLayout(self.ctrl_panel)
         ctrl_layout.setContentsMargins(5, 0, 5, 0)
         ctrl_layout.setSpacing(6)
@@ -223,66 +185,13 @@ class PlayerView(QWidget):
         ctrl_layout.addStretch()
         ctrl_layout.addWidget(self.btn_start)
         ctrl_layout.addWidget(self.btn_end)
-        self.player_layout.addWidget(self.ctrl_panel)
+        self.main_layout.addWidget(self.ctrl_panel)
         
-        # 5. Info Bar Pintasan
-        self.inf_bar = QLabel("Space = Play/Pause | DoubleClick = Fullscreen | Ctrl+T = Record | Ctrl+Space = Batal | Q = Keluar", self.player_container)
+        # 4. Info Bar Pintasan
+        self.inf_bar = QLabel("Space = Play/Pause | DoubleClick = Fullscreen | Ctrl+T = Record | Ctrl+Space = Batal | Q = Keluar", self)
         self.inf_bar.setObjectName("InfoBar")
         self.inf_bar.setAlignment(Qt.AlignCenter)
-        self.player_layout.addWidget(self.inf_bar)
-        
-        # ───────────────── CONTAINER KANAN: SIDEBAR ADEGAN ─────────────────
-        # 6. Scene Catatan Adegan Panel
-        self.sc_label_frame = QGroupBox(" Adegan Tercatat ", self.sidebar_container)
-        self.sc_label_frame.setObjectName("SceneFrame")
-        sc_layout = QVBoxLayout(self.sc_label_frame)
-        sc_layout.setContentsMargins(8, 8, 8, 8)
-        sc_layout.setSpacing(6)
-        
-        self.sc_lb = QListWidget(self.sc_label_frame)
-        self.sc_lb.setObjectName("SceneList")
-        self.sc_lb.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.sc_lb.itemSelectionChanged.connect(self._on_sc_select)
-        self.sc_lb.itemDoubleClicked.connect(self._jump_sc)
-        
-        sc_btn_layout = QHBoxLayout()
-        sc_btn_layout.setSpacing(4)
-        
-        self.btn_sc_jump = QPushButton("Lompat", self.sc_label_frame)
-        self.btn_sc_jump.clicked.connect(self._jump_sc)
-        
-        self.btn_sc_del = QPushButton("Hapus", self.sc_label_frame)
-        self.btn_sc_del.setObjectName("DeleteSceneButton")
-        self.btn_sc_del.clicked.connect(self._del_sc)
-        
-        self.btn_sc_exp = QPushButton("Export", self.sc_label_frame)
-        self.btn_sc_exp.setObjectName("ExportSceneButton")
-        self.btn_sc_exp.clicked.connect(self._exp_sc)
-        
-        for btn in [self.btn_sc_jump, self.btn_sc_del, self.btn_sc_exp]:
-            btn.setObjectName("SceneActionButton")
-            btn.setCursor(Qt.PointingHandCursor)
-            sc_btn_layout.addWidget(btn)
-            
-        sc_layout.addWidget(self.sc_lb)
-        sc_layout.addLayout(sc_btn_layout)
-        self.sidebar_layout.addWidget(self.sc_label_frame)
-        
-        # 7. Detail Preview Adegan Terpilih
-        self.detail_frame = QGroupBox(" Detail Adegan & Subtitel ", self.sidebar_container)
-        self.detail_frame.setObjectName("DetailFrame")
-        self.detail_frame.setFixedHeight(150)
-        det_layout = QVBoxLayout(self.detail_frame)
-        det_layout.setContentsMargins(6, 6, 6, 6)
-        
-        self.txt_detail = QTextEdit(self.detail_frame)
-        self.txt_detail.setObjectName("DetailText")
-        self.txt_detail.setReadOnly(True)
-        self.txt_detail.setPlainText("Pilih adegan di atas untuk melihat detail subtitel...")
-        
-        det_layout.addWidget(self.txt_detail)
-        self.sidebar_layout.addWidget(self.detail_frame)
-        self.detail_frame.hide() # sembunyi secara default
+        self.main_layout.addWidget(self.inf_bar)
 
     def _apply_stylesheet(self):
         qss = """
@@ -733,7 +642,7 @@ class PlayerView(QWidget):
         pixmap = QPixmap.fromImage(qimg)
         
         self.lbl_canvas.setPixmap(pixmap.scaled(
-            self.lbl_canvas.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+            self.lbl_canvas.size(), Qt.KeepAspectRatio, Qt.FastTransformation
         ))
 
     def _wrap_text(self, text, font, scale, thickness, max_w):
@@ -868,9 +777,6 @@ class PlayerView(QWidget):
 
     def load_saved_scenes(self):
         self.scenes = []
-        self.sc_lb.clear()
-        self.detail_frame.hide()
-        
         if not self.engine.cap or not self.engine.video_path:
             return
             
@@ -882,69 +788,13 @@ class PlayerView(QWidget):
             label = item.get("label", "")
             subs = item.get("subtitles", "")
             self.scenes.append((s, e, label, subs))
-            
-            dur = e - s
-            disp = f"{label}: {format_time(s)} -> {format_time(e)} ({dur:.2f}s)"
-            self.sc_lb.addItem(disp)
 
-    def _on_sc_select(self):
-        selected = self.sc_lb.currentRow()
-        if selected < 0 or selected >= len(self.scenes):
-            self.detail_frame.hide()
+    def open_scenes_dialog(self):
+        if not self.engine.cap or not self.engine.video_path:
+            QMessageBox.critical(self, "Pemberitahuan", "Silakan muat file video terlebih dahulu.")
             return
-            
-        s_start, s_end, label, subs = self.scenes[selected]
-        self.txt_detail.clear()
-        if subs:
-            self.txt_detail.setPlainText(f"Adegan: {label}\n{subs}")
-        else:
-            self.txt_detail.setPlainText(f"Adegan: {label}\n(Tidak ada subtitel/dialog terekam)")
-            
-        if not self.is_fullscreen:
-            self.detail_frame.show()
-
-    def _jump_sc(self):
-        selected = self.sc_lb.currentRow()
-        if selected >= 0 and selected < len(self.scenes):
-            s_start, _, _, _ = self.scenes[selected]
-            self.engine.seek_to(int(s_start * self.engine.fps))
-            self._update_time_slider()
-            self.render_current_frame()
-
-    def _del_sc(self):
-        selected = self.sc_lb.currentRow()
-        if selected >= 0 and selected < len(self.scenes):
-            reply = QMessageBox.question(self, "Konfirmasi", 
-                                         "Hapus catatan adegan terpilih?",
-                                         QMessageBox.Yes | QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                self.scenes.pop(selected)
-                
-                from vidstamp.utils.file_manager import save_scenes_data
-                save_scenes_data(self.engine.video_path, self.scenes)
-                self._auto_export_scenes()
-                
-                self.load_saved_scenes()
-                self.lbl_status_bar_update("Adegan dihapus.")
-
-    def _exp_sc(self):
-        selected = self.sc_lb.currentRow()
-        if selected >= 0 and selected < len(self.scenes):
-            s_start, s_end, label, _ = self.scenes[selected]
-            fn, _ = QFileDialog.getSaveFileName(self, "Export Potongan Adegan Video", 
-                                                os.path.dirname(self.engine.video_path), 
-                                                "Video MP4 (*.mp4)")
-            if fn:
-                self.lbl_status_bar_update("Mengekspor potongan adegan via FFmpeg... Mohon tunggu.")
-                import threading
-                from vidstamp.core.exporter import cut_video_single
-                def run_cut():
-                    success, msg = cut_video_single(self.engine.video_path, s_start, s_end, fn)
-                    if success:
-                        self.lbl_status_bar_update("Ekspor adegan sukses!")
-                    else:
-                        self.lbl_status_bar_update(f"Ekspor adegan gagal: {msg}")
-                threading.Thread(target=run_cut, daemon=True).start()
+        dialog = SceneListDialog(self)
+        dialog.exec()
 
     def _auto_export_scenes(self):
         if not self.engine.cap or not self.engine.video_path:
@@ -970,10 +820,201 @@ class PlayerView(QWidget):
         except Exception as err:
             print(f"Gagal melakukan ekspor otomatis catatan: {err}")
 
-    def _open_file_dialog(self):
-        fn, _ = QFileDialog.getOpenFileName(self, "Pilih Berkas Video", "", "Video Files (*.mkv *.mp4 *.avi)")
-        if fn:
-            self.load_video(fn)
+from PySide6.QtWidgets import QDialog, QListWidget, QTextEdit, QGroupBox
+
+class SceneListDialog(QDialog):
+    def __init__(self, parent_player):
+        super().__init__(parent_player)
+        self.player = parent_player
+        self.setWindowTitle("Daftar Catatan Adegan - VidStamp")
+        self.resize(500, 420)
+        self.setMinimumSize(400, 320)
+        self.setObjectName("SceneListDialog")
+        
+        self._build_ui()
+        self._apply_stylesheet()
+        self.load_scenes()
+        
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(10)
+        
+        self.sc_label_frame = QGroupBox(" Adegan Tercatat ", self)
+        self.sc_label_frame.setObjectName("SceneFrame")
+        sc_layout = QVBoxLayout(self.sc_label_frame)
+        sc_layout.setContentsMargins(8, 8, 8, 8)
+        sc_layout.setSpacing(6)
+        
+        self.sc_lb = QListWidget(self.sc_label_frame)
+        self.sc_lb.setObjectName("SceneList")
+        self.sc_lb.itemSelectionChanged.connect(self._on_sc_select)
+        self.sc_lb.itemDoubleClicked.connect(self._jump_sc)
+        
+        sc_btn_layout = QHBoxLayout()
+        sc_btn_layout.setSpacing(6)
+        
+        self.btn_sc_jump = QPushButton("Lompat", self.sc_label_frame)
+        self.btn_sc_jump.clicked.connect(self._jump_sc)
+        
+        self.btn_sc_del = QPushButton("Hapus", self.sc_label_frame)
+        self.btn_sc_del.setObjectName("DeleteSceneButton")
+        self.btn_sc_del.clicked.connect(self._del_sc)
+        
+        self.btn_sc_exp = QPushButton("Export Video", self.sc_label_frame)
+        self.btn_sc_exp.setObjectName("ExportSceneButton")
+        self.btn_sc_exp.clicked.connect(self._exp_sc)
+        
+        for btn in [self.btn_sc_jump, self.btn_sc_del, self.btn_sc_exp]:
+            btn.setObjectName("SceneActionButton")
+            btn.setCursor(Qt.PointingHandCursor)
+            sc_btn_layout.addWidget(btn)
+            
+        sc_layout.addWidget(self.sc_lb)
+        sc_layout.addLayout(sc_btn_layout)
+        layout.addWidget(self.sc_label_frame)
+        
+        self.detail_frame = QGroupBox(" Detail Adegan & Subtitel ", self)
+        self.detail_frame.setObjectName("DetailFrame")
+        self.detail_frame.setFixedHeight(120)
+        det_layout = QVBoxLayout(self.detail_frame)
+        det_layout.setContentsMargins(6, 6, 6, 6)
+        
+        self.txt_detail = QTextEdit(self.detail_frame)
+        self.txt_detail.setObjectName("DetailText")
+        self.txt_detail.setReadOnly(True)
+        self.txt_detail.setPlainText("Pilih adegan di atas untuk melihat detail...")
+        
+        det_layout.addWidget(self.txt_detail)
+        layout.addWidget(self.detail_frame)
+        
+    def _apply_stylesheet(self):
+        qss = """
+        #SceneListDialog {
+            background-color: #0d0d1a;
+        }
+        #SceneFrame, #DetailFrame {
+            color: #a8dadc;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #1f4068;
+            border-radius: 6px;
+        }
+        #SceneList {
+            background-color: #050510;
+            color: #e0e0ff;
+            border: 1px solid #1f4068;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+        }
+        #SceneList::item:hover {
+            background-color: #16213e;
+        }
+        #SceneList::item:selected {
+            background-color: #e94560;
+            color: white;
+        }
+        #SceneActionButton {
+            background-color: #16213e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10px;
+            padding: 5px 12px;
+            font-weight: bold;
+        }
+        #SceneActionButton:hover {
+            background-color: #243b6b;
+        }
+        #DeleteSceneButton {
+            background-color: #5c1a1a;
+        }
+        #DeleteSceneButton:hover {
+            background-color: #7c2222;
+        }
+        #ExportSceneButton {
+            background-color: #1e5f3a;
+        }
+        #ExportSceneButton:hover {
+            background-color: #2a7f50;
+        }
+        #DetailText {
+            background-color: #050510;
+            color: #8888aa;
+            border: 1px solid #1f4068;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 11px;
+        }
+        """
+        self.setStyleSheet(qss)
+        
+    def load_scenes(self):
+        self.sc_lb.clear()
+        self.txt_detail.setPlainText("Pilih adegan di atas untuk melihat detail...")
+        
+        for idx, (s, e, label, subs) in enumerate(self.player.scenes):
+            dur = e - s
+            disp = f"{label}: {format_time(s)} -> {format_time(e)} ({dur:.2f}s)"
+            self.sc_lb.addItem(disp)
+            
+    def _on_sc_select(self):
+        selected = self.sc_lb.currentRow()
+        if selected < 0 or selected >= len(self.player.scenes):
+            return
+            
+        s_start, s_end, label, subs = self.player.scenes[selected]
+        self.txt_detail.clear()
+        if subs:
+            self.txt_detail.setPlainText(f"Adegan: {label}\n{subs}")
+        else:
+            self.txt_detail.setPlainText(f"Adegan: {label}\n(Tidak ada subtitel/dialog terekam)")
+            
+    def _jump_sc(self):
+        selected = self.sc_lb.currentRow()
+        if selected >= 0 and selected < len(self.player.scenes):
+            s_start, _, _, _ = self.player.scenes[selected]
+            self.player.engine.seek_to(int(s_start * self.player.engine.fps))
+            self.player._update_time_slider()
+            self.player.render_current_frame()
+            
+    def _del_sc(self):
+        selected = self.sc_lb.currentRow()
+        if selected >= 0 and selected < len(self.player.scenes):
+            reply = QMessageBox.question(self, "Konfirmasi", 
+                                         "Hapus catatan adegan terpilih?",
+                                         QMessageBox.Yes | QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.player.scenes.pop(selected)
+                
+                from vidstamp.utils.file_manager import save_scenes_data
+                save_scenes_data(self.player.engine.video_path, self.player.scenes)
+                self.player._auto_export_scenes()
+                
+                self.load_scenes()
+                self.player.lbl_status_bar_update("Adegan dihapus.")
+                
+    def _exp_sc(self):
+        selected = self.sc_lb.currentRow()
+        if selected >= 0 and selected < len(self.player.scenes):
+            s_start, s_end, label, _ = self.player.scenes[selected]
+            fn, _ = QFileDialog.getSaveFileName(self, "Export Potongan Adegan Video", 
+                                                os.path.dirname(self.player.engine.video_path), 
+                                                "Video MP4 (*.mp4)")
+            if fn:
+                self.player.lbl_status_bar_update("Mengekspor potongan adegan via FFmpeg... Mohon tunggu.")
+                import threading
+                from vidstamp.core.exporter import cut_video_single
+                def run_cut():
+                    success, msg = cut_video_single(self.player.engine.video_path, s_start, s_end, fn)
+                    if success:
+                        self.player.lbl_status_bar_update("Ekspor adegan sukses!")
+                    else:
+                        self.player.lbl_status_bar_update(f"Ekspor adegan gagal: {msg}")
+                threading.Thread(target=run_cut, daemon=True).start()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

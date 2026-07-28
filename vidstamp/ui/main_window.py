@@ -65,8 +65,33 @@ class VideoAppController(QMainWindow):
         self.menu_bar = self.menuBar()
         self.menu_bar.setObjectName("MenuBar")
         
+        # 1. Menu Berkas
+        self.file_menu = self.menu_bar.addMenu("Berkas")
+        self.file_menu.setObjectName("FileMenu")
+        
+        self.action_open = QAction("Buka Video...", self)
+        self.action_open.setShortcut(QKeySequence("Ctrl+O"))
+        self.action_open.triggered.connect(self.open_video_dialog)
+        self.file_menu.addAction(self.action_open)
+        
+        self.file_menu.addSeparator()
+        
+        self.action_quit = QAction("Keluar", self)
+        self.action_quit.setShortcut(QKeySequence("Ctrl+Q"))
+        self.action_quit.triggered.connect(self.close)
+        self.file_menu.addAction(self.action_quit)
+        
+        # 2. Menu Peralatan
         self.tools_menu = self.menu_bar.addMenu("Peralatan")
         self.tools_menu.setObjectName("ToolsMenu")
+        
+        # Action Daftar Catatan Adegan
+        self.action_scenes = QAction("Daftar Catatan Adegan...", self)
+        self.action_scenes.setShortcut(QKeySequence("Ctrl+L"))
+        self.action_scenes.triggered.connect(self.right_panel.open_scenes_dialog)
+        self.tools_menu.addAction(self.action_scenes)
+        
+        self.tools_menu.addSeparator()
         
         # Action Batch Merger
         self.action_merger = QAction("Batch Merger Wizard...", self)
@@ -78,6 +103,13 @@ class VideoAppController(QMainWindow):
         self.action_extractor = QAction("Ekstraktor Subtitle & Audio...", self)
         self.action_extractor.triggered.connect(self.open_extractor_tool)
         self.tools_menu.addAction(self.action_extractor)
+
+    def open_video_dialog(self):
+        from PySide6.QtWidgets import QFileDialog
+        init = self.left_panel.cur_folder or self.get_default_dir()
+        fn, _ = QFileDialog.getOpenFileName(self, "Pilih Berkas Video", init, "Video Files (*.mkv *.mp4 *.avi)")
+        if fn:
+            self.load_video(fn)
 
     def _apply_stylesheet(self):
         qss = """
@@ -141,7 +173,11 @@ class VideoAppController(QMainWindow):
         modifiers = event.modifiers()
         
         # Global Shortcuts
-        if key == Qt.Key_Tab:
+        if modifiers & Qt.ControlModifier and key == Qt.Key_O:
+            self.open_video_dialog()
+        elif modifiers & Qt.ControlModifier and key == Qt.Key_L:
+            self.right_panel.open_scenes_dialog()
+        elif key == Qt.Key_Tab:
             self.toggle_browser()
         elif key == Qt.Key_F11:
             self.right_panel.toggle_fullscreen()
