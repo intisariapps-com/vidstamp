@@ -47,7 +47,16 @@ Log kronologis aktivitas harian sesi pengembangan.
   - Mengembangkan visualisasi progress bar (`show_export_progress_window`) berbasis Threading non-blocking di Tkinter yang melacak kemajuan render FFmpeg per detik secara real-time dan mendukung pembatalan (Cancel).
   - Memperbarui dokumentasi memori proyek (`memory/features_existing.md`) dengan fitur-fitur baru yang telah stabil ini.
 * **Status**: Sukses besar, fitur deteksi bab otomatis dan ekspor video bersih berjalan sangat lancar dan responsif tanpa memblokir antarmuka utama (UI).
-* **Langkah Selanjutnya**: Evaluasi kinerja ekspor massal untuk folder berskala besar dan persiapan untuk migrasi UI ke CustomTkinter.
+* **Langkah Selanjutnya**: Evaluasi kinerja ekspor massal untuk folder berskala besar.
+
+## 2026-07-28 - Sesi Konfirmasi Jalur Pengembangan Utama (Kembali ke Tkinter Klasik Stabil)
+* **Aktivitas**:
+  - Melakukan uji coba perombakan arsitektur PySide6 / Companion App MPC-HC pada branch terpisah (`feat-pyside6-gui`).
+  - Setelah evaluasi mendalam, diputuskan secara strategis untuk **kembali menggunakan dan melanjutkan pengembangan pada basis kode Tkinter klasik yang stabil** (`main-old-base-fixed`).
+  - Memperbarui memori proyek untuk mencatat arah pengembangan masa depan yang berfokus pada Tkinter klasik, optimasi performa pemutar video internal OpenCV, dan perluasan fitur-fitur pintar.
+* **Status**: Sukses besar, repositori lokal berada di branch `main-old-base-fixed` yang bersih, stabil, dan siap dikembangkan lebih lanjut.
+* **Langkah Selanjutnya**: Melanjutkan backlog fitur (Whisper API / database AniSkip) langsung di atas basis Tkinter klasik stabil.
+
 
 
 
