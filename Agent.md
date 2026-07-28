@@ -40,12 +40,16 @@ Aplikasi ini bernama **VidStamp** (Video Timestamp & Marker) yang dikembangkan d
 
 ---
 
-## 3. Sistem Operasi & Lingkungan
+## 3. Sistem Operasi & Lingkungan & Cabang Git (Git Branching)
 * **Sistem Operasi**: Windows (PowerShell) & macOS (untuk target build `.dmg`)
 * **Direktori Workspace**: `e:\ANIME\`
+* **Aturan Cabang Git (MANDATORI)**:
+  * **Cabang Pengembangan Aktif (`dev`)**: Segala bentuk modifikasi kode, eksperimen, penulisan fitur, dan perbaikan bug WAJIB dilakukan di branch `dev`.
+  * **Cabang Produksi/Stabil (`main`)**: Branch `main` dilindungi secara ketat dan hanya berisi versi rilis yang sudah stabil dan lolos uji (production-ready). JANGAN PERNAH mengubah file kode, melakukan pengujian langsung, atau commit di branch `main`.
+  * **Proteksi AI**: Jika AI mendeteksi sedang berada di branch `main`, AI wajib memperingatkan pengguna dan secara otonom beralih ke branch `dev` (`git checkout dev`) sebelum melanjutkan pekerjaan.
 * **Manajemen Sesi**:
-  * **Mulai Sesi (`/session-start`)**: AI memverifikasi status Git secara proaktif, membaca `memory/README.md` dan file memori pendukung untuk memulihkan konteks kerja.
-  * **Tutup Sesi (`/session-end`)**: AI memperbarui `memory/journal.md`, `memory/features_existing.md`, dan `memory/features_roadmap.md`, lalu melakukan commit & push ke branch dev (atau branch utama jika disepakati).
+  * **Mulai Sesi (`/session-start`)**: AI memverifikasi status Git secara proaktif (memastikan berada di branch `dev` yang sinkron dengan remote), membaca `memory/README.md` dan file memori pendukung untuk memulihkan konteks kerja.
+  * **Tutup Sesi (`/session-end`)**: AI memperbarui `memory/journal.md`, `memory/features_existing.md`, dan `memory/features_roadmap.md`, lalu melakukan commit & push ke branch `dev`.
 
 ---
 
