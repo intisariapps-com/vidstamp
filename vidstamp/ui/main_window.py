@@ -316,8 +316,13 @@ class VideoAppController:
         self.root.after(5000, self._start_auto_save_loop)
 
 def start_gui(start_path=None):
+    from PySide6.QtWidgets import QApplication
     from vidstamp.ui.launcher import LauncherWindow
     from vidstamp.config import ROOT_DIRS
+    import sys
+    
+    # State untuk menentukan apa yang harus dibuka setelah launcher ditutup
+    action_to_take = {"mode": None, "path": None}
     
     def get_default_dir():
         for d in ROOT_DIRS:
@@ -325,7 +330,33 @@ def start_gui(start_path=None):
                 return d
         return os.path.expanduser("~")
 
-    def launch_player():
+    def set_launch_player():
+        action_to_take["mode"] = "player"
+        QApplication.quit()
+
+    def set_launch_wizard(folder_path):
+        action_to_take["mode"] = "wizard"
+        action_to_take["path"] = folder_path
+        QApplication.quit()
+
+    # Jika start_path diberikan dan berupa file/folder valid, langsung buka player
+    if start_path and os.path.exists(start_path):
+        action_to_take["mode"] = "player"
+    else:
+        # Jalankan launcher screen berbasis PySide6
+        app = QApplication(sys.argv)
+        launcher = LauncherWindow(
+            launch_player_fn=set_launch_player,
+            launch_wizard_fn=set_launch_wizard,
+            get_def_dir_fn=get_default_dir
+        )
+        launcher.show()
+        app.exec()
+        
+    # Eksekusi Tkinter loop berdasarkan aksi yang dipilih dari launcher PySide6
+    if action_to_take["mode"] == "player":
+        import tkinter as tk
+        from tkinter import ttk
         root = tk.Tk()
         from vidstamp.utils.logger import register_tkinter_exception_handler
         register_tkinter_exception_handler(root)
@@ -337,19 +368,20 @@ def start_gui(start_path=None):
         style.configure("Horizontal.TScale", background="#0d0d1a", troughcolor="#1a1a3e",
                          sliderthickness=14, sliderrelief="flat")
                          
-        app = VideoAppController(root, start_path)
-        root.protocol("WM_DELETE_WINDOW", app.quit_app)
+        app_ctrl = VideoAppController(root, start_path)
+        root.protocol("WM_DELETE_WINDOW", app_ctrl.quit_app)
         root.mainloop()
-
-    def launch_wizard(folder_path):
+        
+    elif action_to_take["mode"] == "wizard":
+        import tkinter as tk
         root = tk.Tk()
-        root.withdraw() # Sembunyikan window root
+        root.withdraw()
         
         from vidstamp.utils.logger import register_tkinter_exception_handler
         register_tkinter_exception_handler(root)
         
         from vidstamp.ui.batch_merger import BatchMergerWizard
-        wizard = BatchMergerWizard(root, folder_path)
+        wizard = BatchMergerWizard(root, action_to_take["path"])
         
         def on_wizard_close():
             try: wizard.destroy()
@@ -359,15 +391,3 @@ def start_gui(start_path=None):
             
         wizard.protocol("WM_DELETE_WINDOW", on_wizard_close)
         root.mainloop()
-
-    # Jika start_path diberikan dan berupa file/folder valid, langsung buka player
-    if start_path and os.path.exists(start_path):
-        launch_player()
-    else:
-        # Jalankan launcher screen
-        launcher = LauncherWindow(
-            launch_player_fn=launch_player,
-            launch_wizard_fn=launch_wizard,
-            get_def_dir_fn=get_default_dir
-        )
-        launcher.mainloop()

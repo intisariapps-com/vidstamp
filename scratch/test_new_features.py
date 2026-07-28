@@ -10,21 +10,23 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 def test_launcher_bootstrap():
     print("Memulai tes bootstrap LauncherWindow...")
-    root = tk.Tk()
-    root.withdraw()
-    
+    from PySide6.QtWidgets import QApplication
+    from PySide6.QtCore import QTimer
     from vidstamp.ui.launcher import LauncherWindow
+    
+    app = QApplication(sys.argv)
     
     dummy_fn = lambda *args: print("Callback terpicu")
     launcher = LauncherWindow(dummy_fn, dummy_fn, lambda: os.getcwd())
+    launcher.show()
     
     def close():
         print("Menutup Launcher. Sukses!")
-        launcher.destroy()
-        root.destroy()
+        launcher.close()
+        app.quit()
         
-    launcher.after(1500, close)
-    launcher.mainloop()
+    QTimer.singleShot(1500, close)
+    app.exec()
 
 def test_extractor_bootstrap():
     print("Memulai tes bootstrap AudioSubExtractorWizard...")
