@@ -6,8 +6,8 @@ import subprocess
 import re
 
 def parse_srt_timestamp(ts_str):
-    """Konversi format SRT HH:MM:SS,mmm ke detik float"""
-    match = re.match(r"(\d+):(\d+):(\d+),(\d+)", ts_str)
+    """Konversi format SRT HH:MM:SS,mmm atau HH:MM:SS.mmm ke detik float"""
+    match = re.match(r"(\d+):(\d+):(\d+)[.,](\d+)", ts_str.strip())
     if not match:
         return 0.0
     h, m, s, ms = map(int, match.groups())
@@ -94,7 +94,7 @@ def extract_mkv_subtitles(video_path, temp_srt_path):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            timeout=15
+            timeout=60
         )
         if os.path.exists(temp_srt_path) and os.path.getsize(temp_srt_path) > 0:
             return True
@@ -102,6 +102,51 @@ def extract_mkv_subtitles(video_path, temp_srt_path):
         print(f"FFmpeg subtitle extraction error: {e}")
         
     return False
+
+def extract_audio_from_video(video_path, output_audio_path):
+    """
+    Mengekstrak audio track dari video (MP4/MKV) ke file audio (MP3/WAV)
+    menggunakan subprocess FFmpeg.
+    """
+    if os.path.exists(output_audio_path):
+        try:
+            os.remove(output_audio_path)
+        except:
+            pass
+
+    from vidstamp.utils.path_helper import get_ffmpeg_path
+    ffmpeg_cmd = get_ffmpeg_path()
+    
+    cmd = [
+        ffmpeg_cmd, '-y',
+        '-i', video_path,
+        '-vn',
+        '-c:a', 'libmp3lame' if output_audio_path.lower().endswith('.mp3') else 'pcm_s16le',
+        '-q:a', '2' if output_audio_path.lower().endswith('.mp3') else '0',
+        output_audio_path
+    ]
+    
+    startupinfo = None
+    if os.name == 'nt':
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = 0
+
+    try:
+        res = subprocess.run(
+            cmd,
+            startupinfo=startupinfo,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=180 # 3 menit untuk audio 2 jam
+        )
+        if os.path.exists(output_audio_path) and os.path.getsize(output_audio_path) > 0:
+            return True, "Sukses"
+        else:
+            return False, f"FFmpeg error: {res.stderr}"
+    except Exception as e:
+        return False, str(e)
 
 def get_subtitles_in_range(subtitles_list, start_sec, end_sec):
     """

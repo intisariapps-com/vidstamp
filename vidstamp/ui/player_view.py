@@ -408,7 +408,7 @@ class RightPlayerPanel(tk.Frame):
             
         dialog = tk.Toplevel(self)
         dialog.title("✂️ Konfigurasi Ekspor Bersih")
-        dialog.geometry("380x240")
+        dialog.geometry("380x310")
         dialog.configure(bg="#0f0f1e")
         dialog.resizable(False, False)
         dialog.transient(parent_dialog)
@@ -417,7 +417,7 @@ class RightPlayerPanel(tk.Frame):
         lbl_style = dict(bg="#0f0f1e", fg="#a8dadc", font=("Segoe UI", 9, "bold"))
         
         # Opsi 1: Mode Subtitel (Hardsub vs Softsub)
-        tk.Label(dialog, text="Mode Subtitel:", **lbl_style).pack(anchor="w", padx=20, pady=(15, 5))
+        tk.Label(dialog, text="Mode Subtitel:", **lbl_style).pack(anchor="w", padx=20, pady=(12, 3))
         v_sub_mode = tk.StringVar(value="softsub")
         tk.Radiobutton(dialog, text="Softsub (Potong subtitel terpisah .srt)", variable=v_sub_mode, value="softsub",
                        bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
@@ -427,7 +427,7 @@ class RightPlayerPanel(tk.Frame):
                        activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
                        
         # Opsi 2: Cakupan (Satu file vs Bulk folder)
-        tk.Label(dialog, text="Cakupan Ekspor:", **lbl_style).pack(anchor="w", padx=20, pady=(15, 5))
+        tk.Label(dialog, text="Cakupan Ekspor:", **lbl_style).pack(anchor="w", padx=20, pady=(10, 3))
         v_scope = tk.BooleanVar(value=False) # False = Single, True = Bulk
         tk.Radiobutton(dialog, text="Hanya episode aktif saat ini", variable=v_scope, value=False,
                        bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
@@ -436,10 +436,17 @@ class RightPlayerPanel(tk.Frame):
                        bg="#0f0f1e", fg="white", selectcolor="#1a1a3e", activebackground="#0f0f1e",
                        activeforeground="white", font=("Segoe UI", 9)).pack(anchor="w", padx=35)
                        
+        v_merge_bulk = tk.BooleanVar(value=True)
+        chk_merge = tk.Checkbutton(dialog, text="Gabungkan hasil bulk menjadi 1 file utama (MP4 & SRT)", variable=v_merge_bulk,
+                        bg="#0f0f1e", fg="#ffd700", selectcolor="#1a1a3e", activebackground="#0f0f1e",
+                        activeforeground="#ffd700", font=("Segoe UI", 8, "bold"))
+        chk_merge.pack(anchor="w", padx=35, pady=(5, 0))
+                       
         def start_export():
             video_path = self.engine.video_path
             mode = v_sub_mode.get()
             is_bulk = v_scope.get()
+            is_merge = v_merge_bulk.get()
             
             # Default output paths
             base_name, ext = os.path.splitext(video_path)
@@ -453,17 +460,17 @@ class RightPlayerPanel(tk.Frame):
             # Buka progress window
             self.show_export_progress_window(
                 video_path, op_s, op_e, ed_s, ed_e,
-                output_video, output_srt, mode, is_bulk
+                output_video, output_srt, mode, is_bulk, is_merge
             )
             
         # Tombol aksi
         btn_frame_opts = tk.Frame(dialog, bg="#0f0f1e")
-        btn_frame_opts.pack(fill="x", pady=15)
+        btn_frame_opts.pack(fill="x", pady=12)
         
         tk.Button(btn_frame_opts, text="Batal", command=dialog.destroy, bg="#333", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="left", padx=25)
         tk.Button(btn_frame_opts, text="Mulai Ekspor", command=start_export, bg="#1e5f3a", fg="white", relief="flat", font=("Segoe UI", 9, "bold"), padx=15).pack(side="right", padx=25)
 
-    def show_export_progress_window(self, video_path, op_start, op_end, ed_start, ed_end, output_video, output_srt, mode, is_bulk):
+    def show_export_progress_window(self, video_path, op_start, op_end, ed_start, ed_end, output_video, output_srt, mode, is_bulk, is_merge=False):
         import threading
         
         progress_dialog = tk.Toplevel(self)
@@ -495,7 +502,7 @@ class RightPlayerPanel(tk.Frame):
         btn_cancel.pack(pady=5)
         
         def run_export_thread():
-            from vidstamp.core.exporter import export_clean_video_and_srt
+            from vidstamp.core.exporter import export_clean_video_and_srt, export_bulk_and_merge
             
             def progress_callback(pct):
                 self.after(0, lambda: progress_var.set(pct))
@@ -515,59 +522,25 @@ class RightPlayerPanel(tk.Frame):
                         self.after(0, lambda: messagebox.showerror("Gagal Ekspor", f"Terjadi kesalahan saat mengekspor:\n{msg}"))
                     self.after(0, progress_dialog.destroy)
             else:
-                # Pemrosesan Batch (Bulk Folder)
+                # Pemrosesan Massal (Bulk Folder)
                 parent_dir = os.path.dirname(video_path)
-                from vidstamp.config import VIDEO_EXTS
-                all_files = [os.path.join(parent_dir, f) for f in os.listdir(parent_dir) if os.path.splitext(f)[1].lower() in VIDEO_EXTS]
-                all_files = sorted(all_files)
                 
-                total_files = len(all_files)
-                success_count = 0
+                def bulk_progress_callback(file_idx, total, pct, status_text):
+                    overall_pct = (file_idx / total) * 100 + (pct / total)
+                    self.after(0, lambda: progress_var.set(overall_pct))
+                    self.after(0, lambda: lbl_status.config(text=f"Eps {file_idx+1}/{total} - {pct:.1f}%"))
+                    self.after(0, lambda: lbl_file.config(text=status_text))
+                    
+                success, msg = export_bulk_and_merge(
+                    parent_dir, mode=mode, merge_to_one=is_merge,
+                    progress_callback=bulk_progress_callback, cancel_event=cancel_event
+                )
                 
-                for idx, file in enumerate(all_files):
-                    if cancel_event.is_set():
-                        break
-                        
-                    self.after(0, lambda f=file, i=idx: lbl_file.config(text=f"[{i+1}/{total_files}] {os.path.basename(f)}"))
-                    
-                    # Dapatkan skip config masing-masing video, fallback ke template season
-                    from vidstamp.utils.file_manager import load_skip_config
-                    skip_data = load_skip_config(file)
-                    
-                    op_s = skip_data.get("op_start")
-                    op_e = skip_data.get("op_end")
-                    ed_s = skip_data.get("ed_start")
-                    ed_e = skip_data.get("ed_end")
-                    
-                    # Jika tidak ada config, coba deteksi bab
-                    if not skip_data and file.lower().endswith(".mkv"):
-                        from vidstamp.core.exporter import get_mkv_chapters
-                        detected = get_mkv_chapters(file)
-                        op_s = detected.get("op_start")
-                        op_e = detected.get("op_end")
-                        ed_s = detected.get("ed_start")
-                        ed_e = detected.get("ed_end")
-                        
-                    # Output file paths
-                    base_name, ext = os.path.splitext(file)
-                    out_v = f"{base_name}_clean{ext}"
-                    out_s = f"{base_name}_clean.srt"
-                    
-                    def bulk_progress_callback(pct, file_idx=idx):
-                        overall_pct = (file_idx / total_files) * 100 + (pct / total_files)
-                        self.after(0, lambda: progress_var.set(overall_pct))
-                        self.after(0, lambda: lbl_status.config(text=f"Episode {file_idx+1}/{total_files} - Render: {pct:.1f}%"))
-                        
-                    success, msg = export_clean_video_and_srt(
-                        file, op_s, op_e, ed_s, ed_e,
-                        out_v, out_s, mode=mode,
-                        progress_callback=bulk_progress_callback, cancel_event=cancel_event
-                    )
-                    if success:
-                        success_count += 1
-                        
                 if not cancel_event.is_set():
-                    self.after(0, lambda: messagebox.showinfo("Sukses", f"Ekspor Massal Selesai!\nBerhasil memproses {success_count} dari {total_files} video di folder:\n{parent_dir}"))
+                    if success:
+                        self.after(0, lambda: messagebox.showinfo("Sukses", f"Ekspor Massal Selesai!\n{msg}"))
+                    else:
+                        self.after(0, lambda: messagebox.showerror("Gagal Ekspor Massal", f"Terjadi kesalahan:\n{msg}"))
                     self.after(0, progress_dialog.destroy)
                     
         threading.Thread(target=run_export_thread, daemon=True).start()
@@ -877,6 +850,27 @@ class RightPlayerPanel(tk.Frame):
             messagebox.showerror("Error", f"Gagal mengekspor file: {err}")
 
     # ── Rendering Helper ──
+    def _wrap_text(self, text, font, font_scale, thickness, max_width):
+        """Membungkus kata-kata dalam teks agar total lebar visual piksel tidak melebihi max_width."""
+        words = text.split(' ')
+        lines = []
+        current_line = []
+        
+        for word in words:
+            test_line = ' '.join(current_line + [word]) if current_line else word
+            (tw, _), _ = cv2.getTextSize(test_line, font, font_scale, thickness)
+            
+            if tw <= max_width or not current_line:
+                current_line.append(word)
+            else:
+                lines.append(' '.join(current_line))
+                current_line = [word]
+                
+        if current_line:
+            lines.append(' '.join(current_line))
+            
+        return lines
+
     def render_current_frame(self):
         if not self.engine.cap:
             return
@@ -934,6 +928,40 @@ class RightPlayerPanel(tk.Frame):
             cv2.putText(frame, t, (w - tw - 12, h - 28), FONT, 0.75, COLOR_BG, 4, cv2.LINE_AA)
             cv2.putText(frame, t, (w - tw - 12, h - 28), FONT, 0.75, COLOR_END, 2, cv2.LINE_AA)
             
+        # ─ Render Subtitle Live Preview ke Frame ─
+        if self.subtitle_list:
+            import re
+            active_subs = [s for s in self.subtitle_list if s['start'] <= sec < s['end']]
+            if active_subs:
+                sub_text = active_subs[0]['text']
+                sub_text = re.sub(r'<[^>]*>', '', sub_text).strip()
+                
+                # Font scale proporsional terhadap lebar frame (sweet spot)
+                font_scale = max(0.45, min(0.9, w / 1100.0))
+                thickness = max(1, int(2.5 * font_scale))
+                shadow_thickness = thickness + 3
+                
+                # Batas lebar maksimum teks 85% dari lebar video
+                max_text_width = int(w * 0.85)
+                
+                raw_lines = sub_text.split('\n')
+                wrapped_lines = []
+                for rl in raw_lines:
+                    wrapped_lines.extend(self._wrap_text(rl, FONT, font_scale, thickness, max_text_width))
+                
+                line_height = int(32 * font_scale)
+                base_y = h - 45 - (len(wrapped_lines) - 1) * line_height
+                
+                for line_idx, line in enumerate(wrapped_lines):
+                    (tw, th), _ = cv2.getTextSize(line, FONT, font_scale, thickness)
+                    tx = (w - tw) // 2
+                    ty = base_y + line_idx * line_height
+                    
+                    # Shadow hitam outline
+                    cv2.putText(frame, line, (tx, ty), FONT, font_scale, COLOR_BG, shadow_thickness, cv2.LINE_AA)
+                    # Text utama putih
+                    cv2.putText(frame, line, (tx, ty), FONT, font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
+
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
         # Ambil dimensi aktual Canvas tanpa memblokir thread via update_idletasks()

@@ -46,6 +46,15 @@ class VideoAppController:
                                              on_toggle_browser_callback=self.toggle_browser)
         self.paned_window.add(self.right_panel, minsize=600)
         
+        # Setup Menu Bar
+        self.menu_bar = tk.Menu(self.root, bg="#0d0d1a", fg="white", activebackground="#1a1a3e", activeforeground="white")
+        self.root.config(menu=self.menu_bar)
+        
+        self.tools_menu = tk.Menu(self.menu_bar, tearoff=0, bg="#0d0d1a", fg="white", activebackground="#1a1a3e")
+        self.menu_bar.add_cascade(label="Peralatan", menu=self.tools_menu)
+        self.tools_menu.add_command(label="Batch Merger Wizard... (Ctrl+M)", command=self.open_batch_merger)
+        self.tools_menu.add_command(label="Ekstraktor Subtitle & Audio...", command=self.open_extractor_tool)
+
         self._bind_global_shortcuts()
         
         init_path = start_path or self.get_default_dir()
@@ -166,7 +175,10 @@ class VideoAppController:
     def toggle_browser(self, event=None):
         self.browser_visible = not self.browser_visible
         if self.browser_visible:
-            self.paned_window.add(self.left_panel, before=self.right_panel, minsize=180)
+            # Hapus panel kanan terlebih dahulu agar urutan penambahan kembali konsisten (kiri lalu kanan)
+            self.paned_window.forget(self.right_panel)
+            self.paned_window.add(self.left_panel, minsize=180)
+            self.paned_window.add(self.right_panel, minsize=600)
             self.left_panel.pack(fill="both", expand=True)
         else:
             self.paned_window.forget(self.left_panel)
@@ -186,6 +198,8 @@ class VideoAppController:
         self.root.bind("<Control-t>",   self._record_shortcut_handler)
         self.root.bind("<Control-T>",   self._record_shortcut_handler)
         self.root.bind("<Control-space>", lambda e: self.right_panel.cancel_recording_action())
+        self.root.bind("<Control-m>",   lambda e: self.open_batch_merger())
+        self.root.bind("<Control-M>",   lambda e: self.open_batch_merger())
         self.root.bind("q",             lambda e: self.quit_app())
         self.root.bind("Q",             lambda e: self.quit_app())
 
@@ -251,6 +265,32 @@ class VideoAppController:
         else:
             self.root.after(50, self.playback_loop)
 
+    def open_batch_merger(self, event=None):
+        # Tentukan folder aktif saat ini
+        current_dir = None
+        if self.engine.video_path:
+            current_dir = os.path.dirname(self.engine.video_path)
+        else:
+            current_dir = self.left_panel.cur_folder or self.get_default_dir()
+            
+        if not current_dir or not os.path.isdir(current_dir):
+            messagebox.showerror("Pemberitahuan", "Silakan buka folder video terlebih dahulu pada panel folder kiri.")
+            return
+            
+        from vidstamp.ui.batch_merger import BatchMergerWizard
+        BatchMergerWizard(self.root, current_dir)
+
+    def open_extractor_tool(self, event=None):
+        # Tentukan folder aktif saat ini untuk initial directory dialog
+        current_dir = None
+        if self.engine.video_path:
+            current_dir = os.path.dirname(self.engine.video_path)
+        else:
+            current_dir = self.left_panel.cur_folder or self.get_default_dir()
+            
+        from vidstamp.ui.extractor_tool import AudioSubExtractorWizard
+        AudioSubExtractorWizard(self.root, current_dir)
+
     def quit_app(self):
         # Simpan posisi pemutaran detik terakhir saat aplikasi ditutup
         if self.engine.cap and self.engine.video_path:
@@ -276,17 +316,58 @@ class VideoAppController:
         self.root.after(5000, self._start_auto_save_loop)
 
 def start_gui(start_path=None):
-    root = tk.Tk()
-    from vidstamp.utils.logger import register_tkinter_exception_handler
-    register_tkinter_exception_handler(root)
-    root.geometry("1200x760")
-    root.minsize(900, 580)
+    from vidstamp.ui.launcher import LauncherWindow
+    from vidstamp.config import ROOT_DIRS
     
-    style = ttk.Style(root)
-    style.theme_use("clam")
-    style.configure("Horizontal.TScale", background="#0d0d1a", troughcolor="#1a1a3e",
-                     sliderthickness=14, sliderrelief="flat")
-                     
-    app = VideoAppController(root, start_path)
-    root.protocol("WM_DELETE_WINDOW", app.quit_app)
-    root.mainloop()
+    def get_default_dir():
+        for d in ROOT_DIRS:
+            if os.path.isdir(d):
+                return d
+        return os.path.expanduser("~")
+
+    def launch_player():
+        root = tk.Tk()
+        from vidstamp.utils.logger import register_tkinter_exception_handler
+        register_tkinter_exception_handler(root)
+        root.geometry("1200x760")
+        root.minsize(900, 580)
+        
+        style = ttk.Style(root)
+        style.theme_use("clam")
+        style.configure("Horizontal.TScale", background="#0d0d1a", troughcolor="#1a1a3e",
+                         sliderthickness=14, sliderrelief="flat")
+                         
+        app = VideoAppController(root, start_path)
+        root.protocol("WM_DELETE_WINDOW", app.quit_app)
+        root.mainloop()
+
+    def launch_wizard(folder_path):
+        root = tk.Tk()
+        root.withdraw() # Sembunyikan window root
+        
+        from vidstamp.utils.logger import register_tkinter_exception_handler
+        register_tkinter_exception_handler(root)
+        
+        from vidstamp.ui.batch_merger import BatchMergerWizard
+        wizard = BatchMergerWizard(root, folder_path)
+        
+        def on_wizard_close():
+            try: wizard.destroy()
+            except: pass
+            try: root.destroy()
+            except: pass
+            
+        wizard.protocol("WM_DELETE_WINDOW", on_wizard_close)
+        root.mainloop()
+
+    # Jika start_path diberikan dan berupa file/folder valid, langsung buka player
+    if start_path and os.path.exists(start_path):
+        launch_player()
+    else:
+        # Jalankan launcher screen
+        launcher = LauncherWindow(
+            launch_player_fn=launch_player,
+            launch_wizard_fn=launch_wizard,
+            get_def_dir_fn=get_default_dir
+        )
+        launcher.mainloop()

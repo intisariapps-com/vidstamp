@@ -26,6 +26,12 @@ Mengintegrasikan kapabilitas dari skrip `mkv_merger_skip_oped.py` ke dalam UI Vi
     * **Cakupan Ekspor**:
       1. *Video Aktif Saja*: Hanya memproses video yang sedang dibuka.
       2. *Bulk Folder (Semua Episode)*: Memproses seluruh berkas video dalam folder aktif saat ini secara massal (batch).
+    * **Deduplikasi OCR Spam Otomatis**:
+      1. Program secara cerdas memindai baris-baris subtitel berturut-turut yang memiliki teks identik atau mirip (biasanya ditemui pada subtitle hasil pindaian OCR hardsub).
+      2. Menggabungkan rentang waktu mulai dari subtitle pertama hingga waktu akhir subtitle duplikat terakhir menjadi satu blok dialog utuh yang sangat padat dan efisien (menghilangkan flicker/redundansi).
+    * **Penggabungan Hasil Massal (Lossless Concat)**:
+      1. Jika cakupan massal (Bulk) dan opsi "Gabungkan hasil bulk" dicentang, setelah semua episode selesai diproses secara individual, program akan menggabungkan semuanya secara lossless menggunakan perintah `concat` FFmpeg tanpa merender ulang (sangat cepat).
+      2. Program juga akan merakit satu file `.srt` global dari seluruh episode dengan offset waktu terakumulasi yang diselaraskan secara tepat dan padat setelah diproses oleh modul deduplikasi OCR.
   * Jalankan proses rendering FFmpeg di latar belakang (Background Thread) agar aplikasi tidak membeku (*non-blocking*), serta sediakan jendela indikator progres yang informatif (menampilkan bar persentase dan estimasi waktu selesai).
 
 ---
@@ -40,6 +46,8 @@ Mengintegrasikan kapabilitas dari skrip `mkv_merger_skip_oped.py` ke dalam UI Vi
   * Membaca chapter MKV menggunakan `ffprobe`.
   * Melakukan kalkulasi pemotongan segmen (trimming) video & audio menggunakan FFmpeg filter complex concat.
   * Mengekstrak, memotong, dan menggeser subtitel SRT secara presisi berdasarkan daftar chapter/detik yang di-skip (logika pemotongan SRT dari `mkv_merger_skip_oped.py`).
+  * `merge_duplicate_ocr_subtitles(subs_list)`: Fungsi pintar untuk mendeteksi, menyatukan, dan mengeliminasi spaming OCR subtitle yang berulang.
+  * `export_bulk_and_merge(...)`: Logika pemrosesan batch beralur penuh yang mengotomatisasi rendering, penyelarasan SRT massal, pembuatan SRT global, dan penyatuan MP4 lossless.
 
 ### C. Modul UI Player View: `vidstamp/ui/player_view.py`
 * Menambahkan tombol aksi ekspor video bersih di dalam UI Dialog "Set Skip OP/ED".
@@ -56,3 +64,4 @@ Mengintegrasikan kapabilitas dari skrip `mkv_merger_skip_oped.py` ke dalam UI Vi
 3. Klik tombol "Ekspor Video Bersih" dan pilih opsi "Hardsub" untuk "Video Aktif Saja".
 4. Verifikasi bahwa proses ekspor berjalan di latar belakang tanpa membuat aplikasi tidak responsif (*Not Responding*).
 5. Putar berkas hasil ekspor: pastikan bagian Opening/Ending hilang dan teks subtitel tetap muncul secara sinkron tepat waktu.
+6. Uji proses Bulk dengan opsi "Gabungkan hasil bulk" aktif. Pastikan video final yang dihasilkan tergabung sempurna tanpa patahan visual, serta file `.srt` globalnya bersih dari duplikasi beruntun (OCR spam).

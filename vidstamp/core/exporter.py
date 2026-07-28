@@ -127,11 +127,47 @@ def clean_srt_text(raw_text):
     cleaned = "\n".join(lines).strip()
     return cleaned
 
+def merge_duplicate_ocr_subtitles(subs_list):
+    """
+    Menggabungkan teks subtitle berturut-turut yang identik atau sangat mirip (OCR duplicate spam).
+    Dan menyatukan durasi waktunya dari start pertama hingga end terakhir.
+    """
+    if not subs_list:
+        return []
+    
+    # Normalisasi teks untuk perbandingan (lowercase, hapus tag, hapus spasi/simbol berlebih)
+    def normalize_text(t):
+        t = t.lower()
+        t = re.sub(r'<[^>]*>', '', t)
+        t = re.sub(r'[\s.,\/#!$%\^&\*;:{}=\-_`~()]+', '', t)
+        return t.strip()
+
+    merged = []
+    current = subs_list[0].copy()
+    
+    for next_sub in subs_list[1:]:
+        norm_curr = normalize_text(current['text'])
+        norm_next = normalize_text(next_sub['text'])
+        
+        # Jarak waktu antar subtitle (gap)
+        gap = next_sub['start'] - current['end']
+        
+        # Jika teks sama dan jarak waktu sangat dekat (misal <= 2.5 detik)
+        if norm_curr == norm_next and gap <= 2.5:
+            # Perluas durasi subtitle saat ini
+            current['end'] = max(current['end'], next_sub['end'])
+        else:
+            merged.append(current)
+            current = next_sub.copy()
+            
+    merged.append(current)
+    return merged
+
 def cut_and_shift_srt(input_srt_path, keep_ranges, output_srt_path):
     """
     Membaca berkas SRT input, mempertahankan subtitle yang masuk dalam keep_ranges,
     menggeser waktunya agar selaras dengan video baru yang terpotong,
-    dan menyimpannya ke berkas SRT output.
+    menjalankan pembersih duplikat OCR spam, dan menyimpannya ke berkas SRT output.
     """
     if not os.path.exists(input_srt_path):
         return False
@@ -145,8 +181,7 @@ def cut_and_shift_srt(input_srt_path, keep_ranges, output_srt_path):
             
         # Pisahkan blok berdasarkan baris kosong ganda atau baris kosong tunggal yang memisahkan angka indeks
         blocks = re.split(r'\n\s*\n', content.strip())
-        shifted_blocks = []
-        current_index = 1
+        subs_list = []
         
         for block in blocks:
             lines = block.strip().split('\n')
@@ -181,10 +216,21 @@ def cut_and_shift_srt(input_srt_path, keep_ranges, output_srt_path):
                                 acc_keep_duration += (k_end - k_start)
                                 
                             if mapped_start is not None and mapped_end is not None:
-                                new_ts_line = f"{seconds_to_srt_time(mapped_start)} --> {seconds_to_srt_time(mapped_end)}"
-                                block_str = f"{current_index}\n{new_ts_line}\n{clean_text}"
-                                shifted_blocks.append(block_str)
-                                current_index += 1
+                                subs_list.append({
+                                    'start': mapped_start,
+                                    'end': mapped_end,
+                                    'text': clean_text
+                                })
+                                
+        # Jalankan deduplikasi OCR spam duplikat
+        deduplicated_subs = merge_duplicate_ocr_subtitles(subs_list)
+        
+        # Konversi kembali ke format SRT
+        shifted_blocks = []
+        for idx, sub in enumerate(deduplicated_subs, 1):
+            new_ts_line = f"{seconds_to_srt_time(sub['start'])} --> {seconds_to_srt_time(sub['end'])}"
+            block_str = f"{idx}\n{new_ts_line}\n{sub['text']}"
+            shifted_blocks.append(block_str)
                                 
         with open(output_srt_path, 'w', encoding='utf-8') as out_f:
             out_f.write("\n\n".join(shifted_blocks))
@@ -334,3 +380,254 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
     # Jalankan render FFmpeg
     success, msg = run_ffmpeg_process(cmd, total_keep_duration, progress_callback, cancel_event)
     return success, msg
+
+def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progress_callback=None, cancel_event=None):
+    """
+    Memproses seluruh episode dalam folder: memotong OP/ED, menggeser subtitle,
+    dan jika merge_to_one=True, menggabungkannya menjadi 1 file MP4 utama dan 1 file SRT global.
+    """
+    from vidstamp.config import VIDEO_EXTS
+    from vidstamp.utils.file_manager import load_skip_config
+    from vidstamp.core.subtitle import find_external_subtitle, extract_mkv_subtitles
+    
+    # 1. Cari semua file video
+    try:
+        files = sorted([
+            os.path.join(parent_dir, f) for f in os.listdir(parent_dir)
+            if os.path.splitext(f)[1].lower() in VIDEO_EXTS and "_clean" not in f.lower()
+        ])
+    except Exception as e:
+        return False, f"Gagal membaca isi direktori: {e}"
+    
+    if not files:
+        return False, "Tidak ditemukan berkas video di folder tersebut."
+        
+    total_files = len(files)
+    episode_temp_videos = []
+    global_subs_list = []
+    accumulated_offset = 0.0
+    
+    folder_name = os.path.basename(parent_dir.rstrip(r"\/"))
+    output_mp4_final = os.path.join(parent_dir, f"{folder_name}_clean.mp4")
+    output_srt_final = os.path.join(parent_dir, f"{folder_name}_clean.srt")
+    
+    ffmpeg_exe = get_ffmpeg_path()
+    
+    for idx, file in enumerate(files):
+        if cancel_event and cancel_event.is_set():
+            return False, "Dibatalkan oleh pengguna"
+            
+        # Update progress callback for current file start
+        if progress_callback:
+            progress_callback(idx, total_files, 0.0, f"Memulai {os.path.basename(file)}")
+            
+        # Dapatkan skip config
+        skip_data = load_skip_config(file)
+        op_s = skip_data.get("op_start")
+        op_e = skip_data.get("op_end")
+        ed_s = skip_data.get("ed_start")
+        ed_e = skip_data.get("ed_end")
+        
+        if not skip_data and file.lower().endswith(".mkv"):
+            detected = get_mkv_chapters(file)
+            op_s = detected.get("op_start")
+            op_e = detected.get("op_end")
+            ed_s = detected.get("ed_start")
+            ed_e = detected.get("ed_end")
+            
+        # Tentukan keep ranges
+        total_duration = get_video_duration(file)
+        if total_duration <= 0.0:
+            continue
+            
+        skip_ranges = []
+        if op_s is not None and op_e is not None:
+            skip_ranges.append((op_s, op_e))
+        if ed_s is not None and ed_e is not None:
+            skip_ranges.append((ed_s, ed_e))
+            
+        keep_ranges = []
+        current = 0.0
+        for s_start, s_end in sorted(skip_ranges):
+            if s_start > current:
+                keep_ranges.append((current, s_start))
+            current = max(current, s_end)
+        if current < total_duration:
+            keep_ranges.append((current, total_duration))
+            
+        if not keep_ranges:
+            keep_ranges = [(0.0, total_duration)]
+            
+        total_keep_duration = sum(end - start for start, end in keep_ranges)
+        
+        # Proses Subtitle untuk episode ini
+        base_name, ext = os.path.splitext(file)
+        out_v = f"{base_name}_clean{ext}"
+        out_s = f"{base_name}_clean.srt"
+        
+        # Cari subtitle eksternal atau internal
+        temp_extract_srt = out_s + ".temp_extract.srt"
+        srt_to_shift = None
+        
+        external_srt = find_external_subtitle(file)
+        if external_srt:
+            srt_to_shift = external_srt
+        elif file.lower().endswith('.mkv'):
+            if extract_mkv_subtitles(file, temp_extract_srt):
+                srt_to_shift = temp_extract_srt
+                
+        srt_success = False
+        if srt_to_shift:
+            # Shift untuk episode saat ini (selaras dengan video episode ini)
+            srt_success = cut_and_shift_srt(srt_to_shift, keep_ranges, out_s)
+            
+            # Jika merger diaktifkan, kumpulkan juga sub yang di-offset secara global
+            if merge_to_one:
+                # Muat sub lama, geser dengan global accumulated_offset, dan tambahkan ke global list
+                try:
+                    with open(srt_to_shift, 'r', encoding='utf-8', errors='replace') as sf:
+                        content = sf.read()
+                    if content.startswith('\ufeff'): content = content[1:]
+                    blocks = re.split(r'\n\s*\n', content.strip())
+                    for b in blocks:
+                        lines = b.strip().split('\n')
+                        if len(lines) >= 2:
+                            ts_line_idx = -1
+                            for l_i, line in enumerate(lines):
+                                if "-->" in line:
+                                    ts_line_idx = l_i
+                                    break
+                            if ts_line_idx != -1:
+                                dialogue_lines = lines[ts_line_idx+1:]
+                                clean_txt = clean_srt_text("\n".join(dialogue_lines))
+                                if clean_txt:
+                                    parts = lines[ts_line_idx].split("-->")
+                                    if len(parts) == 2:
+                                        start_s = srt_time_to_seconds(parts[0])
+                                        end_s = srt_time_to_seconds(parts[1])
+                                        
+                                        # Map ke global timeline
+                                        mapped_s = None
+                                        mapped_e = None
+                                        acc_keep = 0.0
+                                        for k_s, k_e in keep_ranges:
+                                            if k_s <= start_s < k_e:
+                                                mapped_s = (start_s - k_s) + acc_keep + accumulated_offset
+                                                mapped_e = (end_s - k_s) + acc_keep + accumulated_offset
+                                                break
+                                            acc_keep += (k_e - k_s)
+                                            
+                                        if mapped_s is not None and mapped_e is not None:
+                                            global_subs_list.append({
+                                                'start': mapped_s,
+                                                'end': mapped_e,
+                                                'text': clean_txt
+                                            })
+                except Exception as ex_sub:
+                    print(f"Gagal memproses global subtitle: {ex_sub}")
+                    
+            if os.path.exists(temp_extract_srt):
+                try: os.remove(temp_extract_srt)
+                except: pass
+                
+        # Potong video episode ini
+        filter_v_nodes = []
+        filter_a_nodes = []
+        for r_idx, (start, end) in enumerate(keep_ranges):
+            filter_v_nodes.append(f"[0:v]trim=start={start}:end={end},setpts=PTS-STARTPTS[v{r_idx}]")
+            filter_a_nodes.append(f"[0:a]atrim=start={start}:end={end},asetpts=PTS-STARTPTS[a{r_idx}]")
+            
+        concat_inputs = "".join(f"[v{k}][a{k}]" for k in range(len(keep_ranges)))
+        concat_node = f"{concat_inputs}concat=n={len(keep_ranges)}:v=1:a=1[v_cut][a_cut]"
+        
+        if mode == "hardsub" and srt_success and os.path.exists(out_s):
+            srt_escaped = escape_path_for_ffmpeg_filter(out_s)
+            subtitle_node = f"[v_cut]subtitles='{srt_escaped}'[v_final]"
+            filter_complex = "; ".join(filter_v_nodes + filter_a_nodes) + "; " + concat_node + "; " + subtitle_node
+            map_video = "[v_final]"
+        else:
+            filter_complex = "; ".join(filter_v_nodes + filter_a_nodes) + "; " + concat_node
+            map_video = "[v_cut]"
+            
+        # Target output video untuk concat global jika diaktifkan
+        temp_video_out = out_v if not merge_to_one else os.path.join(parent_dir, f"temp_clean_ep{idx}{ext}")
+        episode_temp_videos.append(temp_video_out)
+        
+        cmd = [
+            ffmpeg_exe, "-y", "-i", file,
+            "-filter_complex", filter_complex,
+            "-map", map_video, "-map", "[a_cut]",
+            "-c:v", "libx264", "-preset", "fast", "-crf", "20",
+            "-c:a", "aac", "-b:a", "192k",
+            temp_video_out
+        ]
+        
+        def sub_progress_callback(pct):
+            if progress_callback:
+                progress_callback(idx, total_files, pct, f"Memproses {os.path.basename(file)}")
+                
+        success, msg = run_ffmpeg_process(cmd, total_keep_duration, sub_progress_callback, cancel_event)
+        if not success:
+            # Bersihkan berkas temp yang baru dibuat
+            for tv in episode_temp_videos:
+                if os.path.exists(tv):
+                    try: os.remove(tv)
+                    except: pass
+            return False, f"Gagal pada episode {idx+1}: {msg}"
+            
+        accumulated_offset += total_keep_duration
+        
+    # Selesai memproses semua episode secara individual.
+    # Jika merge_to_one diaktifkan, gabungkan sekarang!
+    if merge_to_one and not (cancel_event and cancel_event.is_set()):
+        if progress_callback:
+            progress_callback(total_files - 1, total_files, 95.0, "Menggabungkan semua episode bersih...")
+            
+        # Tulis list file concat
+        mylist_path = os.path.join(parent_dir, "mylist_temp.txt")
+        with open(mylist_path, 'w', encoding='utf-8') as f_list:
+            for temp_v in episode_temp_videos:
+                safe_path = temp_v.replace("\\", "/")
+                f_list.write(f"file '{safe_path}'\n")
+                
+        # Concat lossless
+        cmd_concat_final = [
+            ffmpeg_exe, "-y", "-f", "concat", "-safe", "0", "-i", mylist_path,
+            "-c", "copy", output_mp4_final
+        ]
+        
+        sub_kw_concat = {'stdin': subprocess.DEVNULL, 'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}
+        if os.name == 'nt': 
+            sub_kw_concat['creationflags'] = 0x08004000
+            
+        res_final = subprocess.run(cmd_concat_final, **sub_kw_concat)
+        
+        # Hapus berkas temp daftar concat dan video temp
+        if os.path.exists(mylist_path):
+            try: os.remove(mylist_path)
+            except: pass
+            
+        for temp_v in episode_temp_videos:
+            if os.path.exists(temp_v):
+                try: os.remove(temp_v)
+                except: pass
+                
+        if res_final.returncode != 0:
+            return False, f"Gagal merakit video concat final (FFmpeg code: {res_final.returncode})"
+            
+        # Simpan subtitle global gabungan (dengan pembantaian OCR spam!)
+        if global_subs_list:
+            deduplicated_global = merge_duplicate_ocr_subtitles(global_subs_list)
+            
+            shifted_blocks = []
+            for g_idx, sub in enumerate(deduplicated_global, 1):
+                new_ts_line = f"{seconds_to_srt_time(sub['start'])} --> {seconds_to_srt_time(sub['end'])}"
+                block_str = f"{g_idx}\n{new_ts_line}\n{sub['text']}"
+                shifted_blocks.append(block_str)
+                
+            with open(output_srt_final, 'w', encoding='utf-8') as out_f:
+                out_f.write("\n\n".join(shifted_blocks))
+                
+        return True, "Sukses menggabungkan folder!"
+        
+    return True, f"Sukses memproses {total_files} berkas."
