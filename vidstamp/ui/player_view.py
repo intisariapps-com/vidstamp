@@ -979,13 +979,13 @@ class RightPlayerPanel(tk.Frame):
                 sub_text = re.sub(r'<[^>]*>', '', sub_text)
                 sub_text = re.sub(r'\{[^}]*\}', '', sub_text).strip()
                 
-                # Font scale proporsional terhadap lebar frame (dioptimasi untuk 1:1 IG)
-                font_scale = max(0.35, min(0.7, w / 1300.0))
+                # Font scale proporsional terhadap tinggi frame (lebar area 1:1 di tengah)
+                font_scale = max(0.35, min(0.7, h / 1300.0))
                 thickness = max(1, int(2.0 * font_scale))
                 shadow_thickness = thickness + 2
                 
-                # Batas lebar maksimum teks 85% dari lebar video
-                max_text_width = int(w * 0.85)
+                # Batas lebar maksimum teks 85% dari lebar efektif area 1:1 di tengah (tinggi h)
+                max_text_width = int(h * 0.85)
                 
                 raw_lines = sub_text.split('\n')
                 wrapped_lines = []
