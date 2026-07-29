@@ -313,7 +313,7 @@ class _VideoPlayerPanelState extends State<VideoPlayerPanel> {
     required VoidCallback onPressed,
   }) {
     return InkWell(
-      onPressed: onPressed,
+      onTap: onPressed,
       borderRadius: BorderRadius.circular(6),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
