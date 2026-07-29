@@ -129,7 +129,7 @@ def clean_srt_text(raw_text):
 
 def merge_duplicate_ocr_subtitles(subs_list):
     """
-    Menggabungkan teks subtitle berturut-turut yang identik atau sangat mirip (OCR duplicate spam).
+    Menggabungkan teks subtitle bertumpuk/bergantian yang identik atau sangat mirip (interleaved OCR duplicate spam).
     Dan menyatukan durasi waktunya dari start pertama hingga end terakhir.
     """
     if not subs_list:
@@ -139,28 +139,31 @@ def merge_duplicate_ocr_subtitles(subs_list):
     def normalize_text(t):
         t = t.lower()
         t = re.sub(r'<[^>]*>', '', t)
-        t = re.sub(r'[\s.,\/#!$%\^&\*;:{}=\-_`~()]+', '', t)
+        t = re.sub(r'\{[^}]*\}', '', t)
+        t = re.sub(r'[\s.,\/#!$%\^&\*;:{}=\-_`~()\"\'\[\]\\]+', '', t)
         return t.strip()
 
     merged = []
-    current = subs_list[0].copy()
-    
-    for next_sub in subs_list[1:]:
-        norm_curr = normalize_text(current['text'])
-        norm_next = normalize_text(next_sub['text'])
+    for sub in subs_list:
+        norm_sub = normalize_text(sub['text'])
         
-        # Jarak waktu antar subtitle (gap)
-        gap = next_sub['start'] - current['end']
-        
-        # Jika teks sama dan jarak waktu sangat dekat (misal <= 2.5 detik)
-        if norm_curr == norm_next and gap <= 2.5:
-            # Perluas durasi subtitle saat ini
-            current['end'] = max(current['end'], next_sub['end'])
-        else:
-            merged.append(current)
-            current = next_sub.copy()
+        # Cari ke belakang di merged list (mulai dari yang paling baru)
+        found = False
+        for m in reversed(merged):
+            norm_m = normalize_text(m['text'])
+            if norm_m == norm_sub:
+                # Cek jarak waktu (gap)
+                gap = sub['start'] - m['end']
+                if gap <= 2.5:
+                    m['end'] = max(m['end'], sub['end'])
+                    found = True
+                break # Berhenti mencari karena ini adalah kemunculan paling akhir dari teks tersebut
+                
+        if not found:
+            merged.append(sub.copy())
             
-    merged.append(current)
+    # Urutkan kembali berdasarkan waktu mulai (start time)
+    merged.sort(key=lambda x: x['start'])
     return merged
 
 def wrap_text_by_char_limit(text, limit):
