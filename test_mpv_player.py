@@ -55,8 +55,7 @@ class MpvTestApp:
             self.root.destroy()
             return
             
-        # Bind Resize Jendela agar MPV menyesuaikan ukuran frame
-        self.video_frame.bind("<Configure>", lambda e: self.player.command("video-aspect-override", "-1"))
+        # MPV otomatis menangani perubahan ukuran canvas dari parent window ID (wid)
         
         # Muat video secara otomatis jika ada argumen
         if len(sys.argv) > 1:
