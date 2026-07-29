@@ -3,7 +3,7 @@ vidstamp/ui/player_view.py - Komponen UI Player Panel Kanan
 """
 import tkinter as tk
 from tkinter import messagebox, ttk, simpledialog, filedialog
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw, ImageFont
 import os
 import cv2
 from vidstamp.config import FONT, COLOR_TS, COLOR_MARK, COLOR_END, COLOR_BG
@@ -1087,41 +1087,6 @@ class RightPlayerPanel(tk.Frame):
             (tw, _), _ = cv2.getTextSize(t, FONT, 0.75, 2)
             cv2.putText(frame, t, (w - tw - 12, h - 28), FONT, 0.75, COLOR_BG, 4, cv2.LINE_AA)
             cv2.putText(frame, t, (w - tw - 12, h - 28), FONT, 0.75, COLOR_END, 2, cv2.LINE_AA)
-            
-        # ─ Render Subtitle Live Preview ke Frame ─
-        if self.show_sub.get() and self.subtitle_list:
-            import re
-            active_subs = [s for s in self.subtitle_list if s['start'] <= sec < s['end']]
-            if active_subs:
-                sub_text = active_subs[0]['text']
-                sub_text = re.sub(r'<[^>]*>', '', sub_text)
-                sub_text = re.sub(r'\{[^}]*\}', '', sub_text).strip()
-                
-                # Font scale proporsional terhadap tinggi frame (lebar area 1:1 di tengah)
-                font_scale = max(0.35, min(0.7, h / 1300.0))
-                thickness = max(1, int(2.0 * font_scale))
-                shadow_thickness = thickness + 2
-                
-                # Batas lebar maksimum teks 85% dari lebar efektif area 1:1 di tengah (tinggi h)
-                max_text_width = int(h * 0.85)
-                
-                raw_lines = sub_text.split('\n')
-                wrapped_lines = []
-                for rl in raw_lines:
-                    wrapped_lines.extend(self._wrap_text(rl, FONT, font_scale, thickness, max_text_width))
-                
-                line_height = int(28 * font_scale)
-                base_y = h - 35 - (len(wrapped_lines) - 1) * line_height
-                
-                for line_idx, line in enumerate(wrapped_lines):
-                    (tw, th), _ = cv2.getTextSize(line, FONT, font_scale, thickness)
-                    tx = (w - tw) // 2
-                    ty = base_y + line_idx * line_height
-                    
-                    # Shadow hitam outline
-                    cv2.putText(frame, line, (tx, ty), FONT, font_scale, COLOR_BG, shadow_thickness, cv2.LINE_AA)
-                    # Text utama putih
-                    cv2.putText(frame, line, (tx, ty), FONT, font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
 
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
@@ -1138,8 +1103,61 @@ class RightPlayerPanel(tk.Frame):
         nw, nh = max(1, int(w * sc)), max(1, int(h * sc))
         
         rgb = cv2.resize(rgb, (nw, nh), interpolation=cv2.INTER_NEAREST)
-        img = ImageTk.PhotoImage(Image.fromarray(rgb))
+        pil_img = Image.fromarray(rgb)
         
+        # ─ Render Subtitle Live Preview ke PIL Image (Gaya MPC-HC Anti-Alias) ─
+        if self.show_sub.get() and self.subtitle_list:
+            import re
+            active_subs = [s for s in self.subtitle_list if s['start'] <= sec < s['end']]
+            if active_subs:
+                sub_text = active_subs[0]['text']
+                sub_text = re.sub(r'<[^>]*>', '', sub_text)
+                sub_text = re.sub(r'\{[^}]*\}', '', sub_text).strip()
+                
+                # Gunakan font Arial dengan ukuran relatif terhadap tinggi pemutar
+                font_size = max(14, int(nh * 0.055))
+                try:
+                    font_path = "C:\\Windows\\Fonts\\arial.ttf"
+                    if not os.path.exists(font_path):
+                        font_path = "arial.ttf"
+                    font = ImageFont.truetype(font_path, size=font_size)
+                except Exception:
+                    font = ImageFont.load_default()
+                
+                draw = ImageDraw.Draw(pil_img)
+                lines = sub_text.split('\n')
+                
+                line_widths = []
+                line_heights = []
+                for line in lines:
+                    try:
+                        bbox = draw.textbbox((0, 0), line, font=font)
+                        tw = bbox[2] - bbox[0]
+                        th = bbox[3] - bbox[1]
+                    except AttributeError:
+                        tw, th = draw.textsize(line, font=font)
+                    line_widths.append(tw)
+                    line_heights.append(max(th, font_size))
+                
+                total_height = sum(line_heights) + 6 * (len(lines) - 1)
+                base_y = nh - total_height - 25 # Jarak 25px dari bawah canvas
+                
+                cur_y = base_y
+                for idx, line in enumerate(lines):
+                    tw = line_widths[idx]
+                    th = line_heights[idx]
+                    tx = (nw - tw) // 2
+                    
+                    # Gambar teks putih dengan outline hitam tebal 2px (anti-aliased)
+                    draw.text((tx, cur_y), line, font=font, fill=(255, 255, 255),
+                              stroke_width=2, stroke_fill=(0, 0, 0))
+                    cur_y += th + 6
+                    
+        img = ImageTk.PhotoImage(pil_img)
+        
+        self.canvas.delete("all")
+        self.canvas.create_image(cw // 2, ch // 2, anchor="center", image=img)
+        self._img_ref = img        
         self.canvas.delete("all")
         self.canvas.create_image(cw // 2, ch // 2, anchor="center", image=img)
         self._img_ref = img
