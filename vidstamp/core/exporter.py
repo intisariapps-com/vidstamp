@@ -119,11 +119,133 @@ def seconds_to_srt_time(total_seconds):
         minutes -= 60
     return f"{hours:02d}:{minutes:02d}:{seconds:02d},{milliseconds:03d}"
 
-def clean_srt_text(raw_text):
-    """Membersihkan format tag ASS/HTML dari teks SRT."""
-    text = re.sub(r'\{[^}]*\}', '', raw_text)
+def is_vector_drawing(text):
+    """Mendeteksi apakah teks merupakan instruksi gambar vektor ASS."""
+    t = text.strip()
+    if not t:
+        return False
+    # Gambar vektor ASS selalu dimulai dengan move (m atau n) diikuti koordinat angka
+    if re.match(r'^[mn]\s+-?\d+', t):
+        # Memastikan hanya berisi huruf komando gambar, angka, spasi, dan tanda matematika
+        if re.match(r'^[mnlbspcv\d\s.,\-+]+$', t, re.IGNORECASE):
+            return True
+    return False
+
+def is_blacklisted_style(style_name):
+    """Memeriksa apakah gaya subtitle termasuk dalam kategori non-dialog (karaoke/UI/lokasi)."""
+    style_lower = style_name.lower()
+    blacklist = [
+        'romaji', 'kanji', 'karaoke', 'sign', 'judul', 'title', 
+        'logo', 'location', 'map', 'ui', 'info', 'tanda', 
+        'draw', 'drawing', 'jurus', 'effect', 'fx'
+    ]
+    return any(kw in style_lower for kw in blacklist)
+
+def clean_ass_text_to_srt(ass_text):
+    """Mengonversi teks berformat ASS ke teks SRT bersih."""
+    # Ganti line break ASS (\N) menjadi baris baru, dan hard space (\h) menjadi spasi biasa
+    text = ass_text.replace(r'\N', '\n').replace(r'\h', ' ').replace(r'\n', ' ')
+    # Hapus semua tag pemformatan ASS {...} dan HTML <...>
+    text = re.sub(r'\{[^}]*\}', '', text)
     text = re.sub(r'<[^>]*>', '', text)
-    lines = [l.strip() for l in text.split('\n') if l.strip()]
+    
+    lines = []
+    for l in text.split('\n'):
+        l_strip = l.strip()
+        if l_strip and not is_vector_drawing(l_strip):
+            lines.append(l_strip)
+    cleaned = "\n".join(lines).strip()
+    return cleaned
+
+def parse_ass_dialogue(line):
+    """Memparse baris Dialogue/Comment dari berkas ASS."""
+    match = re.match(r'^(Dialogue|Comment):\s*(.*)$', line, re.IGNORECASE)
+    if not match:
+        return None
+    type_str = match.group(1)
+    rest = match.group(2)
+    parts = rest.split(',', 9)
+    if len(parts) < 10:
+        return None
+    return {
+        'type': type_str,
+        'layer': parts[0],
+        'start': parts[1],
+        'end': parts[2],
+        'style': parts[3],
+        'name': parts[4],
+        'margin_l': parts[5],
+        'margin_r': parts[6],
+        'margin_v': parts[7],
+        'effect': parts[8],
+        'text': parts[9]
+    }
+
+def parse_and_clean_ass_to_srt_subs(input_ass_path, keep_ranges):
+    """
+    Membaca berkas ASS, menyaring gaya non-dialog/gambar vektor,
+    menggeser waktu, dan mengembalikan list of dict subtitle SRT:
+    [{'start': float, 'end': float, 'text': str}]
+    """
+    subs = []
+    if not os.path.exists(input_ass_path):
+        return subs
+        
+    try:
+        with open(input_ass_path, 'r', encoding='utf-8', errors='replace') as f:
+            lines = f.readlines()
+            
+        for line in lines:
+            d = parse_ass_dialogue(line)
+            if d and d['type'].lower() == 'dialogue':
+                # Filter style
+                if is_blacklisted_style(d['style']):
+                    continue
+                # Shift waktu
+                try:
+                    start_sec = ass_time_to_seconds(d['start'])
+                    end_sec = ass_time_to_seconds(d['end'])
+                except Exception:
+                    continue
+                    
+                mapped_start = None
+                mapped_end = None
+                acc_keep_duration = 0.0
+                for k_start, k_end in keep_ranges:
+                    if k_start <= start_sec < k_end:
+                        mapped_start = (start_sec - k_start) + acc_keep_duration
+                        mapped_end = (end_sec - k_start) + acc_keep_duration
+                        break
+                    acc_keep_duration += (k_end - k_start)
+                    
+                if mapped_start is not None and mapped_end is not None:
+                    # Clean text
+                    clean_txt = clean_ass_text_to_srt(d['text'])
+                    if clean_txt and not is_vector_drawing(clean_txt):
+                        # Filter out zero duration or too short lyrics spam
+                        duration = mapped_end - mapped_start
+                        if duration <= 0.0:
+                            continue
+                        subs.append({
+                            'start': mapped_start,
+                            'end': mapped_end,
+                            'text': clean_txt
+                        })
+    except Exception as e:
+        print(f"Gagal mengekstrak/membersihkan ASS ke SRT: {e}")
+        
+    return subs
+
+def clean_srt_text(raw_text):
+    """Membersihkan format tag ASS/HTML dari teks SRT serta membuang gambar vektor."""
+    text = raw_text.replace(r'\N', '\n').replace(r'\h', ' ').replace(r'\n', ' ')
+    text = re.sub(r'\{[^}]*\}', '', text)
+    text = re.sub(r'<[^>]*>', '', text)
+    lines = []
+    for l in text.split('\n'):
+        l_strip = l.strip()
+        if l_strip and not is_vector_drawing(l_strip):
+            lines.append(l_strip)
     cleaned = "\n".join(lines).strip()
     return cleaned
 
@@ -286,7 +408,7 @@ def seconds_to_ass_time(total_seconds):
 def cut_and_shift_ass(input_ass_path, keep_ranges, output_ass_path):
     """
     Membaca berkas ASS input, mempertahankan subtitle Dialogue yang masuk dalam keep_ranges,
-    menggeser waktunya agar selaras dengan video baru yang terpotong,
+    menyaring gaya non-dialog & gambar vektor, menggeser waktunya agar selaras,
     dan menyimpannya ke berkas ASS output dengan gaya/format asli tetap utuh.
     """
     if not os.path.exists(input_ass_path):
@@ -296,41 +418,50 @@ def cut_and_shift_ass(input_ass_path, keep_ranges, output_ass_path):
         with open(input_ass_path, 'r', encoding='utf-8', errors='replace') as f:
             lines = f.readlines()
             
-        dialogue_pattern = re.compile(r'^(Dialogue:\s*[^,]+,)([^,]+),([^,]+),(.*)$')
         shifted_lines = []
         
         for line in lines:
-            match = dialogue_pattern.match(line)
-            if match:
-                prefix = match.group(1)
-                start_str = match.group(2)
-                end_str = match.group(3)
-                suffix = match.group(4)
-                
-                try:
-                    start_sec = ass_time_to_seconds(start_str)
-                    end_sec = ass_time_to_seconds(end_str)
-                except Exception:
+            d = parse_ass_dialogue(line)
+            if d:
+                if d['type'].lower() == 'dialogue':
+                    # Filter style
+                    if is_blacklisted_style(d['style']):
+                        continue
+                    # Filter vector drawing
+                    clean_txt = clean_ass_text_to_srt(d['text'])
+                    if not clean_txt or is_vector_drawing(clean_txt):
+                        continue
+                        
+                    # Shift waktu
+                    try:
+                        start_sec = ass_time_to_seconds(d['start'])
+                        end_sec = ass_time_to_seconds(d['end'])
+                    except Exception:
+                        shifted_lines.append(line)
+                        continue
+                        
+                    mapped_start = None
+                    mapped_end = None
+                    acc_keep_duration = 0.0
+                    for k_start, k_end in keep_ranges:
+                        if k_start <= start_sec < k_end:
+                            mapped_start = (start_sec - k_start) + acc_keep_duration
+                            mapped_end = (end_sec - k_start) + acc_keep_duration
+                            break
+                        acc_keep_duration += (k_end - k_start)
+                        
+                    if mapped_start is not None and mapped_end is not None:
+                        new_start_str = seconds_to_ass_time(mapped_start)
+                        new_end_str = seconds_to_ass_time(mapped_end)
+                        # Reconstruct dialogue line
+                        new_line = f"Dialogue: {d['layer']},{new_start_str},{new_end_str},{d['style']},{d['name']},{d['margin_l']},{d['margin_r']},{d['margin_v']},{d['effect']},{d['text']}"
+                        if not new_line.endswith('\n'):
+                            new_line += '\n'
+                        shifted_lines.append(new_line)
+                else:
                     shifted_lines.append(line)
-                    continue
-                
-                mapped_start = None
-                mapped_end = None
-                
-                acc_keep_duration = 0.0
-                for k_start, k_end in keep_ranges:
-                    if k_start <= start_sec < k_end:
-                        mapped_start = (start_sec - k_start) + acc_keep_duration
-                        mapped_end = (end_sec - k_start) + acc_keep_duration
-                        break
-                    acc_keep_duration += (k_end - k_start)
-                    
-                if mapped_start is not None and mapped_end is not None:
-                    new_start_str = seconds_to_ass_time(mapped_start)
-                    new_end_str = seconds_to_ass_time(mapped_end)
-                    shifted_lines.append(f"{prefix}{new_start_str},{new_end_str},{suffix}\n")
             else:
-                # Pertahankan line non-dialogue (script info, styles, dll)
+                # Pertahankan line non-events (headers, styles, dll)
                 shifted_lines.append(line)
                 
         with open(output_ass_path, 'w', encoding='utf-8') as f:
@@ -340,74 +471,87 @@ def cut_and_shift_ass(input_ass_path, keep_ranges, output_ass_path):
         print(f"Gagal menyelaraskan subtitel ASS: {e}")
         return False
 
-def cut_and_shift_srt(input_srt_path, keep_ranges, output_srt_path, line_limit=None):
+def cut_and_shift_srt(input_srt_path, keep_ranges, output_srt_path, line_limit=None, input_ass_path=None):
     """
-    Membaca berkas SRT input, mempertahankan subtitle yang masuk dalam keep_ranges,
+    Membaca berkas SRT input (atau ASS input jika tersedia), mempertahankan subtitle yang masuk dalam keep_ranges,
     menggeser waktunya agar selaras dengan video baru yang terpotong,
     mengjalankan pembersih duplikat OCR spam, membatasi panjang karakter baris,
     dan menyimpannya ke berkas SRT output.
     """
-    if not os.path.exists(input_srt_path):
-        return False
-        
-    try:
-        with open(input_srt_path, 'r', encoding='utf-8', errors='replace') as f:
-            content = f.read()
+    subs_list = []
+    
+    # 1. Jika ada file ASS, gunakan parser ASS yang pintar
+    if input_ass_path and os.path.exists(input_ass_path):
+        subs_list = parse_and_clean_ass_to_srt_subs(input_ass_path, keep_ranges)
+    # 2. Jika tidak, gunakan file SRT input
+    elif os.path.exists(input_srt_path):
+        try:
+            with open(input_srt_path, 'r', encoding='utf-8', errors='replace') as f:
+                content = f.read()
+                
+            if content.startswith('\ufeff'):
+                content = content[1:]
+                
+            blocks = re.split(r'\n\s*\n', content.strip())
             
-        if content.startswith('\ufeff'):
-            content = content[1:]
-            
-        # Pisahkan blok berdasarkan baris kosong ganda atau baris kosong tunggal yang memisahkan angka indeks
-        blocks = re.split(r'\n\s*\n', content.strip())
-        subs_list = []
-        
-        for block in blocks:
-            lines = block.strip().split('\n')
-            if len(lines) >= 2:
-                ts_line_idx = -1
-                for idx, line in enumerate(lines):
-                    if "-->" in line:
-                        ts_line_idx = idx
-                        break
+            for block in blocks:
+                lines = block.strip().split('\n')
+                if len(lines) >= 2:
+                    ts_line_idx = -1
+                    for idx, line in enumerate(lines):
+                        if "-->" in line:
+                            ts_line_idx = idx
+                            break
+                            
+                    if ts_line_idx != -1:
+                        dialogue_lines = lines[ts_line_idx+1:]
+                        clean_text = clean_srt_text("\n".join(dialogue_lines))
                         
-                if ts_line_idx != -1:
-                    dialogue_lines = lines[ts_line_idx+1:]
-                    clean_text = clean_srt_text("\n".join(dialogue_lines))
-                    
-                    if clean_text:
-                        # Terapkan pembatasan panjang karakter per baris jika diatur
-                        if line_limit:
-                            clean_text = wrap_text_by_char_limit(clean_text, line_limit)
-                            
-                        ts_line = lines[ts_line_idx]
-                        parts = ts_line.split("-->")
-                        if len(parts) == 2:
-                            start_sec = srt_time_to_seconds(parts[0])
-                            end_sec = srt_time_to_seconds(parts[1])
-                            
-                            mapped_start = None
-                            mapped_end = None
-                            
-                            acc_keep_duration = 0.0
-                            for k_start, k_end in keep_ranges:
-                                # Jika timestamp dialog masuk dalam rentang segmen ini
-                                if k_start <= start_sec < k_end:
-                                    mapped_start = (start_sec - k_start) + acc_keep_duration
-                                    mapped_end = (end_sec - k_start) + acc_keep_duration
-                                    break
-                                acc_keep_duration += (k_end - k_start)
+                        if clean_text:
+                            ts_line = lines[ts_line_idx]
+                            parts = ts_line.split("-->")
+                            if len(parts) == 2:
+                                start_sec = srt_time_to_seconds(parts[0])
+                                end_sec = srt_time_to_seconds(parts[1])
                                 
-                            if mapped_start is not None and mapped_end is not None:
-                                subs_list.append({
-                                    'start': mapped_start,
-                                    'end': mapped_end,
-                                    'text': clean_text
-                                })
+                                mapped_start = None
+                                mapped_end = None
                                 
-        # Jalankan deduplikasi OCR spam duplikat
-        deduplicated_subs = merge_duplicate_ocr_subtitles(subs_list)
-        
-        # Konversi kembali ke format SRT
+                                acc_keep_duration = 0.0
+                                for k_start, k_end in keep_ranges:
+                                    if k_start <= start_sec < k_end:
+                                        mapped_start = (start_sec - k_start) + acc_keep_duration
+                                        mapped_end = (end_sec - k_start) + acc_keep_duration
+                                        break
+                                    acc_keep_duration += (k_end - k_start)
+                                    
+                                if mapped_start is not None and mapped_end is not None:
+                                    subs_list.append({
+                                        'start': mapped_start,
+                                        'end': mapped_end,
+                                        'text': clean_text
+                                    })
+        except Exception as e:
+            print(f"Gagal memproses SRT input: {e}")
+            
+    # Terapkan pembatasan panjang karakter per baris dan hapus baris yang kosong/vector
+    processed_subs = []
+    for sub in subs_list:
+        clean_txt = clean_srt_text(sub['text'])
+        if line_limit:
+            clean_txt = wrap_text_by_char_limit(clean_txt, line_limit)
+        if clean_txt and not is_vector_drawing(clean_txt):
+            processed_subs.append({
+                'start': sub['start'],
+                'end': sub['end'],
+                'text': clean_txt
+            })
+            
+    # Jalankan deduplikasi OCR spam duplikat
+    deduplicated_subs = merge_duplicate_ocr_subtitles(processed_subs)
+    
+    # Konversi kembali ke format SRT
+    try:
         shifted_blocks = []
         for idx, sub in enumerate(deduplicated_subs, 1):
             new_ts_line = f"{seconds_to_srt_time(sub['start'])} --> {seconds_to_srt_time(sub['end'])}"
@@ -418,7 +562,7 @@ def cut_and_shift_srt(input_srt_path, keep_ranges, output_srt_path, line_limit=N
             out_f.write("\n\n".join(shifted_blocks))
         return True
     except Exception as e:
-        print(f"Gagal menyelaraskan subtitel: {e}")
+        print(f"Gagal menulis file SRT output: {e}")
         return False
 
 def escape_path_for_ffmpeg_filter(path):
@@ -533,7 +677,7 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
     # Selaraskan subtitle
     srt_success = False
     if srt_to_shift:
-        srt_success = cut_and_shift_srt(srt_to_shift, keep_ranges, output_srt_path, line_limit=line_limit)
+        srt_success = cut_and_shift_srt(srt_to_shift, keep_ranges, output_srt_path, line_limit=line_limit, input_ass_path=ass_to_shift)
         if os.path.exists(temp_extract_srt):
             try: os.remove(temp_extract_srt)
             except: pass
@@ -700,53 +844,48 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
         srt_success = False
         if srt_to_shift:
             # Shift untuk episode saat ini (selaras dengan video episode ini)
-            srt_success = cut_and_shift_srt(srt_to_shift, keep_ranges, out_s, line_limit=line_limit)
+            srt_success = cut_and_shift_srt(srt_to_shift, keep_ranges, out_s, line_limit=line_limit, input_ass_path=ass_to_shift)
             
             # Jika merger diaktifkan, kumpulkan juga sub yang di-offset secara global
             if merge_to_one:
-                # Muat sub lama, geser dengan global accumulated_offset, dan tambahkan ke global list
                 try:
-                    with open(srt_to_shift, 'r', encoding='utf-8', errors='replace') as sf:
-                        content = sf.read()
-                    if content.startswith('\ufeff'): content = content[1:]
-                    blocks = re.split(r'\n\s*\n', content.strip())
-                    for b in blocks:
-                        lines = b.strip().split('\n')
-                        if len(lines) >= 2:
-                            ts_line_idx = -1
-                            for l_i, line in enumerate(lines):
-                                if "-->" in line:
-                                    ts_line_idx = l_i
+                    ep_subs = []
+                    if ass_to_shift and os.path.exists(ass_to_shift):
+                        ep_subs = parse_and_clean_ass_to_srt_subs(ass_to_shift, keep_ranges)
+                    elif srt_to_shift and os.path.exists(srt_to_shift):
+                        from vidstamp.core.subtitle import parse_srt_file
+                        raw_ep_subs = parse_srt_file(srt_to_shift)
+                        # Shift them
+                        for sub in raw_ep_subs:
+                            start_s = sub['start']
+                            end_s = sub['end']
+                            mapped_s = None
+                            mapped_e = None
+                            acc_keep = 0.0
+                            for k_s, k_e in keep_ranges:
+                                if k_s <= start_s < k_e:
+                                    mapped_s = (start_s - k_s) + acc_keep
+                                    mapped_e = (end_s - k_s) + acc_keep
                                     break
-                            if ts_line_idx != -1:
-                                dialogue_lines = lines[ts_line_idx+1:]
-                                clean_txt = clean_srt_text("\n".join(dialogue_lines))
-                                if clean_txt:
-                                    if line_limit:
-                                        clean_txt = wrap_text_by_char_limit(clean_txt, line_limit)
-                                        
-                                    parts = lines[ts_line_idx].split("-->")
-                                    if len(parts) == 2:
-                                        start_s = srt_time_to_seconds(parts[0])
-                                        end_s = srt_time_to_seconds(parts[1])
-                                        
-                                        # Map ke global timeline
-                                        mapped_s = None
-                                        mapped_e = None
-                                        acc_keep = 0.0
-                                        for k_s, k_e in keep_ranges:
-                                            if k_s <= start_s < k_e:
-                                                mapped_s = (start_s - k_s) + acc_keep + accumulated_offset
-                                                mapped_e = (end_s - k_s) + acc_keep + accumulated_offset
-                                                break
-                                            acc_keep += (k_e - k_s)
-                                            
-                                        if mapped_s is not None and mapped_e is not None:
-                                            global_subs_list.append({
-                                                'start': mapped_s,
-                                                'end': mapped_e,
-                                                'text': clean_txt
-                                            })
+                                acc_keep += (k_e - k_s)
+                            if mapped_s is not None and mapped_e is not None:
+                                ep_subs.append({
+                                    'start': mapped_s,
+                                    'end': mapped_e,
+                                    'text': sub['text']
+                                })
+                    
+                    # Tambahkan offset global dan kumpulkan ke global list
+                    for sub in ep_subs:
+                        clean_txt = clean_srt_text(sub['text'])
+                        if line_limit:
+                            clean_txt = wrap_text_by_char_limit(clean_txt, line_limit)
+                        if clean_txt:
+                            global_subs_list.append({
+                                'start': sub['start'] + accumulated_offset,
+                                'end': sub['end'] + accumulated_offset,
+                                'text': clean_txt
+                            })
                 except Exception as ex_sub:
                     print(f"Gagal memproses global subtitle: {ex_sub}")
                     
