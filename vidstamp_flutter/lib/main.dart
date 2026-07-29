@@ -7,6 +7,9 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'models/scene_note.dart';
 import 'widgets/video_player_panel.dart';
 import 'widgets/notes_panel.dart';
+import 'widgets/export_dialog.dart';
+import 'utils/subtitle_processor.dart';
+import 'utils/video_processor.dart';
 import 'package:uuid/uuid.dart';
 
 void main() {
@@ -357,9 +360,252 @@ class _MainSplitScreenState extends State<MainSplitScreen> {
     }
   }
 
+  void _showExportSetupDialog() {
+    if (_currentVideoPath.isEmpty) {
+      _showSnackbar('Buka video terlebih dahulu sebelum mengekspor!', Colors.amber);
+      return;
+    }
+
+    String mode = 'softsub';
+    int fontSize = 18;
+    int lineLimit = 45;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF16162A),
+              title: const Text('Pengaturan Ekspor Video Bersih', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Mode Subtitle:', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Radio<String>(
+                        value: 'softsub',
+                        groupValue: mode,
+                        activeColor: Colors.indigoAccent,
+                        onChanged: (val) => setDialogState(() => mode = val!),
+                      ),
+                      const Text('Softsub (Lossless)', style: TextStyle(color: Colors.white, fontSize: 13)),
+                      const SizedBox(width: 16),
+                      Radio<String>(
+                        value: 'hardsub',
+                        groupValue: mode,
+                        activeColor: Colors.indigoAccent,
+                        onChanged: (val) => setDialogState(() => mode = val!),
+                      ),
+                      const Text('Hardsub (Bakar)', style: TextStyle(color: Colors.white, fontSize: 13)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (mode == 'hardsub') ...[
+                    Text('Ukuran Font Hardsub: $fontSize', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                    Slider(
+                      value: fontSize.toDouble(),
+                      min: 10,
+                      max: 40,
+                      divisions: 30,
+                      activeColor: Colors.indigoAccent,
+                      onChanged: (val) => setDialogState(() => fontSize = val.toInt()),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  Text('Batas Karakter Per Baris: $lineLimit', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  Slider(
+                    value: lineLimit.toDouble(),
+                    min: 20,
+                    max: 80,
+                    divisions: 60,
+                    activeColor: Colors.indigoAccent,
+                    onChanged: (val) => setDialogState(() => lineLimit = val.toInt()),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _executeCleanExport(mode, fontSize, lineLimit);
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.indigoAccent),
+                  child: const Text('Mulai Ekspor'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _executeCleanExport(String mode, int fontSize, int lineLimit) async {
+    final videoPath = _currentVideoPath;
+    final totalDuration = _player.state.duration.inMilliseconds.toDouble() / 1000.0;
+    if (totalDuration <= 0.0) {
+      _showSnackbar('Durasi video tidak terdeteksi!', Colors.redAccent);
+      return;
+    }
+
+    // Hitung keep ranges
+    final List<Map<String, double>> skipRanges = [];
+    if (_opStart != null && _opEnd != null) {
+      skipRanges.add({
+        'start': _opStart!.inMilliseconds.toDouble() / 1000.0,
+        'end': _opEnd!.inMilliseconds.toDouble() / 1000.0,
+      });
+    }
+    if (_edStart != null && _edEnd != null) {
+      skipRanges.add({
+        'start': _edStart!.inMilliseconds.toDouble() / 1000.0,
+        'end': _edEnd!.inMilliseconds.toDouble() / 1000.0,
+      });
+    }
+
+    // Urutkan skip ranges
+    skipRanges.sort((a, b) => a['start']!.compareTo(b['start']!));
+
+    final List<Map<String, double>> keepRanges = [];
+    double current = 0.0;
+    for (var skip in skipRanges) {
+      final sStart = skip['start']!;
+      final sEnd = skip['end']!;
+      if (sStart > current) {
+        keepRanges.add({'start': current, 'end': sStart});
+      }
+      current = current > sEnd ? current : sEnd;
+    }
+    if (current < totalDuration) {
+      keepRanges.add({'start': current, 'end': totalDuration});
+    }
+
+    if (keepRanges.isEmpty) {
+      _showSnackbar('Tidak ada bagian video untuk diekspor!', Colors.redAccent);
+      return;
+    }
+
+    final totalKeepDuration = keepRanges.fold<double>(0.0, (prev, element) => prev + (element['end']! - element['start']!));
+
+    // Bangun path berkas ekspor
+    final lastDotIdx = videoPath.lastIndexOf('.');
+    final baseName = lastDotIdx != -1 ? videoPath.substring(0, lastDotIdx) : videoPath;
+    final ext = lastDotIdx != -1 ? videoPath.substring(lastDotIdx) : '.mp4';
+    final outputVideo = '${baseName}_clean$ext';
+    final outputSrt = '${baseName}_clean.srt';
+
+    // Berkas sementara
+    final uuidSuffix = _uuid.v4().substring(0, 8);
+    final tempExtractSrt = '${baseName}_temp_extract_$uuidSuffix.srt';
+    final tempExtractAss = '${baseName}_temp_extract_$uuidSuffix.ass';
+    final tempShiftedAss = '${baseName}_temp_shifted_$uuidSuffix.ass';
+
+    String? srtToShift;
+    String? assToShift;
+
+    _showSnackbar('Mengekstrak subtitle (FFmpeg)...', Colors.indigoAccent);
+
+    // Jika MKV, lakukan ekstraksi track subtitle pertama ke berkas temp
+    if (videoPath.toLowerCase().endsWith('.mkv')) {
+      final ffmpegPath = VideoProcessor.getFfmpegPath();
+      if (ffmpegPath != null) {
+        // Ekstrak SRT
+        await Process.run(ffmpegPath, ['-y', '-i', videoPath, '-map', '0:s:0', tempExtractSrt]);
+        if (File(tempExtractSrt).existsSync()) srtToShift = tempExtractSrt;
+        
+        // Ekstrak ASS
+        await Process.run(ffmpegPath, ['-y', '-i', videoPath, '-map', '0:s:0', tempExtractAss]);
+        if (File(tempExtractAss).existsSync()) assToShift = tempExtractAss;
+      }
+    }
+
+    // Selaraskan dan bersihkan subtitel menggunakan SubtitleProcessor
+    bool srtSuccess = false;
+    if (srtToShift != null) {
+      srtSuccess = SubtitleProcessor.cutAndShiftSrt(
+        srtToShift,
+        keepRanges,
+        outputSrt,
+        lineLimit: lineLimit,
+        inputAssPath: assToShift,
+      );
+    }
+
+    bool assSuccess = false;
+    if (assToShift != null) {
+      assSuccess = SubtitleProcessor.cutAndShiftAss(
+        assToShift,
+        keepRanges,
+        tempShiftedAss,
+      );
+    }
+
+    // Panggil dialog progres render ekspor
+    if (mounted) {
+      final exportSuccess = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return ExportProgressDialog(
+            videoPath: videoPath,
+            keepRanges: keepRanges,
+            outputPath: outputVideo,
+            mode: mode,
+            shiftedAssPath: assSuccess ? tempShiftedAss : null,
+            shiftedSrtPath: srtSuccess ? outputSrt : null,
+            fontSize: fontSize,
+            totalKeepDuration: totalKeepDuration,
+          );
+        },
+      );
+
+      // Bersihkan berkas sementara
+      for (var path in [tempExtractSrt, tempExtractAss, tempShiftedAss]) {
+        final f = File(path);
+        if (f.existsSync()) {
+          try { f.deleteSync(); } catch (_) {}
+        }
+      }
+
+      if (exportSuccess == true) {
+        _showSnackbar('Ekspor video bersih sukses!', Colors.green);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('🎬 VidStamp Desktop - Split Panel Layout', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        backgroundColor: const Color(0xFF16162A),
+        elevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: ElevatedButton.icon(
+              onPressed: _showExportSetupDialog,
+              icon: const Icon(Icons.movie_filter_outlined, size: 18),
+              label: const Text('Ekspor Video Bersih'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE94560),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: Focus(
         autofocus: true,
         onKeyEvent: (node, event) {
