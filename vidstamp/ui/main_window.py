@@ -186,11 +186,16 @@ class VideoAppController:
         self.root.bind("<Shift-Right>", lambda e: self.right_panel._delta(10))
         self.root.bind("<F11>",         self.right_panel.toggle_fullscreen)
         self.root.bind("<Escape>",      self._exit_fullscreen_only)
-        self.root.bind("<Control-t>",   self._record_shortcut_handler)
-        self.root.bind("<Control-T>",   self._record_shortcut_handler)
+        self.root.bind("<Control-r>",   self._record_shortcut_handler)
+        self.root.bind("<Control-R>",   self._record_shortcut_handler)
+        self.root.bind("<Control-o>",   self._opening_shortcut_handler)
+        self.root.bind("<Control-O>",   self._opening_shortcut_handler)
+        self.root.bind("<Control-c>",   self._closing_shortcut_handler)
+        self.root.bind("<Control-C>",   self._closing_shortcut_handler)
         self.root.bind("<Control-space>", lambda e: self.right_panel.cancel_recording_action())
         self.root.bind("<Control-m>",   lambda e: self.open_batch_merger())
         self.root.bind("<Control-M>",   lambda e: self.open_batch_merger())
+        self.root.bind("<Tab>",         lambda e: self.right_panel.toggle_fullscreen_controls())
         self.root.bind("q",             lambda e: self.quit_app())
         self.root.bind("Q",             lambda e: self.quit_app())
 
@@ -198,7 +203,21 @@ class VideoAppController:
         if self.right_panel.is_fullscreen:
             self.right_panel.toggle_fullscreen()
 
+    def _is_typing_focus(self):
+        widget = self.root.focus_get()
+        if widget is None:
+            return False
+        try:
+            classname = widget.winfo_class()
+            if classname in ("Entry", "Text", "TEntry", "TText"):
+                return True
+        except Exception:
+            pass
+        return False
+
     def _record_shortcut_handler(self, event=None):
+        if self._is_typing_focus():
+            return
         if not self.engine.cap:
             return
         if self.right_panel.mark_start is None:
@@ -206,6 +225,23 @@ class VideoAppController:
         else:
             self.right_panel.mark_end_action()
             self.right_panel.save_scene_action()
+        return "break"
+
+    def _opening_shortcut_handler(self, event=None):
+        if self._is_typing_focus():
+            return
+        if not self.engine.cap:
+            return
+        self.right_panel.record_opening_action()
+        return "break"
+
+    def _closing_shortcut_handler(self, event=None):
+        if self._is_typing_focus():
+            return
+        if not self.engine.cap:
+            return
+        self.right_panel.record_closing_action()
+        return "break"
 
     def playback_loop(self):
         if self.engine.playing and self.engine.cap:

@@ -32,6 +32,7 @@ class RightPlayerPanel(tk.Frame):
         
         # State Fullscreen
         self.is_fullscreen = False
+        self.fullscreen_controls_visible = False
         
         # State Skip OP/ED
         self.auto_skip = tk.BooleanVar(value=True)
@@ -78,34 +79,20 @@ class RightPlayerPanel(tk.Frame):
         self.show_ms = tk.BooleanVar(value=True)
         self.show_sub = tk.BooleanVar(value=False)
         
-        # Tombol set OP/ED dan Checkbox Auto-Skip
-        tk.Button(self.top_bar, text="⚙️ Set Skip OP/ED", command=self.setup_skip_oped_dialog,
-                  bg="#e94560", fg="white", relief="flat", font=("Segoe UI", 8, "bold"),
-                  padx=6, pady=1).pack(side="right", padx=4)
-                  
-        tk.Checkbutton(self.top_bar, text="Auto-Skip OP/ED", variable=self.auto_skip,
-                        bg="#16213e", fg="#ffd700", selectcolor="#0f3460",
-                        activebackground="#16213e", font=("Segoe UI", 8, "bold")).pack(side="right", padx=2)
-                        
-        tk.Frame(self.top_bar, bg="#e94560", width=1, height=18).pack(side="right", padx=8, fill="y")
-        
-        tk.Checkbutton(self.top_bar, text="ms", variable=self.show_ms,
-                        command=self.render_current_frame,
-                        bg="#16213e", fg="#a8dadc", selectcolor="#0f3460",
-                        activebackground="#16213e", font=("Segoe UI", 8)).pack(side="right", padx=(2, 6))
-        tk.Checkbutton(self.top_bar, text="Timestamp", variable=self.show_ts,
-                        command=self.render_current_frame,
-                        bg="#16213e", fg="#a8dadc", selectcolor="#0f3460",
-                        activebackground="#16213e", font=("Segoe UI", 8)).pack(side="right", padx=2)
-        tk.Checkbutton(self.top_bar, text="Subtitel", variable=self.show_sub,
-                        command=self.render_current_frame,
-                        bg="#16213e", fg="#a8dadc", selectcolor="#0f3460",
-                        activebackground="#16213e", font=("Segoe UI", 8)).pack(side="right", padx=2)
-
-        tk.Frame(self.top_bar, bg="#e94560", width=1, height=18).pack(side="right", padx=8, fill="y")
-
         # Tombol Peralatan (Dropdown Melayang)
+        # Menghapus style tidak standar agar menu dirender secara native dengan benar oleh Win32
         self.tools_popup = tk.Menu(self, tearoff=0)
+        
+        # 1. Toggles (Checkbuttons)
+        self.tools_popup.add_checkbutton(label="⏱️ Tampilkan Timestamp", variable=self.show_ts, command=self.render_current_frame)
+        self.tools_popup.add_checkbutton(label="⏱️ Detail Milidetik (ms)", variable=self.show_ms, command=self.render_current_frame)
+        self.tools_popup.add_checkbutton(label="💬 Tampilkan Subtitel Overlay", variable=self.show_sub, command=self.render_current_frame)
+        self.tools_popup.add_checkbutton(label="⏭️ Aktifkan Auto-Skip OP/ED", variable=self.auto_skip)
+        
+        self.tools_popup.add_separator()
+        
+        # 2. Perintah Aksi
+        self.tools_popup.add_command(label="⚙️ Set Skip OP/ED Manual...", command=self.setup_skip_oped_dialog)
         self.tools_popup.add_command(label="🛠️ Batch Merger Wizard (Ctrl+M)", command=self.on_open_batch_merger)
         self.tools_popup.add_command(label="🎵 Ekstraktor Subtitle & Audio", command=self.on_open_extractor)
         self.tools_popup.add_command(label="📂 Buka Folder Catatan", command=self.on_open_notes_folder)
@@ -315,12 +302,16 @@ class RightPlayerPanel(tk.Frame):
             self.engine.set_speed(1.0)
 
     def _on_canvas_click(self, event):
-        self.toggle_play()
+        if self.is_fullscreen:
+            self.toggle_fullscreen_controls()
+        else:
+            self.toggle_play()
 
     # ── Fullscreen ──
     def toggle_fullscreen(self, event=None):
         root = self.winfo_toplevel()
         self.is_fullscreen = not self.is_fullscreen
+        self.fullscreen_controls_visible = False
         
         if self.is_fullscreen:
             self.top_bar.pack_forget()
@@ -342,6 +333,28 @@ class RightPlayerPanel(tk.Frame):
             # Tampilkan kembali detail frame hanya jika ada adegan terpilih
             if self.sc_lb.curselection():
                 self.detail_frame.pack(fill="x", padx=6, pady=(0, 4), after=self.sc_label_frame)
+            
+        self.update_idletasks()
+        self.render_current_frame()
+
+    def toggle_fullscreen_controls(self):
+        if not self.is_fullscreen:
+            return
+        
+        self.fullscreen_controls_visible = not self.fullscreen_controls_visible
+        
+        if self.fullscreen_controls_visible:
+            # Tampilkan kontrol di mode fullscreen
+            self.top_bar.pack(fill="x", before=self.canvas_container)
+            self.seek_frame.pack(fill="x", after=self.canvas_container)
+            self.ctrl_panel.pack(fill="x", after=self.seek_frame)
+            self.inf_bar.pack(fill="x", after=self.ctrl_panel)
+        else:
+            # Sembunyikan kontrol di mode fullscreen
+            self.top_bar.pack_forget()
+            self.seek_frame.pack_forget()
+            self.ctrl_panel.pack_forget()
+            self.inf_bar.pack_forget()
             
         self.update_idletasks()
         self.render_current_frame()
