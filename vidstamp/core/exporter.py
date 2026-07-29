@@ -149,14 +149,24 @@ def merge_duplicate_ocr_subtitles(subs_list):
         
         # Cari ke belakang di merged list (mulai dari yang paling baru)
         found = False
-        for m in reversed(merged):
+        for idx in range(len(merged) - 1, -1, -1):
+            m = merged[idx]
             norm_m = normalize_text(m['text'])
             if norm_m == norm_sub:
-                # Cek jarak waktu (gap)
-                gap = sub['start'] - m['end']
-                if gap <= 2.5:
-                    m['end'] = max(m['end'], sub['end'])
-                    found = True
+                # Cek apakah ada subtitle lain yang memotong secara berurutan di tengah gap
+                has_intervening = False
+                for j in range(idx + 1, len(merged)):
+                    other = merged[j]
+                    if other['start'] >= m['end'] and other['end'] <= sub['start']:
+                        has_intervening = True
+                        break
+                
+                if not has_intervening:
+                    # Cek jarak waktu (gap)
+                    gap = sub['start'] - m['end']
+                    if gap <= 2.5:
+                        m['end'] = max(m['end'], sub['end'])
+                        found = True
                 break # Berhenti mencari karena ini adalah kemunculan paling akhir dari teks tersebut
                 
         if not found:
