@@ -87,3 +87,16 @@ Log kronologis aktivitas harian sesi pengembangan.
     - Menjalankan `/build-app` yang memicu pembaruan versi, kompilasi PyInstaller, dan build Inno Setup secara otonom menghasilkan installer Windows `VidStamp_Setup_v1.3.0.exe` (~146MB) dengan sukses di root.
 * **Status**: Sukses besar, sistem manajemen versi terpusat, pengemasan macOS, dan otomatisasi installer Windows/macOS telah diselesaikan dan berjalan dengan stabil.
 * **Langkah Selanjutnya**: Melakukan push commit ke GitHub remote untuk memicu pengujian build macOS di Actions secara cloud.
+
+## 2026-07-29 - Sesi Perbaikan Bug Merger, Sistem Pintasan Baru, & Optimasi Fullscreen
+* **Aktivitas**:
+  - **Perbaikan Concat Merger**: Memperbaiki error `4294967268` / `-28` (`ENOSPC` - Penyimpanan penuh / batas FAT32) dengan memigrasi daftar file concat (`mylist_temp_*.txt`) menggunakan relative path alih-alih path absolut, yang sekaligus mencegah kegagalan FFmpeg akibat spasi/unicode pada folder kerja induk. Menambahkan penangkapan stderr dan notifikasi informatif jika terjadi disk full.
+  - **Otomatisasi Build Windows (`build.py`)**: Membuat skrip pembangun lokal `build.py` untuk mengotomatiskan jalannya `update_version.py`, `pytest`, `pyinstaller`, dan `ISCC.exe` sekali jalan.
+  - **Sistem Pintasan Keyboard Terpusat**:
+    - Memigrasi tombol perekam adegan dari `Ctrl+T` ke `Ctrl+R`.
+    - Menambahkan pintasan perekam Opening (`Ctrl+O`) dan Closing (`Ctrl+C`) dengan mekanisme toggle 1-tombol (tekan 1 set start, tekan 2 set end & simpan).
+    - Menerapkan proteksi fokus ketik (`_is_typing_focus()`) agar shortcuts ini tidak mengganggu copy/paste (`Ctrl+C`) atau ketikan normal saat kursor berada di input field (Entry/Text).
+  - **Penyatuan Pengaturan ke Menu Peralatan (Decluttering)**: Memindahkan seluruh checkbox kontrol visual (`Tampilkan Timestamp`, `Milidetik`, `Subtitel Overlay`, `Auto-Skip OP/ED`) dan tombol `Set Skip OP/ED` dari `top_bar` ke dalam menu dropdown `Peralatan`. Membuat `top_bar` menjadi sangat minimalis dan bersih.
+  - **Tampilan Kontrol Fullscreen yang Interaktif**: Menambahkan fitur toggle panel kontrol (`top_bar`, `seek_frame`, `ctrl_panel`, `inf_bar`) di mode fullscreen dengan menekan tombol **`Tab`** atau melakukan **Klik Kiri (Left Click)** pada video canvas. Play/pause di mode fullscreen dialihkan sepenuhnya ke tombol **`Space`** untuk menghindari konflik.
+* **Status**: Sukses besar, seluruh unit test lulus (6 passed, 2 skipped), dan aplikasi berhasil dicompile secara manual via `build.py` menghasilkan setup installer Windows yang mutakhir.
+
