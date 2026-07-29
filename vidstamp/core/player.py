@@ -20,6 +20,7 @@ class VideoPlayerEngine:
         self.speed = 1.0
         self._seek_target = None
         self._caffeinate_process = None
+        self.last_frame = None
 
     def load(self, path):
         """Memuat berkas video dan mempersiapkan audio player MediaPlayer."""
@@ -45,6 +46,7 @@ class VideoPlayerEngine:
         self.cur_idx = 0
         self.playing = False
         self._seek_target = None
+        self.last_frame = None
         return True
 
     def set_playing(self, state: bool):
@@ -81,7 +83,7 @@ class VideoPlayerEngine:
     def get_next_frame(self):
         """
         Mengambil frame berikutnya dari OpenCV dan menyinkronkan posisinya
-        berdasarkan waktu (PTS) audio dari MediaPlayer.
+        berdasarkan waktu (PTS) audio dari MediaPlayer dengan strategi optimasi sinkronisasi.
         """
         if not self.cap:
             return False, None
@@ -94,19 +96,44 @@ class VideoPlayerEngine:
             target_idx = self._seek_target
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_idx)
             self._seek_target = None
+            ret, frame = self.cap.read()
+            if ret:
+                self.cur_idx = target_idx
+                self.last_frame = frame.copy()
+            return ret, frame
+            
         # Jika sedang memutar, sinkronkan video ke audio PTS
         elif self.playing and self.audio_player:
             pts = self.audio_player.get_pts()
             if pts > 0:
                 target_frame = int(pts * self.fps)
-                # Hanya lakukan seek (set frame) jika desync lebih dari 6 frame (~200ms)
-                if abs(self.cur_idx - target_frame) >= 6:
+                diff = target_frame - self.cur_idx
+                
+                # Kasus A: Terlambat sedikit (0 < diff < 30) -> Kejar menggunakan grab cepat (fast grab)
+                if 0 < diff < 30:
+                    for _ in range(diff - 1):
+                        self.cap.grab()
+                    ret, frame = self.cap.read()
+                    if ret:
+                        self.cur_idx = target_frame
+                        self.last_frame = frame.copy()
+                        return True, frame
+                    return False, None
+                
+                # Kasus B: Terlalu cepat sedikit (-15 < diff < 0) -> Diamkan frame (tunggu audio)
+                elif diff < 0 and abs(diff) < 15:
+                    if self.last_frame is not None:
+                        return True, self.last_frame
+                
+                # Kasus C: Desinkronisasi besar -> Seek paksa dengan cap.set
+                elif abs(diff) >= 30 or (diff < 0 and abs(diff) >= 15):
                     target_idx = target_frame
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_idx)
 
         ret, frame = self.cap.read()
         if ret:
             self.cur_idx = target_idx
+            self.last_frame = frame.copy()
             
         return ret, frame
 
@@ -138,6 +165,7 @@ class VideoPlayerEngine:
             self.audio_player = None
         self.cur_idx = 0
         self._seek_target = None
+        self.last_frame = None
 
     def _set_sleep_prevention(self, prevent: bool):
         """Mencegah atau mengizinkan layar mati / tidur secara otomatis (Windows & macOS)."""
