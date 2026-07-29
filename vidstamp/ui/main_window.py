@@ -44,17 +44,7 @@ class VideoAppController:
             on_open_notes_folder_callback=self.open_notes_folder_action
         )
         self.right_panel.pack(fill="both", expand=True)
-        
-        # Setup Menu Bar OS Native agar responsif di Windows
-        self.menu_bar = tk.Menu(self.root)
-        self.root.config(menu=self.menu_bar)
-        
-        self.tools_menu = tk.Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label="Peralatan", menu=self.tools_menu)
-        self.tools_menu.add_command(label="Batch Merger Wizard... (Ctrl+M)", command=self.open_batch_merger)
-        self.tools_menu.add_command(label="Ekstraktor Subtitle & Audio...", command=self.open_extractor_tool)
-        self.tools_menu.add_command(label="Buka Folder Catatan adegan", command=self.open_notes_folder_action)
-
+        # Setup Window
         self._bind_global_shortcuts()
         
         init_path = start_path or self.get_default_dir()
