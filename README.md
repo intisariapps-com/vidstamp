@@ -57,9 +57,12 @@ python -m vidstamp "D:\Koleksi Video\Anime\episode01.mkv"
 | `Space` / `Klik Layar` | Play / Pause |
 | `←` / `→` | Mundur / Maju 1 Detik |
 | `Shift` + `←` / `→` | Mundur / Maju 10 Detik |
-| `Ctrl` + `T` (Pertama) | **Mulai Rekam** (Tandai Awal Adegan) |
-| `Ctrl` + `T` (Kedua) | **Berhenti Rekam** (Tandai Akhir Adegan & Simpan) |
-| `Tab` | Sembunyikan / Tampilkan Panel Browser Kiri |
+| `Ctrl` + `R` (Pertama) | **Mulai Rekam Adegan** (Tandai Awal Adegan) |
+| `Ctrl` + `R` (Kedua) | **Berhenti Rekam Adegan** (Tandai Akhir Adegan & Simpan) |
+| `Ctrl` + `O` (Pertama) | **Mulai Rekam Opening** (Set Waktu Mulai OP) |
+| `Ctrl` + `O` (Kedua) | **Berhenti Rekam Opening** (Set Waktu Selesai OP & Simpan) |
+| `Ctrl` + `C` (Pertama) | **Mulai Rekam Closing** (Set Waktu Mulai ED) |
+| `Ctrl` + `C` (Kedua) | **Berhenti Rekam Closing** (Set Waktu Selesai ED & Simpan) |
 | `F11` / `Double Click` | Masuk / Keluar Fullscreen |
 | `Escape` | Keluar Fullscreen |
 | `Q` | Keluar dari Aplikasi |
