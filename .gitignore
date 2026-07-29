@@ -27,3 +27,8 @@ dist/
 bin/win/
 bin/mac/
 VidStamp_Setup.exe
+VidStamp_Setup_v*.exe
+
+# Mesin MPV & Pustaka Eksternal
+*.dll
+media-kit/
