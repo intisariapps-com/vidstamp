@@ -14,14 +14,11 @@ Seluruh pengerjaan dilakukan pada cabang terpisah:
 ## 📋 Checklist Tugas Migrasi
 
 ### 🚀 Fase 1: Inisialisasi Proyek & Setup Player
-- [ ] Buat cabang git baru: `git checkout -b feature/flutter-media-kit`.
-- [ ] Jalankan perintah inisialisasi proyek Flutter Desktop: `flutter create --platforms=windows,macos vidstamp_flutter`.
-- [ ] Tambahkan package berikut ke `pubspec.yaml`:
-  - `media-kit`
-  - `media-kit_video`
-  - `path_provider`
-- [ ] Setup DLL `mpv-2.dll` di folder output build agar terhubung otomatis secara lokal.
-- [ ] Buat antarmuka pemutar video minimalis di Flutter untuk menguji kelancaran akselerasi hardware GPU.
+- [x] Buat cabang git baru: `git checkout -b feature/flutter-media-kit`.
+- [x] Jalankan perintah inisialisasi proyek Flutter Desktop: `flutter create --platforms=windows,macos vidstamp_flutter`.
+- [x] Tambahkan package pemutar video ke `pubspec.yaml` (media_kit, media_kit_video, media_kit_libs_video).
+- [x] Buat antarmuka pemutar video minimalis di Flutter untuk menguji kelancaran akselerasi hardware GPU.
+
 
 ### 🎨 Fase 2: Pembangunan Antarmuka UI (Split Panel Layout)
 - [ ] Desain panel pemutar video di kiri dan panel catatan/transkrip di kanan.
