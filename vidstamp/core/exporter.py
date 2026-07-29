@@ -647,7 +647,9 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
         mylist_path = os.path.join(parent_dir, f"mylist_temp_{unique_id}.txt")
         with open(mylist_path, 'w', encoding='utf-8') as f_list:
             for temp_v in episode_temp_videos:
-                safe_path = temp_v.replace("\\", "/")
+                # Gunakan relative path (hanya nama file saja) karena mylist_path dan temp_v berada di folder yang sama (parent_dir)
+                # Ini menghindari kegagalan pembacaan unicode/spasi path absolut oleh FFmpeg di Windows
+                safe_path = os.path.basename(temp_v)
                 f_list.write(f"file '{safe_path}'\n")
                 
         # Concat lossless
@@ -656,7 +658,14 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
             "-c", "copy", output_mp4_final
         ]
         
-        sub_kw_concat = {'stdin': subprocess.DEVNULL, 'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}
+        # Tangkap stdout dan stderr agar jika terjadi kegagalan bisa didiagnosis
+        sub_kw_concat = {
+            'stdin': subprocess.DEVNULL,
+            'stdout': subprocess.PIPE,
+            'stderr': subprocess.PIPE,
+            'encoding': 'utf-8',
+            'errors': 'replace'
+        }
         if os.name == 'nt': 
             sub_kw_concat['creationflags'] = 0x08004000
             
@@ -673,7 +682,18 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
                 except: pass
                 
         if res_final.returncode != 0:
-            return False, f"Gagal merakit video concat final (FFmpeg code: {res_final.returncode})"
+            err_msg = ""
+            if res_final.returncode in (4294967268, -28):
+                err_msg = " (Kemungkinan: Ruang penyimpanan disk penuh atau batas ukuran file FAT32 4GB terlampaui)"
+            
+            stderr_detail = res_final.stderr.strip() if res_final.stderr else ""
+            if stderr_detail:
+                last_lines = stderr_detail.splitlines()[-3:]
+                stderr_summary = " | Details: " + " / ".join(last_lines)
+            else:
+                stderr_summary = ""
+                
+            return False, f"Gagal merakit video concat final (FFmpeg code: {res_final.returncode}){err_msg}{stderr_summary}"
             
         # Simpan subtitle global gabungan (dengan pembantaian OCR spam!)
         if global_subs_list:

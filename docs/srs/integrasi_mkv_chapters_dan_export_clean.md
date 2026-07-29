@@ -48,6 +48,8 @@ Mengintegrasikan kapabilitas dari skrip `mkv_merger_skip_oped.py` ke dalam UI Vi
   * Mengekstrak, memotong, dan menggeser subtitel SRT secara presisi berdasarkan daftar chapter/detik yang di-skip (logika pemotongan SRT dari `mkv_merger_skip_oped.py`).
   * `merge_duplicate_ocr_subtitles(subs_list)`: Fungsi pintar untuk mendeteksi, menyatukan, dan mengeliminasi spaming OCR subtitle yang berulang.
   * `export_bulk_and_merge(...)`: Logika pemrosesan batch beralur penuh yang mengotomatisasi rendering, penyelarasan SRT massal, pembuatan SRT global, dan penyatuan MP4 lossless.
+    * **Penulisan Path Relatif**: File daftar concat (`mylist_temp_xxx.txt`) harus menggunakan penulisan path relatif (hanya nama file saja) alih-alih path absolut untuk mencegah kegagalan FFmpeg di Windows ketika memproses path folder induk yang memiliki spasi, drive letter tertentu, atau karakter non-ASCII (Unicode).
+    * **Penanganan & Diagnosis Error**: Proses concat final harus merekam output `stderr` dan `stdout`. Jika FFmpeg keluar dengan kode error (misalnya `-28` / `4294967268` untuk `ENOSPC`), program harus mendiagnosis dan memberikan pesan kesalahan spesifik (seperti disk penuh atau batas 4GB FAT32 terlampaui) serta menampilkan 3 baris terakhir dari log `stderr` FFmpeg untuk troubleshooting mandiri yang lebih mudah.
 
 ### C. Modul UI Player View: `vidstamp/ui/player_view.py`
 * Menambahkan tombol aksi ekspor video bersih di dalam UI Dialog "Set Skip OP/ED".
@@ -65,3 +67,5 @@ Mengintegrasikan kapabilitas dari skrip `mkv_merger_skip_oped.py` ke dalam UI Vi
 4. Verifikasi bahwa proses ekspor berjalan di latar belakang tanpa membuat aplikasi tidak responsif (*Not Responding*).
 5. Putar berkas hasil ekspor: pastikan bagian Opening/Ending hilang dan teks subtitel tetap muncul secara sinkron tepat waktu.
 6. Uji proses Bulk dengan opsi "Gabungkan hasil bulk" aktif. Pastikan video final yang dihasilkan tergabung sempurna tanpa patahan visual, serta file `.srt` globalnya bersih dari duplikasi beruntun (OCR spam).
+7. Verifikasi penanganan error dengan menguji merger pada kondisi di mana ruang disk penuh atau batas ukuran terlampaui, pastikan aplikasi menampilkan pesan error informatif beserta potongan detail log `stderr` dari FFmpeg.
+
