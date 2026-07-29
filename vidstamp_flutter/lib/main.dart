@@ -66,11 +66,31 @@ class _MainSplitScreenState extends State<MainSplitScreen> {
   Duration? _edStart;
   Duration? _edEnd;
 
+  // State loading video
+  bool _isLoadingVideo = false;
+
   @override
   void initState() {
     super.initState();
-    _player = Player();
-    _controller = VideoController(_player);
+    _player = Player(
+      configuration: const PlayerConfiguration(
+        // Gunakan buffer yang lebih kecil untuk mempercepat load awal
+        bufferSize: 32 * 1024 * 1024, // 32 MB
+        logLevel: MPVLogLevel.error,   // Kurangi log agar tidak memblokir
+      ),
+    );
+
+    // Konfigurasi VideoController dengan Hardware Acceleration
+    _controller = VideoController(
+      _player,
+      configuration: const VideoControllerConfiguration(
+        enableHardwareAcceleration: true,
+        // Batasi resolusi tekstur GPU awal ke 1280x720 agar VRAM
+        // tidak terpakai habis saat inisialisasi codec pertama kali
+        width: 1280,
+        height: 720,
+      ),
+    );
 
     // Dengarkan posisi waktu untuk auto-skip
     _player.stream.position.listen((pos) {
@@ -212,14 +232,36 @@ class _MainSplitScreenState extends State<MainSplitScreen> {
     if (file.existsSync()) {
       setState(() {
         _currentVideoPath = path;
+        _isLoadingVideo = true; // Tampilkan indikator loading
         _notes.clear(); // Bersihkan notes untuk video baru
         _pendingSceneStart = null;
         _pendingOpeningStart = null;
         _pendingClosingStart = null;
+        // Reset data bab lama
+        _opStart = null;
+        _opEnd = null;
+        _edStart = null;
+        _edEnd = null;
       });
-      _player.open(Media(file.path));
-      _showSnackbar('Berhasil memuat video: ${file.path.split(Platform.pathSeparator).last}', Colors.green);
-      _detectChapters(path); // Panggil pendeteksi bab otomatis
+
+      final filename = file.path.split(Platform.pathSeparator).last;
+
+      // Perbaikan Hang #1: Pisahkan player.open() dari frame render UI
+      // dengan Future.microtask agar Flutter menyelesaikan rebuild UI
+      // terlebih dahulu sebelum memulai inisialisasi libmpv yang berat
+      Future.microtask(() async {
+        _player.open(Media(file.path));
+
+        if (mounted) {
+          setState(() => _isLoadingVideo = false);
+          _showSnackbar('Berhasil memuat video: $filename', Colors.green);
+        }
+
+        // Perbaikan Hang #2: Tunda ffprobe 2 detik agar tidak bersaing
+        // dengan decoder MKV libmpv yang sedang inisialisasi codec
+        await Future.delayed(const Duration(seconds: 2));
+        _detectChapters(path);
+      });
     } else {
       _showSnackbar('File video tidak ditemukan!', Colors.redAccent);
     }
@@ -676,6 +718,7 @@ class _MainSplitScreenState extends State<MainSplitScreen> {
                   onRecordScene: _recordScene,
                   onRecordOpening: _recordOpening,
                   onRecordClosing: _recordClosing,
+                  isLoadingVideo: _isLoadingVideo,
                   autoSkipEnabled: _autoSkipEnabled,
                   onAutoSkipChanged: (val) {
                     setState(() => _autoSkipEnabled = val);

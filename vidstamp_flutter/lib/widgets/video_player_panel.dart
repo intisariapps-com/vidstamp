@@ -12,6 +12,7 @@ class VideoPlayerPanel extends StatefulWidget {
   final VoidCallback onRecordScene;
   final VoidCallback onRecordOpening;
   final VoidCallback onRecordClosing;
+  final bool isLoadingVideo; // Indikator loading saat buka video
   
   // Auto-skip parameters
   final bool autoSkipEnabled;
@@ -33,6 +34,7 @@ class VideoPlayerPanel extends StatefulWidget {
     required this.onRecordClosing,
     required this.autoSkipEnabled,
     required this.onAutoSkipChanged,
+    this.isLoadingVideo = false,
     this.opStart,
     this.opEnd,
     this.edStart,
@@ -206,6 +208,28 @@ class _VideoPlayerPanelState extends State<VideoPlayerPanel> {
                     controller: widget.controller,
                     controls: null,
                   ),
+
+                  // Loading Overlay — tampil saat video sedang dimuat pertama kali
+                  if (widget.isLoadingVideo)
+                    Container(
+                      color: Colors.black54,
+                      child: const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              color: Colors.indigoAccent,
+                              strokeWidth: 3,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Memuat video...',
+                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   
                   // Progress Slider dan Kontrol Overlay di bawah
                   Positioned(
