@@ -12,6 +12,14 @@ class VideoPlayerPanel extends StatefulWidget {
   final VoidCallback onRecordScene;
   final VoidCallback onRecordOpening;
   final VoidCallback onRecordClosing;
+  
+  // Auto-skip parameters
+  final bool autoSkipEnabled;
+  final ValueChanged<bool> onAutoSkipChanged;
+  final Duration? opStart;
+  final Duration? opEnd;
+  final Duration? edStart;
+  final Duration? edEnd;
 
   const VideoPlayerPanel({
     super.key,
@@ -23,6 +31,12 @@ class VideoPlayerPanel extends StatefulWidget {
     required this.onRecordScene,
     required this.onRecordOpening,
     required this.onRecordClosing,
+    required this.autoSkipEnabled,
+    required this.onAutoSkipChanged,
+    this.opStart,
+    this.opEnd,
+    this.edStart,
+    this.edEnd,
   });
 
   @override
@@ -111,6 +125,69 @@ class _VideoPlayerPanelState extends State<VideoPlayerPanel> {
             ],
           ),
         ),
+
+        // Auto-Skip & Bab Info Row
+        if (widget.currentVideoPath.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    SizedBox(
+                      height: 24,
+                      width: 40,
+                      child: Switch(
+                        value: widget.autoSkipEnabled,
+                        onChanged: widget.onAutoSkipChanged,
+                        activeColor: Colors.indigoAccent,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Auto-Skip OP/ED',
+                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+                // Tampilkan info bab terdeteksi
+                Row(
+                  children: [
+                    if (widget.opStart != null && widget.opEnd != null)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                          ),
+                          child: Text(
+                            'OP: ${_formatTime(widget.opStart!)} - ${_formatTime(widget.opEnd!)}',
+                            style: const TextStyle(color: Colors.amberAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    if (widget.edStart != null && widget.edEnd != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.green.withOpacity(0.3)),
+                        ),
+                        child: Text(
+                          'ED: ${_formatTime(widget.edStart!)} - ${_formatTime(widget.edEnd!)}',
+                          style: const TextStyle(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
 
         // Video Screen Area
         Expanded(

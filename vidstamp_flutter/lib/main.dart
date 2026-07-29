@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
@@ -54,11 +55,23 @@ class _MainSplitScreenState extends State<MainSplitScreen> {
   Duration? _pendingOpeningStart;
   Duration? _pendingClosingStart;
 
+  // State Auto-Skip
+  bool _autoSkipEnabled = true;
+  Duration? _opStart;
+  Duration? _opEnd;
+  Duration? _edStart;
+  Duration? _edEnd;
+
   @override
   void initState() {
     super.initState();
     _player = Player();
     _controller = VideoController(_player);
+
+    // Dengarkan posisi waktu untuk auto-skip
+    _player.stream.position.listen((pos) {
+      _checkAutoSkip(pos);
+    });
 
     // Default placeholder path
     _pathController.text = r"E:\ANIME\Sword Art Online\Sword Art Online S1\Sword Art Online S1\[Kusonime] Sword Art Online BD - 01.mkv";
@@ -69,6 +82,122 @@ class _MainSplitScreenState extends State<MainSplitScreen> {
     _player.dispose();
     _pathController.dispose();
     super.dispose();
+  }
+
+  void _checkAutoSkip(Duration pos) {
+    if (!_autoSkipEnabled) return;
+
+    // Lompat Opening
+    if (_opStart != null && _opEnd != null) {
+      if (pos >= _opStart! && pos < _opEnd!) {
+        _player.seek(_opEnd!);
+        _showSnackbar('Melompati Opening otomatis...', Colors.indigoAccent);
+        return;
+      }
+    }
+
+    // Lompat Ending
+    if (_edStart != null && _edEnd != null) {
+      if (pos >= _edStart! && pos < _edEnd!) {
+        _player.seek(_edEnd!);
+        _showSnackbar('Melompati Ending otomatis...', Colors.indigoAccent);
+        return;
+      }
+    }
+  }
+
+  String? _getFfprobePath() {
+    final envPath = Platform.environment['PATH'] ?? '';
+    final separator = Platform.isWindows ? ';' : ':';
+    final paths = envPath.split(separator);
+    final ffprobeName = Platform.isWindows ? 'ffprobe.exe' : 'ffprobe';
+
+    for (var path in paths) {
+      final file = File('$path${Platform.pathSeparator}$ffprobeName');
+      if (file.existsSync()) {
+        return file.path;
+      }
+    }
+
+    final localBin = Directory(Directory.current.path).parent.path;
+    final fallbackFile = File(
+      Platform.isWindows
+          ? '$localBin${Platform.pathSeparator}bin${Platform.pathSeparator}win${Platform.pathSeparator}ffprobe.exe'
+          : '$localBin${Platform.pathSeparator}bin${Platform.pathSeparator}mac${Platform.pathSeparator}ffprobe',
+    );
+
+    if (fallbackFile.existsSync()) {
+      return fallbackFile.path;
+    }
+
+    return null;
+  }
+
+  Future<void> _detectChapters(String videoPath) async {
+    setState(() {
+      _opStart = null;
+      _opEnd = null;
+      _edStart = null;
+      _edEnd = null;
+    });
+
+    if (!videoPath.toLowerCase().endsWith('.mkv')) return;
+
+    try {
+      final ffprobePath = _getFfprobePath();
+      if (ffprobePath == null) {
+        print('ffprobe tidak ditemukan, deteksi bab dibatalkan.');
+        return;
+      }
+
+      final result = await Process.run(ffprobePath, [
+        '-v', 'error',
+        '-show_chapters',
+        '-print_format', 'json',
+        videoPath,
+      ]);
+
+      if (result.exitCode == 0) {
+        final jsonMap = json.decode(result.stdout as String);
+        final chapters = jsonMap['chapters'] as List?;
+        if (chapters != null) {
+          Duration? localOpStart;
+          Duration? localOpEnd;
+          Duration? localEdStart;
+          Duration? localEdEnd;
+
+          for (var chapter in chapters) {
+            final start = double.parse(chapter['start_time'].toString());
+            final end = double.parse(chapter['end_time'].toString());
+            final tags = chapter['tags'] as Map?;
+            if (tags != null) {
+              final title = tags['title'].toString().toLowerCase();
+              if (title.contains('op') || title.contains('opening') || title.contains('intro')) {
+                localOpStart = Duration(milliseconds: (start * 1000).toInt());
+                localOpEnd = Duration(milliseconds: (end * 1000).toInt());
+              } else if (title.contains('ed') || title.contains('ending') || title.contains('outro')) {
+                localEdStart = Duration(milliseconds: (start * 1000).toInt());
+                localEdEnd = Duration(milliseconds: (end * 1000).toInt());
+              }
+            }
+          }
+
+          if (mounted) {
+            setState(() {
+              _opStart = localOpStart;
+              _opEnd = localOpEnd;
+              _edStart = localEdStart;
+              _edEnd = localEdEnd;
+            });
+            if (_opStart != null || _edStart != null) {
+              _showSnackbar('Metadata bab MKV terdeteksi otomatis!', Colors.indigoAccent);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('Gagal mendeteksi bab: $e');
+    }
   }
 
   void _loadVideo() {
@@ -86,6 +215,7 @@ class _MainSplitScreenState extends State<MainSplitScreen> {
       });
       _player.open(Media(file.path));
       _showSnackbar('Berhasil memuat video: ${file.path.split(Platform.pathSeparator).last}', Colors.green);
+      _detectChapters(path); // Panggil pendeteksi bab otomatis
     } else {
       _showSnackbar('File video tidak ditemukan!', Colors.redAccent);
     }
@@ -233,6 +363,15 @@ class _MainSplitScreenState extends State<MainSplitScreen> {
       body: Focus(
         autofocus: true,
         onKeyEvent: (node, event) {
+          // Pengaman Fokus Pengetikan: Abaikan hotkey jika kursor aktif di input teks
+          final primaryFocus = FocusManager.instance.primaryFocus;
+          if (primaryFocus != null && primaryFocus.context != null) {
+            final isEditable = primaryFocus.context!.findAncestorWidgetOfExactType<EditableText>() != null;
+            if (isEditable) {
+              return KeyEventResult.ignored;
+            }
+          }
+
           if (event is KeyDownEvent) {
             final isCtrl = HardwareKeyboard.instance.isControlPressed ||
                 HardwareKeyboard.instance.isMetaPressed;
@@ -269,6 +408,14 @@ class _MainSplitScreenState extends State<MainSplitScreen> {
                   onRecordScene: _recordScene,
                   onRecordOpening: _recordOpening,
                   onRecordClosing: _recordClosing,
+                  autoSkipEnabled: _autoSkipEnabled,
+                  onAutoSkipChanged: (val) {
+                    setState(() => _autoSkipEnabled = val);
+                  },
+                  opStart: _opStart,
+                  opEnd: _opEnd,
+                  edStart: _edStart,
+                  edEnd: _edEnd,
                 ),
               ),
               const SizedBox(width: 16),
