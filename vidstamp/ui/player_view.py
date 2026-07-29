@@ -76,6 +76,7 @@ class RightPlayerPanel(tk.Frame):
         # Overlay options
         self.show_ts = tk.BooleanVar(value=True)
         self.show_ms = tk.BooleanVar(value=True)
+        self.show_sub = tk.BooleanVar(value=False)
         
         # Tombol set OP/ED dan Checkbox Auto-Skip
         tk.Button(self.top_bar, text="⚙️ Set Skip OP/ED", command=self.setup_skip_oped_dialog,
@@ -89,9 +90,15 @@ class RightPlayerPanel(tk.Frame):
         tk.Frame(self.top_bar, bg="#e94560", width=1, height=18).pack(side="right", padx=8, fill="y")
         
         tk.Checkbutton(self.top_bar, text="ms", variable=self.show_ms,
+                        command=self.render_current_frame,
                         bg="#16213e", fg="#a8dadc", selectcolor="#0f3460",
                         activebackground="#16213e", font=("Segoe UI", 8)).pack(side="right", padx=(2, 6))
         tk.Checkbutton(self.top_bar, text="Timestamp", variable=self.show_ts,
+                        command=self.render_current_frame,
+                        bg="#16213e", fg="#a8dadc", selectcolor="#0f3460",
+                        activebackground="#16213e", font=("Segoe UI", 8)).pack(side="right", padx=2)
+        tk.Checkbutton(self.top_bar, text="Subtitel", variable=self.show_sub,
+                        command=self.render_current_frame,
                         bg="#16213e", fg="#a8dadc", selectcolor="#0f3460",
                         activebackground="#16213e", font=("Segoe UI", 8)).pack(side="right", padx=2)
 
@@ -624,6 +631,62 @@ class RightPlayerPanel(tk.Frame):
             self.lbl_mk.config(text="Perekaman dibatalkan")
             self.render_current_frame()
 
+    def record_opening_action(self):
+        if not self.engine.cap:
+            return
+        current_time = self.engine.cur_idx / self.engine.fps
+        
+        # Jika op_start belum diatur, atau jika keduanya sudah diatur (kita reset rekam baru)
+        if self.op_start is None or (self.op_start is not None and self.op_end is not None):
+            self.op_start = current_time
+            self.op_end = None
+            self.lbl_mk.config(text=f"⚙️ OP Mulai: {format_time(self.op_start)} (Tekan Ctrl+O lagi untuk Selesai)")
+        else:
+            # Set op_end dan simpan
+            self.op_end = current_time
+            if self.op_end <= self.op_start:
+                # Swap jika user seek mundur
+                self.op_start, self.op_end = self.op_end, self.op_start
+            
+            # Simpan skip config secara otomatis (default as_template=True agar konsisten)
+            config = {
+                "op_start": self.op_start,
+                "op_end": self.op_end,
+                "ed_start": self.ed_start,
+                "ed_end": self.ed_end,
+                "auto_skip_enabled": self.auto_skip.get()
+            }
+            save_skip_config(self.engine.video_path, config, as_template=True)
+            self.lbl_mk.config(text=f"⚙️ OP Tersimpan: {format_time(self.op_start)} - {format_time(self.op_end)}")
+
+    def record_closing_action(self):
+        if not self.engine.cap:
+            return
+        current_time = self.engine.cur_idx / self.engine.fps
+        
+        # Jika ed_start belum diatur, atau jika keduanya sudah diatur (kita reset rekam baru)
+        if self.ed_start is None or (self.ed_start is not None and self.ed_end is not None):
+            self.ed_start = current_time
+            self.ed_end = None
+            self.lbl_mk.config(text=f"⚙️ ED Mulai: {format_time(self.ed_start)} (Tekan Ctrl+C lagi untuk Selesai)")
+        else:
+            # Set ed_end dan simpan
+            self.ed_end = current_time
+            if self.ed_end <= self.ed_start:
+                # Swap jika user seek mundur
+                self.ed_start, self.ed_end = self.ed_end, self.ed_start
+            
+            # Simpan skip config secara otomatis
+            config = {
+                "op_start": self.op_start,
+                "op_end": self.op_end,
+                "ed_start": self.ed_start,
+                "ed_end": self.ed_end,
+                "auto_skip_enabled": self.auto_skip.get()
+            }
+            save_skip_config(self.engine.video_path, config, as_template=True)
+            self.lbl_mk.config(text=f"⚙️ ED Tersimpan: {format_time(self.ed_start)} - {format_time(self.ed_end)}")
+
     def save_scene_action(self):
         if not self.engine.cap:
             return
@@ -1013,7 +1076,7 @@ class RightPlayerPanel(tk.Frame):
             cv2.putText(frame, t, (w - tw - 12, h - 28), FONT, 0.75, COLOR_END, 2, cv2.LINE_AA)
             
         # ─ Render Subtitle Live Preview ke Frame ─
-        if self.subtitle_list:
+        if self.show_sub.get() and self.subtitle_list:
             import re
             active_subs = [s for s in self.subtitle_list if s['start'] <= sec < s['end']]
             if active_subs:

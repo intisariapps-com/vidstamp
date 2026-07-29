@@ -32,3 +32,13 @@ Dokumen ini mendokumentasikan spesifikasi kebutuhan untuk restrukturisasi tata l
 * `self.video_list` (list string): Daftar path absolut seluruh video di folder aktif saat ini.
 * `self.current_folder` (string): Path folder aktif saat ini.
 * `self.video_select_combo` (ttk.Combobox): Widget dropdown di `top_bar` untuk memilih video dari `self.video_list`.
+
+## 5. Kontrol Tampilan Overlay & Subtitel Cerdas
+* **Checkbutton "Subtitel" (Live Preview Toggle)**:
+  * Lokasi: Di sebelah kanan opsi "Timestamp" pada `top_bar`.
+  * Status Default: Nonaktif (`BooleanVar(value=False)`).
+  * Perilaku: Mencegah penggambaran teks subtitle manual menggunakan `cv2.putText` di atas canvas video ketika pemutaran berlangsung. Hal ini memberikan kenyamanan maksimal bagi pengguna yang menonton video MKV dengan hardsubs bawaan (misalnya rilis Kusonime) agar tidak terjadi penumpukan teks. Jika dicentang, teks subtitle hasil ekstraksi akan digambar ulang secara manual.
+* **Pemicu Refresh Instan (Instant Refresh Trigger)**:
+  * Aksi: Menghubungkan seluruh checkbox overlay (`Timestamp`, `ms`, `Subtitel`) ke fungsi `self.render_current_frame`.
+  * Hasil: Ketika status checkbox diubah oleh pengguna, tampilan video canvas langsung menyegarkan overlay detik dan subtitle-nya saat itu juga (real-time) tanpa harus memutar video terlebih dahulu.
+
