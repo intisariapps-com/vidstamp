@@ -40,6 +40,9 @@ class MpvTestApp:
         tk.Label(self.ctrl, text="Gunakan Drag Seekbar atau tombol arah ← / → untuk tes kecepatan seek!", 
                  bg="#0d0d1a", fg="#666688", font=("Segoe UI", 8)).pack(side="right", padx=15)
 
+        # Force Tkinter untuk merender dan me-map widget ke layar agar winfo_id() mengembalikan handle HWND Windows yang sah
+        self.root.update()
+
         # Inisialisasi MPV Player
         # wmode='direct3d' untuk Windows agar akselerasi hardware berjalan mulus langsung di window handle
         try:
@@ -55,14 +58,6 @@ class MpvTestApp:
             self.root.destroy()
             return
             
-        # MPV otomatis menangani perubahan ukuran canvas dari parent window ID (wid)
-        
-        # Muat video secara otomatis jika ada argumen
-        if len(sys.argv) > 1:
-            video_path = sys.argv[1]
-            if os.path.exists(video_path):
-                self.player.play(video_path)
-                
     def toggle_play(self):
         self.player.pause = not self.player.pause
 
@@ -78,12 +73,23 @@ if __name__ == "__main__":
     
     # Tunggu sebentar agar window id valid sebelum mulai memutar
     def start_playback():
-        # Cari file mkv di folder saat ini jika ada untuk otomatis dimuat
-        import glob
-        mkv_files = glob.glob("*.mkv") + glob.glob("*.mp4")
-        if mkv_files:
-            print(f"[+] Otomatis memuat file: {mkv_files[0]}")
-            app.player.play(mkv_files[0])
+        if len(sys.argv) > 1:
+            video_path = sys.argv[1]
+            if os.path.exists(video_path):
+                print(f"[+] Memutar berkas dari argumen: {video_path}")
+                app.player.play(video_path)
+            else:
+                print(f"[-] Berkas video tidak ditemukan: {video_path}")
+                messagebox.showwarning("File Tidak Ditemukan", f"Berkas video berikut tidak dapat ditemukan:\n\n{video_path}\n\nPastikan path file sudah benar.")
+        else:
+            # Cari file mkv di folder saat ini jika ada untuk otomatis dimuat
+            import glob
+            mkv_files = glob.glob("*.mkv") + glob.glob("*.mp4")
+            if mkv_files:
+                print(f"[+] Otomatis memuat file lokal: {mkv_files[0]}")
+                app.player.play(mkv_files[0])
+            else:
+                print("[*] Tidak ada file video eksternal yang dimasukkan, dan tidak ada berkas .mkv/.mp4 di folder kerja.")
             
     root.after(100, start_playback)
     root.mainloop()
