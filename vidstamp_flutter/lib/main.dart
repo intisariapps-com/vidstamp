@@ -8,6 +8,7 @@ import 'models/scene_note.dart';
 import 'widgets/video_player_panel.dart';
 import 'widgets/notes_panel.dart';
 import 'widgets/export_dialog.dart';
+import 'widgets/batch_merger_dialog.dart';
 import 'utils/subtitle_processor.dart';
 import 'utils/video_processor.dart';
 import 'package:uuid/uuid.dart';
@@ -589,6 +590,27 @@ class _MainSplitScreenState extends State<MainSplitScreen> {
         backgroundColor: const Color(0xFF16162A),
         elevation: 0,
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (ctx) => const BatchMergerDialog(),
+                );
+              },
+              icon: const Icon(Icons.merge_type_outlined, size: 18),
+              label: const Text('Batch Merger'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6C2EB9),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: ElevatedButton.icon(
