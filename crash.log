@@ -1,0 +1,2814 @@
+=== CRASH LOG [2026-07-28 23:33:16,910] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 260, in open_folder_action
+    folder = filedialog.askdirectory(initialdir=self.current_folder or self.get_default_dir(),
+             ^^^^^^^^^^
+NameError: name 'filedialog' is not defined
+
+==================================================
+
+=== CRASH LOG [2026-07-28 23:33:59,957] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\main_window.py", line 260, in open_folder_action
+    folder = filedialog.askdirectory(initialdir=self.current_folder or self.get_default_dir(),
+             ^^^^^^^^^^
+NameError: name 'filedialog' is not defined
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:38,226] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:38,730] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:39,263] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:39,781] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:40,288] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:40,809] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:41,384] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:41,840] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:42,361] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:42,897] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:43,415] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:43,935] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:44,459] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:44,975] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:45,486] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:45,993] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
+=== CRASH LOG [2026-07-29 00:28:46,509] ===
+Tkinter Callback Exception:
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1967, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 861, in callit
+    func(*args)
+  File "D:\VIDSTAMPS-APPS\vidstamp\ui\batch_merger.py", line 402, in <lambda>
+    self.after(0, lambda: self.lbl_status_text.config(text=f"Eps {file_idx+1}/{total} ({pct:.1f}%) - {status_text}"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1721, in configure
+    return self._configure('configure', cnf, kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ripal\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1711, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+_tkinter.TclError: invalid command name ".!batchmergerwizard2.!frame3.!label"
+
+==================================================
+
