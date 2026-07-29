@@ -125,7 +125,10 @@ class _VideoPlayerPanelState extends State<VideoPlayerPanel> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Video(controller: widget.controller),
+                  Video(
+                    controller: widget.controller,
+                    controls: null,
+                  ),
                   
                   // Progress Slider dan Kontrol Overlay di bawah
                   Positioned(
