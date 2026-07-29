@@ -196,6 +196,137 @@ def wrap_text_by_char_limit(text, limit):
         return " ".join(line1) + "\n" + " ".join(line2)
     return " ".join(line1)
 
+def extract_mkv_ass_subtitles(video_path, temp_ass_path):
+    """
+    Mengekstrak trek subtitle internal pertama (0:s:0) dari berkas MKV
+    ke berkas ASS temporer menggunakan subprocess FFmpeg.
+    """
+    if not video_path.lower().endswith('.mkv'):
+        return False
+        
+    if os.path.exists(temp_ass_path):
+        try:
+            os.remove(temp_ass_path)
+        except:
+            pass
+
+    ffmpeg_cmd = get_ffmpeg_path()
+    cmd = [
+        ffmpeg_cmd, '-y',
+        '-i', video_path,
+        '-map', '0:s:0',
+        temp_ass_path
+    ]
+    
+    startupinfo = None
+    if os.name == 'nt':
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = 0 # Sembunyikan window CMD hitam
+
+    try:
+        subprocess.run(
+            cmd,
+            startupinfo=startupinfo,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=60
+        )
+        if os.path.exists(temp_ass_path) and os.path.getsize(temp_ass_path) > 0:
+            return True
+    except Exception as e:
+        print(f"FFmpeg ASS subtitle extraction error: {e}")
+        
+    return False
+
+def ass_time_to_seconds(time_str):
+    """Mengonversi format waktu ASS (H:MM:SS.cs) ke detik float."""
+    parts = time_str.split(":")
+    if len(parts) != 3:
+        return 0.0
+    h = int(parts[0])
+    m = int(parts[1])
+    s_parts = parts[2].split(".")
+    s = int(s_parts[0])
+    cs = int(s_parts[1]) if len(s_parts) > 1 else 0
+    # cs adalah centiseconds (seperseratus detik)
+    return h * 3600 + m * 60 + s + cs / 100.0
+
+def seconds_to_ass_time(total_seconds):
+    """Mengonversi detik float ke format waktu ASS (H:MM:SS.cs)."""
+    hours = int(total_seconds // 3600)
+    minutes = int((total_seconds % 3600) // 60)
+    seconds = int(total_seconds % 60)
+    centiseconds = int(round((total_seconds - int(total_seconds)) * 100))
+    if centiseconds >= 100:
+        seconds += 1
+        centiseconds -= 100
+    if seconds >= 60:
+        minutes += 1
+        seconds -= 60
+    if minutes >= 60:
+        hours += 1
+        minutes -= 60
+    return f"{hours}:{minutes:02d}:{seconds:02d}.{centiseconds:02d}"
+
+def cut_and_shift_ass(input_ass_path, keep_ranges, output_ass_path):
+    """
+    Membaca berkas ASS input, mempertahankan subtitle Dialogue yang masuk dalam keep_ranges,
+    menggeser waktunya agar selaras dengan video baru yang terpotong,
+    dan menyimpannya ke berkas ASS output dengan gaya/format asli tetap utuh.
+    """
+    if not os.path.exists(input_ass_path):
+        return False
+        
+    try:
+        with open(input_ass_path, 'r', encoding='utf-8', errors='replace') as f:
+            lines = f.readlines()
+            
+        dialogue_pattern = re.compile(r'^(Dialogue:\s*[^,]+,)([^,]+),([^,]+),(.*)$')
+        shifted_lines = []
+        
+        for line in lines:
+            match = dialogue_pattern.match(line)
+            if match:
+                prefix = match.group(1)
+                start_str = match.group(2)
+                end_str = match.group(3)
+                suffix = match.group(4)
+                
+                try:
+                    start_sec = ass_time_to_seconds(start_str)
+                    end_sec = ass_time_to_seconds(end_str)
+                except Exception:
+                    shifted_lines.append(line)
+                    continue
+                
+                mapped_start = None
+                mapped_end = None
+                
+                acc_keep_duration = 0.0
+                for k_start, k_end in keep_ranges:
+                    if k_start <= start_sec < k_end:
+                        mapped_start = (start_sec - k_start) + acc_keep_duration
+                        mapped_end = (end_sec - k_start) + acc_keep_duration
+                        break
+                    acc_keep_duration += (k_end - k_start)
+                    
+                if mapped_start is not None and mapped_end is not None:
+                    new_start_str = seconds_to_ass_time(mapped_start)
+                    new_end_str = seconds_to_ass_time(mapped_end)
+                    shifted_lines.append(f"{prefix}{new_start_str},{new_end_str},{suffix}\n")
+            else:
+                # Pertahankan line non-dialogue (script info, styles, dll)
+                shifted_lines.append(line)
+                
+        with open(output_ass_path, 'w', encoding='utf-8') as f:
+            f.writelines(shifted_lines)
+        return True
+    except Exception as e:
+        print(f"Gagal menyelaraskan subtitel ASS: {e}")
+        return False
+
 def cut_and_shift_srt(input_srt_path, keep_ranges, output_srt_path, line_limit=None):
     """
     Membaca berkas SRT input, mempertahankan subtitle yang masuk dalam keep_ranges,
@@ -366,7 +497,11 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
     import uuid
     unique_suffix = uuid.uuid4().hex[:8]
     temp_extract_srt = output_srt_path + f".temp_extract_{unique_suffix}.srt"
+    temp_extract_ass = output_srt_path + f".temp_extract_{unique_suffix}.ass"
+    temp_shifted_ass = output_srt_path + f".temp_shifted_{unique_suffix}.ass"
+    
     srt_to_shift = None
+    ass_to_shift = None
     
     # Deteksi srt eksternal
     from vidstamp.core.subtitle import find_external_subtitle, extract_mkv_subtitles
@@ -375,9 +510,12 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
     if external_srt:
         srt_to_shift = external_srt
     elif video_path.lower().endswith('.mkv'):
-        # Ekstrak subtitle internal ke temp
+        # Ekstrak subtitle internal ke temp SRT (untuk output SRT bersih)
         if extract_mkv_subtitles(video_path, temp_extract_srt):
             srt_to_shift = temp_extract_srt
+        # Ekstrak subtitle internal ke temp ASS (untuk burn native style)
+        if extract_mkv_ass_subtitles(video_path, temp_extract_ass):
+            ass_to_shift = temp_extract_ass
             
     # Selaraskan subtitle
     srt_success = False
@@ -385,6 +523,13 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
         srt_success = cut_and_shift_srt(srt_to_shift, keep_ranges, output_srt_path, line_limit=line_limit)
         if os.path.exists(temp_extract_srt):
             try: os.remove(temp_extract_srt)
+            except: pass
+            
+    ass_success = False
+    if ass_to_shift:
+        ass_success = cut_and_shift_ass(ass_to_shift, keep_ranges, temp_shifted_ass)
+        if os.path.exists(temp_extract_ass):
+            try: os.remove(temp_extract_ass)
             except: pass
             
     # 2. Pemotongan Video & Audio via FFmpeg
@@ -399,16 +544,19 @@ def export_clean_video_and_srt(video_path, op_start, op_end, ed_start, ed_end, o
     concat_node = f"{concat_inputs}concat=n={len(keep_ranges)}:v=1:a=1[v_cut][a_cut]"
     
     # Hardsub atau Softsub
-    if mode == "hardsub" and srt_success and os.path.exists(output_srt_path):
+    # Prioritaskan menggunakan ASS (native mkv styling) untuk hardsub jika sukses diekstraksi
+    if mode == "hardsub" and os.path.exists(temp_shifted_ass) and ass_success:
+        srt_escaped = escape_path_for_ffmpeg_filter(temp_shifted_ass)
+        # Untuk ASS, tidak perlu force_style karena font & ukuran bawaan mkv sudah didefinisikan secara presisi di file ASS
+        subtitle_node = f"[v_cut]subtitles='{srt_escaped}'[v_final]"
+        filter_complex = "; ".join(filter_v_nodes + filter_a_nodes) + "; " + concat_node + "; " + subtitle_node
+        map_video = "[v_final]"
+    elif mode == "hardsub" and srt_success and os.path.exists(output_srt_path):
         srt_escaped = escape_path_for_ffmpeg_filter(output_srt_path)
-        
-        # Tambahkan force_style jika font_size dikustomisasi
         if font_size and str(font_size).lower() != "default":
-            # Berikan outline 2, shadow 0 agar rapi, dan line spacing proporsional otomatis di libass
             subtitle_node = f"[v_cut]subtitles='{srt_escaped}':force_style='Fontsize={font_size},Outline=2,Shadow=0'[v_final]"
         else:
             subtitle_node = f"[v_cut]subtitles='{srt_escaped}'[v_final]"
-            
         filter_complex = "; ".join(filter_v_nodes + filter_a_nodes) + "; " + concat_node + "; " + subtitle_node
         map_video = "[v_final]"
     else:
@@ -521,7 +669,11 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
         import uuid
         unique_suffix = uuid.uuid4().hex[:8]
         temp_extract_srt = out_s + f".temp_extract_{unique_suffix}.srt"
+        temp_extract_ass = out_s + f".temp_extract_{unique_suffix}.ass"
+        temp_shifted_ass = out_s + f".temp_shifted_{unique_suffix}.ass"
+        
         srt_to_shift = None
+        ass_to_shift = None
         
         external_srt = find_external_subtitle(file)
         if external_srt:
@@ -529,6 +681,8 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
         elif file.lower().endswith('.mkv'):
             if extract_mkv_subtitles(file, temp_extract_srt):
                 srt_to_shift = temp_extract_srt
+            if extract_mkv_ass_subtitles(file, temp_extract_ass):
+                ass_to_shift = temp_extract_ass
                 
         srt_success = False
         if srt_to_shift:
@@ -587,6 +741,13 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
                 try: os.remove(temp_extract_srt)
                 except: pass
                 
+        ass_success = False
+        if ass_to_shift:
+            ass_success = cut_and_shift_ass(ass_to_shift, keep_ranges, temp_shifted_ass)
+            if os.path.exists(temp_extract_ass):
+                try: os.remove(temp_extract_ass)
+                except: pass
+
         # Potong video episode ini
         filter_v_nodes = []
         filter_a_nodes = []
@@ -597,7 +758,15 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
         concat_inputs = "".join(f"[v{k}][a{k}]" for k in range(len(keep_ranges)))
         concat_node = f"{concat_inputs}concat=n={len(keep_ranges)}:v=1:a=1[v_cut][a_cut]"
         
-        if mode == "hardsub" and srt_success and os.path.exists(out_s):
+        # Hardsub atau Softsub
+        # Prioritaskan menggunakan ASS (native mkv styling) untuk hardsub jika sukses diekstraksi
+        if mode == "hardsub" and os.path.exists(temp_shifted_ass) and ass_success:
+            srt_escaped = escape_path_for_ffmpeg_filter(temp_shifted_ass)
+            # Untuk ASS, tidak perlu force_style karena font & ukuran bawaan mkv sudah didefinisikan secara presisi di file ASS
+            subtitle_node = f"[v_cut]subtitles='{srt_escaped}'[v_final]"
+            filter_complex = "; ".join(filter_v_nodes + filter_a_nodes) + "; " + concat_node + "; " + subtitle_node
+            map_video = "[v_final]"
+        elif mode == "hardsub" and srt_success and os.path.exists(out_s):
             srt_escaped = escape_path_for_ffmpeg_filter(out_s)
             if font_size and str(font_size).lower() != "default":
                 subtitle_node = f"[v_cut]subtitles='{srt_escaped}':force_style='Fontsize={font_size},Outline=2,Shadow=0'[v_final]"
@@ -627,6 +796,12 @@ def export_bulk_and_merge(parent_dir, mode="softsub", merge_to_one=True, progres
                 progress_callback(idx, total_files, pct, f"Memproses {os.path.basename(file)}")
                 
         success, msg = run_ffmpeg_process(cmd, total_keep_duration, sub_progress_callback, cancel_event)
+        
+        # Bersihkan berkas temp ass episode ini
+        if os.path.exists(temp_shifted_ass):
+            try: os.remove(temp_shifted_ass)
+            except: pass
+            
         if not success:
             # Bersihkan berkas temp yang baru dibuat
             for tv in episode_temp_videos:

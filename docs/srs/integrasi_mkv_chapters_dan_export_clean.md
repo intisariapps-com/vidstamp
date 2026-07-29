@@ -21,7 +21,7 @@ Mengintegrasikan kapabilitas dari skrip `mkv_merger_skip_oped.py` ke dalam UI Vi
   * Menambahkan tombol **"✂️ Ekspor Video Bersih"** pada dialog "Set Skip OP/ED" atau panel kontrol utama.
   * Ketika tombol diklik, tampilkan dialog konfigurasi ekspor:
     * **Mode Subtitel**:
-      1. *Hardsub*: Subtitel digabungkan langsung ke dalam video hasil ekspor menggunakan filter `subtitles` FFmpeg.
+      1. *Hardsub (Pembakaran)*: Subtitel digabungkan langsung ke dalam video hasil ekspor menggunakan filter `subtitles` FFmpeg. **Jika sumber video memiliki subtitle internal format ASS (Advanced SubStation Alpha), program secara otomatis mengekstrak, menggeser, dan membakar format ASS tersebut sehingga seluruh warna, ukuran, tipe font, posisi, dan efek visual bawaan MKV asli dipertahankan secara utuh di hasil ekspor.** Jika sumber hanya memiliki SRT, gaya default atau kustomisasi ukuran font yang akan dibakar.
       2. *Softsub (Potong Saja)*: Video dipotong bersih tanpa hardsub, dan berkas subtitel `.srt` bersih dengan timestamp tergeser disimpan secara terpisah.
     * **Cakupan Ekspor**:
       1. *Video Aktif Saja*: Hanya memproses video yang sedang dibuka.
@@ -46,10 +46,12 @@ Mengintegrasikan kapabilitas dari skrip `mkv_merger_skip_oped.py` ke dalam UI Vi
   * Membaca chapter MKV menggunakan `ffprobe`.
   * Melakukan kalkulasi pemotongan segmen (trimming) video & audio menggunakan FFmpeg filter complex concat.
   * Mengekstrak, memotong, dan menggeser subtitel SRT secara presisi berdasarkan daftar chapter/detik yang di-skip (logika pemotongan SRT dari `mkv_merger_skip_oped.py`).
+  * **Dukungan Retensi Subtitel ASS**: Menambahkan fungsi `extract_mkv_ass_subtitles(...)` untuk mengekstrak track sub internal aslinya ke ekstensi `.ass`, serta `cut_and_shift_ass(...)` untuk menggeser waktu Dialogue di dalam berkas ASS tanpa merusak style header, font name, fontsize, dan formatting tag bawaan anime MKV.
   * `merge_duplicate_ocr_subtitles(subs_list)`: Fungsi pintar untuk mendeteksi, menyatukan, dan mengeliminasi spaming OCR subtitle yang berulang.
   * `export_bulk_and_merge(...)`: Logika pemrosesan batch beralur penuh yang mengotomatisasi rendering, penyelarasan SRT massal, pembuatan SRT global, dan penyatuan MP4 lossless.
     * **Penulisan Path Relatif**: File daftar concat (`mylist_temp_xxx.txt`) harus menggunakan penulisan path relatif (hanya nama file saja) alih-alih path absolut untuk mencegah kegagalan FFmpeg di Windows ketika memproses path folder induk yang memiliki spasi, drive letter tertentu, atau karakter non-ASCII (Unicode).
     * **Penanganan & Diagnosis Error**: Proses concat final harus merekam output `stderr` dan `stdout`. Jika FFmpeg keluar dengan kode error (misalnya `-28` / `4294967268` untuk `ENOSPC`), program harus mendiagnosis dan memberikan pesan kesalahan spesifik (seperti disk penuh atau batas 4GB FAT32 terlampaui) serta menampilkan 3 baris terakhir dari log `stderr` FFmpeg untuk troubleshooting mandiri yang lebih mudah.
+
 
 ### C. Modul UI Player View: `vidstamp/ui/player_view.py`
 * Menambahkan tombol aksi ekspor video bersih di dalam UI Dialog "Set Skip OP/ED".
