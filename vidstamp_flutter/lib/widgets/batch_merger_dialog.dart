@@ -348,7 +348,7 @@ class _BatchMergerDialogState extends State<BatchMergerDialog> {
                             width: 14,
                             height: 14,
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Icon(Icons.folder_search_outlined, size: 18),
+                        : const Icon(Icons.folder_open, size: 18),
                     label: const Text('Pindai Folder'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1A73E8),
